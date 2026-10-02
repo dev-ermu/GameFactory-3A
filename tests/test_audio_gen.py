@@ -1,5 +1,5 @@
 """
-test/test_audio_gen.py
+tests/test_audio_gen.py
 
 Integration test: loads Qwen3-TTS + Woosh-DFlow, runs the gen_audio pipeline
 on the tasks in audio_gen_collect.jsonl, and asserts WAV files are created.
@@ -9,7 +9,7 @@ Run from repo root:
     WOOSH_DFLOW_CKPT=/path/to/Woosh-DFlow \
     WOOSH_AE_CKPT=/path/to/Woosh-AE \
     WOOSH_TEXT_CONDITIONER_CKPT=/path/to/TextConditionerA \
-    python test/test_audio_gen.py
+    python tests/test_audio_gen.py
 """
 from __future__ import annotations
 

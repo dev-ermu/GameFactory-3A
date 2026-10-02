@@ -210,7 +210,7 @@ def combine_avatar(
     slot or parent-local position. ``grip_templates`` supplies optional weapon
     presets; each weapon may override their fields. No sockets or grips are
     implicit. ``slot_definitions`` overrides anatomical placement formulas.
-    See test/test_3d_object_compose.py for editable example settings.
+    See tests/test_3d_object_compose.py for editable example settings.
     """
 
     parts_path = Path(parts_dir)

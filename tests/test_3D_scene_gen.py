@@ -1,5 +1,5 @@
 """
-test/test_3D_scene_gen.py
+tests/test_3D_scene_gen.py
 
 Tests for the `3d_scene` asset kind: a reference image and a camera trajectory
 in, a scene mesh out. The current backend is Hunyuan WorldPlay → WorldMirror.
@@ -16,8 +16,8 @@ to run anywhere: contract (needs only the HY-WorldPlay checkout), wiring (needs
 nothing, stubs stand in for the weights), generation (needs weights and a GPU).
 
 Run from repo root:
-    python test/test_3D_scene_gen.py
-    AAAGF_RUN_GPU_TESTS=1 python test/test_3D_scene_gen.py
+    python tests/test_3D_scene_gen.py
+    AAAGF_RUN_GPU_TESTS=1 python tests/test_3D_scene_gen.py
 """
 from __future__ import annotations
 
@@ -96,7 +96,7 @@ class TestWorldPlayWiring(unittest.TestCase):
         from PIL import Image
 
         from operators.gen_3d_scene.operator import Gen3DSceneOperator
-        from test.harness.stubs import StubWorldMirrorModel, StubWorldPlayModel
+        from tests.harness import StubWorldMirrorModel, StubWorldPlayModel
 
         video_model = StubWorldPlayModel()
         with tempfile.TemporaryDirectory() as directory:

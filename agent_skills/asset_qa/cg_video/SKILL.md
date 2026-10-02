@@ -18,7 +18,7 @@ Game plan → game-cg-director → cg_tasks.jsonl
 | Model | `<REPO_PATH>/models/gen_cg_video/` | Model-native inference, cloud transport, and lifecycle |
 | Operator | `<REPO_PATH>/operators/gen_cg_video/` | Task fields, local image loading, artifact paths, and metadata |
 | Pipeline | `<REPO_PATH>/pipeline/assets_gen/gen_cg_video/` | Backend selection, CLI, JSONL batches, and summaries |
-| Harness | `<REPO_PATH>/test/harness/` | CPU-only, network-free chain validation |
+| Harness | `<REPO_PATH>/tests/harness/` | CPU-only, network-free chain validation |
 | Director sub-Skill | `<REPO_PATH>/agent_skills/asset_qa/cg_video/game-cg-director/` | Model-specific storyboard prompts and validated task rows |
 
 Paths in this Skill are written from the repository root. Resolve every
@@ -334,11 +334,11 @@ for example under `<REPO_PATH>/third_party/` or a configured Hugging Face cache.
 Run a free contract check first:
 
 ```bash
-python test/harness/smoke.py --kind cg_video --backend seedance
-python test/harness/smoke.py --kind cg_video --backend minimax-h3
+python tests/harness/smoke.py --kind cg_video --backend seedance
+python tests/harness/smoke.py --kind cg_video --backend minimax-h3
 ```
 
-Use `<REPO_PATH>/test/test_cg_video_gen.py` for real API or local checkpoint generation only
+Use `<REPO_PATH>/tests/test_cg_video_gen.py` for real API or local checkpoint generation only
 after explicitly selecting backend, runtime, task file, output directory, and
 cache. A paid Seedance example:
 
@@ -348,7 +348,7 @@ export CG_VIDEO_BACKEND=seedance
 export CG_VIDEO_TEST_TASKS=/absolute/path/to/cg_tasks.jsonl
 export CG_VIDEO_TEST_OUT_DIR=/absolute/path/to/output
 export GAMEFACTORY3A_API_CACHE=/absolute/path/to/api_cache
-python test/test_cg_video_gen.py
+python tests/test_cg_video_gen.py
 ```
 
 The test validates tasks before contacting a provider. Set

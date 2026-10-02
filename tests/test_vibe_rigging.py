@@ -324,7 +324,7 @@ def run_mesh_test(*, input_path, output_dir, config, source_url=None, ffmpeg=Non
     initial, orientation, selected = deepcopy(rig), None, None
     before = skeleton.evaluate_skeleton(mesh, rig, config=config['rig_quality'])
     if with_motion:
-        from test.test_vibe_motion import evaluate_bound_motion
+        from tests.test_vibe_motion import evaluate_bound_motion
         limbs = {k: {'chain': [rig.joint_names.index(n) for n in v['chain']], 'forward': v['forward']} for k, v in config['probe_parts'].items()}
         fixed = weights.weights.copy()
         rig, poles, selected, orientation = refine_orientation(mesh, rig, limbs,
@@ -367,7 +367,7 @@ def run_mesh_test(*, input_path, output_dir, config, source_url=None, ffmpeg=Non
                   initial_rig_quality=before, initial_joints=initial.joints.tolist(), orientation=orientation,
                   anchor_count=len(constraints.get('anchors', {}).get('ids', [])))
     if selected is not None:
-        from test.test_vibe_motion import export_bound_motion
+        from tests.test_vibe_motion import export_bound_motion
         report['motion'] = selected['metrics']
         report['passed'] = bool(report['passed'] and not selected['metrics']['motion']['failures']
                                 and selected['metrics']['edge_stretch_max'] <= settings['stretch_max_limit']

@@ -5,7 +5,7 @@ Development harness for the **asset-generation chain** — `<REPO_PATH>/models/`
 
 It exists because the three layers are only useful if they agree on their
 contracts. This directory pins those contracts down; the runnable counterpart
-lives in `<REPO_PATH>/test/harness/` and lets you check a chain **without a GPU and without
+lives in `<REPO_PATH>/tests/harness/` and lets you check a chain **without a GPU and without
 downloading weights**.
 
 Paths are written from the repository root as `<REPO_PATH>/...`; see the Path
@@ -27,8 +27,8 @@ Executable part (under `<REPO_PATH>/test/`, where code belongs):
 
 | File | Purpose |
 |------|---------|
-| `<REPO_PATH>/test/harness/stubs.py` | Fake models + fixtures — run any chain on CPU in milliseconds |
-| `<REPO_PATH>/test/harness/smoke.py` | End-to-end chain run with stub models, asserts the output layout |
+| `<REPO_PATH>/tests/harness/stubs.py` | Fake models + fixtures — run any chain on CPU in milliseconds |
+| `<REPO_PATH>/tests/harness/smoke.py` | End-to-end chain run with stub models, asserts the output layout |
 
 ## The three layers
 
@@ -92,11 +92,11 @@ Add the task lines to both the per-game
 ### 6. Register a stub, then verify — no GPU needed
 
 Add an entry to `STUB_OPERATOR_KWARGS` (and `OPERATOR_LOCATION`) in
-`<REPO_PATH>/test/harness/stubs.py`, then:
+`<REPO_PATH>/tests/harness/stubs.py`, then:
 
 ```bash
 pip install pillow numpy scipy          # the harness needs nothing else
-python test/harness/smoke.py --kind <new_kind>
+python tests/harness/smoke.py --kind <new_kind>
 ```
 
 `smoke.py` asserts the artifacts land exactly where `paths.py` promises, that
@@ -106,7 +106,7 @@ grouped per game project.
 Then, on a GPU box, the real integration test:
 
 ```bash
-python test/test_<task>.py
+python tests/test_<task>.py
 ```
 
 ## Output layout — never hand-build a path
@@ -142,7 +142,7 @@ Operators are consumed by `run.py`, `eval.py` and `<REPO_PATH>/test/`. When chan
   Example: `Gen3DObjectOperator(output_dir=...)` still writes the flat
   `<output_dir>/<task_id>.glb`; the per-game layout only activates when
   `output_dir` is omitted.
-- `<REPO_PATH>/test/harness/smoke.py` exercises **both** modes, so a regression in the legacy
+- `<REPO_PATH>/tests/harness/smoke.py` exercises **both** modes, so a regression in the legacy
   path fails the smoke run.
 
 ## Anti-patterns

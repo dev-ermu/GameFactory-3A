@@ -56,9 +56,9 @@ is pinned to `4.5.1-stable`; `latest` is deliberately rejected. The installer:
 - is idempotent (`action=reused-managed`); a new exact `--version` installs
   beside the old one, while `--force` replaces only that resolved target.
 
-The installer and adapter use Python 3.8+ standard library and do not require
-Python 3.12, pip packages, or an engine SDK package. Compatibility is gated by
-the full Godot adapter suite on Python 3.8.10. Platform details, flags, and
+The installer and adapter use the Python 3.14+ standard library and do not
+require pip packages or an engine SDK package. Compatibility is gated by the
+full Godot adapter suite on Python 3.14. Platform details, flags, and
 failure semantics are in `scripts/engine_install/godot/README.md`.
 
 Configure the returned paths and validate through the public client:

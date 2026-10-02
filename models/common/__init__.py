@@ -10,6 +10,6 @@ Contents:
                    closed-source API wrapper (`api_model_require.md` R9.11).
     glb_utils.py — dependency-free GLB inspection (triangle count, bounds).
 
-Imports are kept lazy and stdlib-only at module level so `test/harness/smoke.py`
+Imports are kept lazy and stdlib-only at module level so `tests/harness/smoke.py`
 can import the chain on a CPU box with no extra packages installed.
 """

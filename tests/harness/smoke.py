@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-test/harness/smoke.py
+tests/harness/smoke.py
 
 End-to-end smoke test for an asset-generation chain, driven by **stub models**
 so it runs on CPU in milliseconds with no weights and no network.
@@ -22,11 +22,11 @@ Requires only `pillow`, `numpy` (and `scipy` for the tpose chain) — no torch, 
 CUDA. Exits 3 with an install hint when they are missing.
 
 Usage:
-    python test/harness/smoke.py                    # all stubbed kinds
-    python test/harness/smoke.py --kind tpose
-    python test/harness/smoke.py --keep             # inspect artifacts
-    python test/harness/smoke.py --kind 3d_object --backend tripo   # API backend
-    python test/harness/smoke.py --kind tpose --backend seedream    # API backend
+    python tests/harness/smoke.py                    # all stubbed kinds
+    python tests/harness/smoke.py --kind tpose
+    python tests/harness/smoke.py --keep             # inspect artifacts
+    python tests/harness/smoke.py --kind 3d_object --backend tripo   # API backend
+    python tests/harness/smoke.py --kind tpose --backend seedream    # API backend
 """
 from __future__ import annotations
 
@@ -43,17 +43,21 @@ for _stream in (sys.stdout, sys.stderr):
 
 _HERE = Path(__file__).resolve().parent
 _REPO_ROOT = _HERE.parents[1]
-# Repo root for `pipeline.*` / `operators.*`; own dir for `stubs` — imported by
-# plain name on purpose, since `test.harness` would collide with the stdlib
-# `test` package.
-for _p in (str(_REPO_ROOT), str(_HERE)):
-    if _p not in sys.path:
-        sys.path.insert(0, _p)
+# Repo root for `pipeline.*` / `operators.*` and for the `tests.harness` package;
+# the harness is a real package, so its own directory need not be on sys.path.
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
 
 from pipeline.common import paths                                    # noqa: E402
 
 try:
-    import stubs                                                     # noqa: E402
+    from tests.harness import (                                      # noqa: E402
+        STUB_BACKENDS,
+        STUB_OPERATOR_KWARGS,
+        build_operator,
+        make_minimal_glb,
+        make_ref_image,
+    )
 except ModuleNotFoundError as _e:                                    # pragma: no cover
     print(
         f"[smoke] Missing CPU-only dependency: {_e.name}\n"
@@ -107,7 +111,7 @@ def _make_task(kind: str, task_id: str, game_id: str | None = None) -> dict:
     """Build the smallest valid task for one stubbed operator."""
     task = {
         "task_id": task_id,
-        "image": stubs.make_ref_image(size=128),
+        "image": make_ref_image(size=128),
         "seed": 7,
         **EXTRA_TASK_FIELDS.get(kind, {}),
     }
@@ -117,7 +121,7 @@ def _make_task(kind: str, task_id: str, game_id: str | None = None) -> dict:
         fixture_dir = paths.OUTPUT_ROOT / "_smoke_motion_inputs"
         fixture_dir.mkdir(parents=True, exist_ok=True)
         target = fixture_dir / "target.glb"
-        target.write_bytes(stubs.make_minimal_glb())
+        target.write_bytes(make_minimal_glb())
         task.update(
             {
                 "task_type": "humanoid",
@@ -149,7 +153,7 @@ def smoke_per_game_mode(
     """Default mode: artifacts grouped under the game project."""
     print(f"  [per-game] building operator for {kind!r} with stub models"
           + (f" (backend={backend})" if backend else ""))
-    op = stubs.build_operator(kind, run_id=SMOKE_RUN_ID, model_key=backend)
+    op = build_operator(kind, run_id=SMOKE_RUN_ID, model_key=backend)
 
     task = _make_task(kind, task_id, game_id=SMOKE_GAME)
     task.update(task_overrides or {})
@@ -204,7 +208,7 @@ def smoke_legacy_flat_mode(kind: str, tmp_dir: Path,
                            backend: str | None = None) -> dict:
     """Backward compatibility: an explicit output_dir keeps the old flat naming."""
     print(f"  [legacy]   output_dir={paths.rel_to_repo(tmp_dir)}")
-    op = stubs.build_operator(kind, run_id=SMOKE_RUN_ID, output_dir=str(tmp_dir),
+    op = build_operator(kind, run_id=SMOKE_RUN_ID, output_dir=str(tmp_dir),
                               model_key=backend)
 
     result = op.run(_make_task(kind, task_id))
@@ -249,7 +253,7 @@ def smoke_kind(kind: str, keep: bool, backend: str | None = None) -> None:
     print(f"\n\033[1m▶ {kind}\033[0m")
     # --backend applies only to slots that actually have alternative backends,
     # so `--backend tripo` with no --kind still smokes every other kind.
-    backend = backend if kind in stubs.STUB_BACKENDS else None
+    backend = backend if kind in STUB_BACKENDS else None
     tmp_flat = paths.OUTPUT_ROOT / f"_smoke_legacy_{kind}"
     try:
         results = [smoke_per_game_mode(kind, backend=backend)]
@@ -286,14 +290,14 @@ def main() -> int:
                     help="Keep the _smoke artifacts for inspection")
     ap.add_argument("--backend", default=None,
                     help="Stub backend for slots with several models, e.g. "
-                         f"{sorted(stubs.STUB_BACKENDS.get('3d_object', {}))}")
+                         f"{sorted(STUB_BACKENDS.get('3d_object', {}))}")
     args = ap.parse_args()
 
-    kinds = args.kind or sorted(stubs.STUB_OPERATOR_KWARGS)
-    unknown = [k for k in kinds if k not in stubs.STUB_OPERATOR_KWARGS]
+    kinds = args.kind or sorted(STUB_OPERATOR_KWARGS)
+    unknown = [k for k in kinds if k not in STUB_OPERATOR_KWARGS]
     if unknown:
         print(f"No stub registered for {unknown}. Add one to STUB_OPERATOR_KWARGS "
-              f"in stubs.py. Available: {sorted(stubs.STUB_OPERATOR_KWARGS)}",
+              f"in stubs.py. Available: {sorted(STUB_OPERATOR_KWARGS)}",
               file=sys.stderr)
         return 2
 

@@ -51,7 +51,7 @@ URP and HDRP material conversion is untested.
 | Project | Use a directory containing `project.godot`; after engine validation, create a minimal project with `python3 -m engine_adapters.godot --project <dir> create-project` |
 | Editor binary | Set `A3GAME_GODOT_EXECUTABLE`; `A3GAME_GODOT` and legacy `AAAGF_GODOT` are fallbacks, followed by `godot4`, `godot`, or `godot-mono` on `PATH` |
 | Import | Godot's built-in glTF/GLB importer needs no addon; the adapter stages the file under `res://` and runs `godot --headless --path <project> --import` |
-| Python | Python 3.8+ standard library; the adapter does not require Python 3.12 or an engine SDK package |
+| Python | Python 3.14+ standard library; the adapter does not require an engine SDK package |
 
 Use GLB when practical. A `.gltf` file may reference sidecar buffers and images;
 the public `GodotClient.assets` path and compatibility launcher validate and

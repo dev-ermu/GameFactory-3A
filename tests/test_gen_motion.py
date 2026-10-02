@@ -17,14 +17,19 @@ from unittest import mock
 _REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
-_TEST_DIR = _REPO_ROOT / "test"
-_HARNESS = _TEST_DIR / "harness"
-for _path in (_TEST_DIR, _HARNESS):
-    if str(_path) not in sys.path:
-        sys.path.insert(0, str(_path))
+_TEST_DIR = _REPO_ROOT / "tests"
+if str(_TEST_DIR) not in sys.path:
+    sys.path.insert(0, str(_TEST_DIR))
 
 import test_rigging_retarget  # noqa: E402
-import stubs  # noqa: E402
+from tests.harness import (
+    StubMoMaskModel,
+    StubPuppeteerModel,
+    make_minimal_glb,
+    retarget_info,
+    retarget_mapping,
+    stub_retarget_motion,
+)
 
 from operators.gen_motion.funcs.fetch_motion import (  # noqa: E402
     fetch_motion,
@@ -70,7 +75,7 @@ class MotionRetargetFixture:
             encoding="utf-8",
         )
         self.mapping.write_text(
-            json.dumps(stubs.retarget_mapping(), indent=2),
+            json.dumps(retarget_mapping(), indent=2),
             encoding="utf-8",
         )
 
@@ -91,7 +96,7 @@ class TestGenMotionOperator(unittest.TestCase):
         self.tmp = tempfile.TemporaryDirectory(prefix="aaagf_motion_test_")
         self.root = Path(self.tmp.name)
         self.fixture = MotionRetargetFixture(self.root)
-        self.retarget_fn = mock.Mock(side_effect=stubs.stub_retarget_motion)
+        self.retarget_fn = mock.Mock(side_effect=stub_retarget_motion)
         self.operator = GenMotionOperator(
             output_dir=str(self.root / "outputs"),
             retarget_fn=self.retarget_fn,
@@ -116,7 +121,7 @@ class TestGenMotionOperator(unittest.TestCase):
             self.assertTrue(path.name.startswith("retarget_unit"))
         self.assertEqual(
             json.loads(Path(result["mapping_path"]).read_text())["bone_map"],
-            stubs.retarget_mapping()["bone_map"],
+            retarget_mapping()["bone_map"],
         )
 
     def test_missing_mapping_uses_automatic_mapping_path(self):
@@ -189,10 +194,10 @@ class TestGenMotionHumanStages(unittest.TestCase):
         self.tmp = tempfile.TemporaryDirectory(prefix="aaagf_humanoid_test_")
         self.root = Path(self.tmp.name)
         self.target = self.root / "avatar.glb"
-        self.target.write_bytes(stubs.make_minimal_glb())
-        self.puppeteer = stubs.StubPuppeteerModel()
-        self.momask = stubs.StubMoMaskModel()
-        self.retarget_fn = mock.Mock(side_effect=stubs.stub_retarget_motion)
+        self.target.write_bytes(make_minimal_glb())
+        self.puppeteer = StubPuppeteerModel()
+        self.momask = StubMoMaskModel()
+        self.retarget_fn = mock.Mock(side_effect=stub_retarget_motion)
         self.operator = GenMotionOperator(
             output_dir=str(self.root / "outputs"),
             puppeteer_model=self.puppeteer,
@@ -289,7 +294,7 @@ class TestGenMotionHumanStages(unittest.TestCase):
     def test_models_are_required_only_for_their_stages(self):
         operator = GenMotionOperator(
             output_dir=str(self.root / "missing"),
-            retarget_fn=stubs.stub_retarget_motion,
+            retarget_fn=stub_retarget_motion,
         )
         with self.assertRaisesRegex(RuntimeError, "PuppeteerModel"):
             operator.run(
@@ -839,14 +844,14 @@ class TestRetargetFunction(unittest.TestCase):
                 self.assertFalse(verbose)
                 if backend_module.endswith("mapping_auto"):
                     expected[0].write_text(
-                        json.dumps(stubs.retarget_mapping()),
+                        json.dumps(retarget_mapping()),
                         encoding="utf-8",
                     )
                     return
                 for path in expected:
                     if path.suffix == ".json":
                         path.write_text(
-                            json.dumps(stubs.retarget_info(30)),
+                            json.dumps(retarget_info(30)),
                             encoding="utf-8",
                         )
                     else:
@@ -910,7 +915,7 @@ class TestGenMotionEvaluationPipeline(unittest.TestCase):
             operator = GenMotionOperator(
                 run_id=run_id,
                 default_game_id=game_id,
-                retarget_fn=stubs.stub_retarget_motion,
+                retarget_fn=stub_retarget_motion,
             )
             task = {
                 **fixture.task(),

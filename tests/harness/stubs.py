@@ -1,23 +1,17 @@
 """
-test/harness/stubs.py
+安装模型和夹具，以便任何资产生成链都可以在**毫秒运行**，没有权重，也没有网络。
 
-Stub models and fixtures so any asset-generation chain can run on **CPU in
-milliseconds**, with no weights and no network.
-
-Each stub mimics the *interface* of a real wrapper (see
-`agent_skills/develop_harness/model_require.md`) while producing trivially cheap
-output. That is enough to exercise everything the operators and runners actually
-own: task parsing, `game_id` resolution, output paths, artifact naming,
-`meta.json`, and summaries.
+每个stubs都模仿真实包装器的*接口*（请参阅`agent_skills/develop_harnes/model_require.md`），
+同时产生微不足道的廉价输出。这足以锻炼operators和runner代码的一切：
+任务解析、game_id解析、输出路径、工件命名、meta.json和摘要。
 
 Usage:
-    import sys; sys.path.insert(0, "test/harness")
-    import stubs
+    from tests.harness import build_operator, make_ref_image
 
-    op = stubs.build_operator("3d_object", run_id="_test")
-    op.run({"game_id": "gameA", "task_id": "t1", "image": stubs.make_ref_image()})
+    op = build_operator("3d_object", run_id="_test")
+    op.run({"game_id": "gameA", "task_id": "t1", "image": make_ref_image()})
 
-Add a stub whenever you add a model slot — `smoke.py` looks them up by task kind.
+每当你添加一个模型slot时，都需要添加一个stub。`smoke.py`会按照类型查找它们。
 """
 from __future__ import annotations
 
@@ -1182,7 +1176,7 @@ def build_operator(task_kind: str, run_id: str = "_smoke",
     if task_kind not in STUB_OPERATOR_KWARGS:
         raise KeyError(
             f"No stub registered for task_kind={task_kind!r}. Add one to "
-            f"STUB_OPERATOR_KWARGS in test/harness/stubs.py. "
+            f"STUB_OPERATOR_KWARGS in tests/harness/stubs.py. "
             f"Available: {sorted(STUB_OPERATOR_KWARGS)}"
         )
     known = STUB_BACKENDS.get(task_kind, {})

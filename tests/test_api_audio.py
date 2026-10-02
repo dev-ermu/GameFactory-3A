@@ -2,7 +2,7 @@
 Offline contract tests for the Seed Audio dialogue and sound-effect backends.
 
 No network, API key, GPU or model weights are used. Run from the repo root:
-    python test/test_api_audio.py
+    python tests/test_api_audio.py
 """
 from __future__ import annotations
 

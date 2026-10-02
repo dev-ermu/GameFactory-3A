@@ -258,7 +258,7 @@ or Gameplay Ability classes the generated Mechanic happens to use.
 
 Completed through August 4, 2026:
 
-- `python -m unittest discover -s test -p 'test_ue5_*.py' -v`
+- `python -m unittest discover -s tests -p 'test_ue5_*.py' -v`
   passes all 86 tests;
 - scans report no `serving.*` or `z_other_serving` imports from
   `engine_adapters/ue5`;

@@ -189,7 +189,7 @@ class TripoModel:
         HTTP 客户端，首次使用时创建。
 
         [C6/R9.7] API Key 与 API 根地址都在这里解析，而不是在 `__init__` 中，因此
-        wrapper 可以在没有凭证的机器上被 import 和构造（`test/harness/smoke.py`
+        wrapper 可以在没有凭证的机器上被 import 和构造（`tests/harness/smoke.py`
         正是这么做的）。
         """
         if self._client is None:

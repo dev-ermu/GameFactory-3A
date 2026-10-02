@@ -1,5 +1,5 @@
 """
-test/test_cg_video_gen.py
+tests/test_cg_video_gen.py
 
 Real-generation integration test for every task in a local JSONL file.
 
@@ -7,7 +7,7 @@ The selected backend is loaded once, then every JSONL task is sent through the
 real gen_cg_video pipeline and each generated MP4 is verified. This is the
 single real-generation test entry point for Seedance API, MiniMax H3 API, and
 MiniMax H3 local checkpoints. The lightweight operator contract checks remain
-in test/harness/.
+in tests/harness/.
 
 Backend selection is deliberately explicit so an agent cannot accidentally
 start a paid API request or a large checkpoint download. Every run requires
@@ -18,21 +18,21 @@ Seedance API:
     ARK_API_KEY=... \
     CG_VIDEO_BACKEND=seedance \
     CG_VIDEO_TEST_TASKS=/path/to/cg_tasks.jsonl \
-    python test/test_cg_video_gen.py
+    python tests/test_cg_video_gen.py
 
 MiniMax API:
     MINIMAX_API_KEY=... \
     CG_VIDEO_BACKEND=minimax-h3 \
     MINIMAX_H3_RUNTIME=api \
     CG_VIDEO_TEST_TASKS=/path/to/cg_tasks.jsonl \
-    python test/test_cg_video_gen.py
+    python tests/test_cg_video_gen.py
 
 MiniMax local checkpoint:
     CG_VIDEO_BACKEND=minimax-h3 \
     MINIMAX_H3_RUNTIME=local \
     CG_VIDEO_CKPT=/path/to/MiniMax-H3 \
     CG_VIDEO_TEST_TASKS=/path/to/cg_tasks.jsonl \
-    python test/test_cg_video_gen.py
+    python tests/test_cg_video_gen.py
 
 Set ``CG_VIDEO_TEST_TASK_ID`` to reproduce only one task from the JSONL.
 """

@@ -130,7 +130,7 @@ Executed in batch mode against **Unity 6000.5.2f1** with
 - untextured GLB, `usage=asset` — prefab, 12/12 triangles, report round-trip;
 - **textured** GLB (cube, embedded PNG, PBR material) — 12 tris, 24 verts,
   1 material, no warnings. Reproduce the fixture with
-  `test/harness/stubs.py:make_textured_glb()`, no API key needed;
+  `tests/harness/stubs.py:make_textured_glb()`, no API key needed;
 - `usage=vfx_particle` — pivot re-centred to the origin and the largest bound
   normalized to 1 unit, both confirmed in the re-measured bounds;
 - batch through `--summary`, and re-import overwriting the previous prefab.

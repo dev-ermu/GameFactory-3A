@@ -26,7 +26,7 @@ semantics) and R6 (swappability).
 | **R9.4** | `unload()` exists, is idempotent and closes the HTTP session. It never invalidates cached credentials. | Overrides R4.1–R4.3. |
 | **R9.5** | `seed` is forwarded when the provider supports it, otherwise accepted and ignored. The docstring must say **server-side reproducibility is not guaranteed**. Never fake determinism by seeding locally. | Overrides R3.3 / R3.4. |
 | **R9.6** | Task-based APIs (submit → poll → download) are hidden behind the synchronous `infer()`. `timeout` and `poll_interval` are constructor arguments; the timeout default errs **long** (generation runs into the tens of minutes). On timeout raise an error that **contains the `task_id`**, so the run can be recovered manually. | R3.1 stays synchronous for the caller. A tripped budget refunds nothing — the task finishes server-side and only the download is lost — so a short default costs credits while a long one costs nothing. |
-| **R9.7** | Both the **API key** and the **API base URL** are read at **first call**, never at construction. When either is missing, fail fast naming the variable and pointing at `<REPO_PATH>/.env`. A base URL is **required, never defaulted**: the public endpoint is not reachable from every network, so a silent fallback looks like working configuration until the first billed call fails. Use `cloud_api.require_api_key()` / `cloud_api.require_api_base()`. | Constructing a model must not require credentials — `<REPO_PATH>/test/harness` imports it. A wrong or unreachable endpoint must be a configuration error, not a mystery failure at request time. |
+| **R9.7** | Both the **API key** and the **API base URL** are read at **first call**, never at construction. When either is missing, fail fast naming the variable and pointing at `<REPO_PATH>/.env`. A base URL is **required, never defaulted**: the public endpoint is not reachable from every network, so a silent fallback looks like working configuration until the first billed call fails. Use `cloud_api.require_api_key()` / `cloud_api.require_api_base()`. | Constructing a model must not require credentials — `<REPO_PATH>/tests/harness` imports it. A wrong or unreachable endpoint must be a configuration error, not a mystery failure at request time. |
 | **R9.8** | Support `cache_dir`. A request identified by `(model_path, prompt / image hash, all inference params, output_format)` that is already in the cache returns **without any network traffic**. Every real call logs `task_id`, elapsed seconds, credits consumed (when reported) and the output size. | Every call is billed. Re-running a pipeline must not re-bill. |
 | **R9.9** | Support `max_retries` with exponential backoff, and **classify** failures: retryable (5xx, 429, connection reset, read timeout) vs. terminal (400 bad params, 401/403 auth, 402 insufficient credits, task rejected). Never retry a terminal failure. **Classify on the response body, not only the status code**: providers return "out of credit" under an auth status, which by status alone is indistinguishable from a bad key, and a caller must be able to tell them apart. | Network failure is the normal case, not the exception. |
 
@@ -131,8 +131,8 @@ Use these ids so every cloud wrapper reads the same way.
 - [ ] `unload()` twice is a no-op
 - [ ] `infer_and_save` signature is byte-identical to the other backends in the
       same operator slot (R6)
-- [ ] a stub exists in `<REPO_PATH>/test/harness/stubs.py` that performs **no** network I/O,
-      and `python test/harness/smoke.py --kind <kind>` passes with no key set
+- [ ] a stub exists in `<REPO_PATH>/tests/harness/stubs.py` that performs **no** network I/O,
+      and `python tests/harness/smoke.py --kind <kind>` passes with no key set
 
 ---
 

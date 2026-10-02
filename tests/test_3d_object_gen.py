@@ -1,11 +1,11 @@
 """
-test/test_3d_object_gen.py
+tests/test_3d_object_gen.py
 
 Integration test: loads Trellis2, runs the gen_3d_object pipeline on the
 2 tasks in 3D_object_gen_collect.jsonl, asserts GLB files are created.
 
 Run from repo root:
-    TRELLIS2_CKPT=/path/to/TRELLIS.2-4B python test/test_3d_object_gen.py
+    TRELLIS2_CKPT=/path/to/TRELLIS.2-4B python tests/test_3d_object_gen.py
 """
 from __future__ import annotations
 

@@ -1,4 +1,4 @@
-"""Run from the repository root: python test/test_3d_object_compose.py.
+"""Run from the repository root: python tests/test_3d_object_compose.py.
 
 Build a rigid body + armour + weapon preview. Edit CONFIG below to use your
 own assets. This example does not test skinned clothing or cloth simulation.

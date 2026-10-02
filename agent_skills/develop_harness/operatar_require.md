@@ -104,7 +104,7 @@ Required keys:
 
 **Compatibility:** these keys are consumed by `run.py`, `eval.py` and `<REPO_PATH>/test/`.
 Adding keys is safe. Removing, renaming or repurposing one is a breaking change —
-`<REPO_PATH>/test/harness/smoke.py` will fail.
+`<REPO_PATH>/tests/harness/smoke.py` will fail.
 
 Optional artifacts use `None`, not a missing key (see `tpose_rgb_path`).
 
@@ -176,5 +176,5 @@ Usage:
 - [ ] `metrics/evaluate(result, task)` and `operator.eval(result, task)` present (or an explicit TODO)
 - [ ] No `argparse`, no model loading, no literal output path
 - [ ] Module imports cleanly on CPU with no weights installed
-- [ ] Stub registered in `<REPO_PATH>/test/harness/stubs.py` (`STUB_OPERATOR_KWARGS` + `OPERATOR_LOCATION`)
-- [ ] `python test/harness/smoke.py --kind <kind>` passes (covers **both** output modes)
+- [ ] Stub registered in `<REPO_PATH>/tests/harness/stubs.py` (`STUB_OPERATOR_KWARGS` + `OPERATOR_LOCATION`)
+- [ ] `python tests/harness/smoke.py --kind <kind>` passes (covers **both** output modes)

@@ -1,6 +1,6 @@
 """Export reproducible whitebox GLBs and a validation manifest.
 
-Called through test/test_3d_scene_code.py --export. Use --source and --variant
+Called through tests/test_3d_scene_code.py --export. Use --source and --variant
 opus for a baseline checkout, or --variant gpt6 for the current checkout.
 """
 from __future__ import annotations

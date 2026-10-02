@@ -18,7 +18,7 @@ It knows nothing about 3D, audio or video — only HTTP, money and failure modes
 第一次计费调用时失败。
 
 Dependencies: stdlib at import time; `requests` is imported lazily on first use
-so `test/harness/smoke.py` keeps working on a machine that does not have it.
+so `tests/harness/smoke.py` keeps working on a machine that does not have it.
 
 Usage:
     from models.common import cloud_api
@@ -220,7 +220,7 @@ def _requests():
             "    bash scripts/asset_env_setup/cloud_api_install.sh\n"
             "    # or simply: python -m pip install requests\n"
             "(only needed for the API backends; the local-weight models and "
-            "test/harness/smoke.py do not import it.)"
+            "tests/harness/smoke.py do not import it.)"
         ) from e
     return requests
 

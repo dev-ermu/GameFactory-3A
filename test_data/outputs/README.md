@@ -57,7 +57,7 @@ ev_dir  = paths.eval_output_dir("gameA_cyberpunk_shooter", "3d_object", "cyberpu
 paths.write_results_summary(results, "3d_object", run_id)
 ```
 
-`agent_skills/develop_harness/README.md` states the rule; `test/harness/smoke.py`
+`agent_skills/develop_harness/README.md` states the rule; `tests/harness/smoke.py`
 asserts that artifacts really land where these helpers promise.
 
 ## Legacy flat mode

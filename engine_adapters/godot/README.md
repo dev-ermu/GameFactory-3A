@@ -25,8 +25,8 @@ scripts/engine_install/godot/install.sh --version 4.5.1 --json
 
 The cross-platform installer is non-interactive, architecture-aware, verifies
 the official SHA-512, stages atomically, probes the exact version, and emits
-PATH/configuration output. It and this adapter support Python 3.8+; Python 3.12
-is not required. See `scripts/engine_install/godot/README.md`.
+PATH/configuration output. It and this adapter require Python 3.14+.
+See `scripts/engine_install/godot/README.md`.
 
 ## Configuration
 

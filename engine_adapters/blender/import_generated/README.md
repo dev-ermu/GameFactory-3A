@@ -138,7 +138,7 @@ python engine_adapters/blender/import_generated/import_mesh.py \
 ```
 
 The host side of the route — job files, argument shapes, tier defaults, operator
-tables — is covered by `test/test_world_asset.py`, which needs no Blender.
+tables — is covered by `tests/test_world_asset.py`, which needs no Blender.
 
 Measured, not assumed:
 

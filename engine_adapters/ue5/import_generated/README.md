@@ -158,7 +158,7 @@ A **textured** GLB (cube, embedded PNG, PBR material):
 
 Geometry, unit conversion, the material, the embedded texture and three
 `.uasset` files on disk all check out. Reproduce the fixture with
-`test/harness/stubs.py:make_textured_glb()` — it needs no API key.
+`tests/harness/stubs.py:make_textured_glb()` — it needs no API key.
 
 Two Interchange behaviours the importer works around, both visible in the
 warnings rather than hidden:

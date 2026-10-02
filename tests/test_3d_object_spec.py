@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """
-test/test_3d_object_spec.py
+tests/test_3d_object_spec.py
 
 Prove the spec route to a 3D object builds the mesh it claims to, and refuses
 the ones it should.
 
 Run:
 
-    python test/test_3d_object_spec.py
+    python tests/test_3d_object_spec.py
 
 Companion to `test_3d_object_gen.py`, which covers the generated route. No
 dependencies, no network, no GPU, no model — which is the point. This is the

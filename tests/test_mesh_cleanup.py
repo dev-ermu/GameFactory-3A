@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-test/test_mesh_cleanup.py
+tests/test_mesh_cleanup.py
 
 Prove that the ground-plate removal deletes floors and nothing else.
 
 Run:
 
-    python test/test_mesh_cleanup.py
+    python tests/test_mesh_cleanup.py
 
 The cases are synthetic on purpose. A generated asset is one sample of a
 model's behaviour and makes a poor regression test — it cannot be varied,

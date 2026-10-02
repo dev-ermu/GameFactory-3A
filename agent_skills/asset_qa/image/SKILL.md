@@ -181,8 +181,8 @@ Run free contract checks before loading production checkpoints or spending API
 credits:
 
 ```bash
-python test/harness/smoke.py --kind tpose
-python test/harness/smoke.py --kind tpose --backend seedream
+python tests/harness/smoke.py --kind tpose
+python tests/harness/smoke.py --kind tpose --backend seedream
 ```
 
 The smoke harness uses stub models, requires only `pillow`, `numpy`, and `scipy`,

@@ -9,7 +9,7 @@ from unittest import mock
 
 from engine_adapters.ue5.vfx import vfx_functions as vfx
 from engine_adapters.ue5.vfx import action_binding, style_presets
-from test.vfx_test import ue5_test_paths
+from tests.vfx_test import ue5_test_paths
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -176,7 +176,7 @@ class TestUnityAndSkillContracts(unittest.TestCase):
 
     def test_unity_review_supports_interactive_play_mode(self):
         source = (
-            REPO_ROOT / "test" / "vfx_test" / "A3Game_VFXRuntimeCapture.cs"
+            REPO_ROOT / "tests" / "vfx_test" / "A3Game_VFXRuntimeCapture.cs"
         ).read_text(encoding="utf-8")
         self.assertIn("StartInteractiveReview();", source)
         self.assertIn('instance.name = "REVIEW_"', source)

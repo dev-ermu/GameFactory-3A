@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-test/test_motion_cloud.py
+tests/test_motion_cloud.py
 
 Integration test for the cloud rigging + animation chain
 (TokenHub / Tripo), the drop-in replacement for Puppeteer + MoMask.
@@ -26,8 +26,8 @@ them reads both GLB and FBX and reports the bone count, the clips, and any bone
 bound to nothing.
 
 Usage:
-    python test/test_motion_cloud.py                          # stub, no cost
-    TOKENHUB_API_KEY=sk-... python test/test_motion_cloud.py --real \
+    python tests/test_motion_cloud.py                          # stub, no cost
+    TOKENHUB_API_KEY=sk-... python tests/test_motion_cloud.py --real \
         --mesh-url https://example.com/tpose_body_lo.glb --out-format fbx
 """
 from __future__ import annotations
@@ -41,7 +41,6 @@ from pathlib import Path
 _REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
-sys.path.insert(0, str(_REPO_ROOT / "test" / "harness"))
 
 PASSED: list[str] = []
 FAILED: list[tuple[str, str]] = []
@@ -87,14 +86,19 @@ def build_operator(*, real: bool, output_dir: Path, run_id: str):
     from operators.gen_motion.operator import GenMotionOperator
 
     if not real:
-        import stubs
+        from tests.harness import (
+            StubTripoAnimationModel,
+            StubTripoFormatModel,
+            StubTripoRigCheckModel,
+            StubTripoRiggingModel,
+        )
         return GenMotionOperator(
             output_dir=str(output_dir),
             run_id=run_id,
-            rig_check_model=stubs.StubTripoRigCheckModel(),
-            cloud_rig_model=stubs.StubTripoRiggingModel(),
-            cloud_animation_model=stubs.StubTripoAnimationModel(),
-            cloud_format_model=stubs.StubTripoFormatModel(),
+            rig_check_model=StubTripoRigCheckModel(),
+            cloud_rig_model=StubTripoRiggingModel(),
+            cloud_animation_model=StubTripoAnimationModel(),
+            cloud_format_model=StubTripoFormatModel(),
         )
 
     from models.gen_motion.tripo_rigging_model import (
@@ -233,9 +237,9 @@ def test_rig_inspection(op, task: dict) -> None:
     print("\nrig inspection separates a named skeleton from an anonymous one")
     from models.gen_motion.tripo_rigging_model import inspect_rig
 
-    import stubs
-    good = inspect_rig(stubs.make_rigged_glb(limbs=4, anonymous=4))
-    poor = inspect_rig(stubs.make_rigged_glb(limbs=1, anonymous=13))
+    from tests.harness import make_rigged_glb
+    good = inspect_rig(make_rigged_glb(limbs=4, anonymous=4))
+    poor = inspect_rig(make_rigged_glb(limbs=1, anonymous=13))
 
     check("a four-chain rig reports 4 limbs", good["limbs"] == 4, str(good))
     check("a one-chain rig reports 1 limb", poor["limbs"] == 1, str(poor))
@@ -245,8 +249,8 @@ def test_rig_inspection(op, task: dict) -> None:
     check("the spine and head are recognised",
           good["has_spine"] and good["has_head"], str(good))
     # Same total bones, different quality — the case a bone count misses.
-    same = inspect_rig(stubs.make_rigged_glb(limbs=1, anonymous=6))
-    other = inspect_rig(stubs.make_rigged_glb(limbs=1, anonymous=6))
+    same = inspect_rig(make_rigged_glb(limbs=1, anonymous=6))
+    other = inspect_rig(make_rigged_glb(limbs=1, anonymous=6))
     check("inspection is stable for identical input",
           same == other, f"{same} != {other}")
 
@@ -408,13 +412,13 @@ def test_rig_inspection_reads_both_naming_schemes(op, task: dict) -> None:
     print("\nrig inspection reads the generic and humanoid naming schemes")
     from models.gen_motion.tripo_rigging_model import inspect_rig
 
-    import stubs
-    generic = inspect_rig(stubs.make_rigged_glb(limbs=4, anonymous=4))
+    from tests.harness import make_humanoid_glb, make_rigged_glb
+    generic = inspect_rig(make_rigged_glb(limbs=4, anonymous=4))
     check("a generic rig is recognised", generic["scheme"] == "generic",
           str(generic))
     check("its limb chains are counted", generic["limbs"] == 4, str(generic))
 
-    humanoid = inspect_rig(stubs.make_humanoid_glb())
+    humanoid = inspect_rig(make_humanoid_glb())
     check("a humanoid rig is recognised", humanoid["scheme"] == "humanoid",
           str(humanoid))
     check("its four limbs are counted", humanoid["limbs"] == 4, str(humanoid))
@@ -423,7 +427,7 @@ def test_rig_inspection_reads_both_naming_schemes(op, task: dict) -> None:
     check("the spine and head are found",
           humanoid["has_spine"] and humanoid["has_head"], str(humanoid))
 
-    poor = inspect_rig(stubs.make_rigged_glb(limbs=1, anonymous=13))
+    poor = inspect_rig(make_rigged_glb(limbs=1, anonymous=13))
     check("a one-chain rig still reports 1 limb", poor["limbs"] == 1, str(poor))
     check("its unresolved joints are counted", poor["anonymous"] == 13,
           str(poor))
@@ -443,8 +447,8 @@ def test_flipped_joints_are_detected(op, task: dict) -> None:
         inspect_animation,
     )
 
-    import stubs
-    flipped = inspect_animation(stubs.make_animated_glb(first_frame_degrees=174))
+    from tests.harness import make_animated_glb
+    flipped = inspect_animation(make_animated_glb(first_frame_degrees=174))
     check("a 174 deg first frame is flagged", bool(flipped["flipped"]),
           str(flipped))
     check("the flagged joint is named",
@@ -453,7 +457,7 @@ def test_flipped_joints_are_detected(op, task: dict) -> None:
 
     # A horse that animated correctly reached 108 deg, so the threshold has to
     # sit above a legitimate mid-stride pose.
-    posed = inspect_animation(stubs.make_animated_glb(first_frame_degrees=108))
+    posed = inspect_animation(make_animated_glb(first_frame_degrees=108))
     check("a 108 deg first frame is not flagged", not posed["flipped"],
           str(posed))
     check("the threshold sits between the two",

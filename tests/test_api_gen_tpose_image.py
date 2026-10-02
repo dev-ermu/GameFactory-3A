@@ -1,20 +1,14 @@
 """
-test/test_api_gen_tpose_image.py
-
-Paid integration test: loads SeedreamModel + RMBGModel, runs the same
-``gen_tpose_image`` pipeline and the same ``tpose_gen_collect.jsonl`` tasks as
-``test_gen_tpose_image.py``, and asserts that transparent T-pose PNG files are
-created.
-
-The prompt is shared automatically through the production operator; this test
-does not define or override it.
+Paid集成测试：
+加载Seedream Model，RMBG Model，运行与“gen_tpose_image” pipeline相同的tpose_gen_collect.json任务，
+并断言成功创建透明的T形PNG文件。
 
 Run from repo root:
     ARK_API_KEY=your-key \
     AAAGF_RUN_SEEDREAM_LIVE=1 \
     SEEDREAM_MODEL=doubao-seedream-5-0-260128 \
     RMBG_CKPT=briaai/RMBG-1.4 \
-    python -m unittest test.test_api_gen_tpose_image -v
+    python -m unittest tests.test_api_gen_tpose_image -v
 
 Identical Seedream requests reuse the response cache unless
 ``AAAGF_SEEDREAM_DISABLE_CACHE=1`` is set.

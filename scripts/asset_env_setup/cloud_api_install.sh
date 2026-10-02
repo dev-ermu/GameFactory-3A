@@ -30,7 +30,7 @@ fi
 # The API wrappers themselves.
 python -m pip install requests
 
-# The CPU-only development harness (test/harness/smoke.py, the offline contract
+# The CPU-only development harness (tests/harness/smoke.py, the offline contract
 # tests). Already present in most envs; listed so a bare env works.
 python -m pip install pillow numpy scipy
 
@@ -48,14 +48,14 @@ echo "  # The API base URL is REQUIRED, not defaulted: the public endpoint is"
 echo "  # not reachable from every network."
 echo
 echo "Verify without spending credits or touching the network:"
-echo "  python test/harness/smoke.py --kind 3d_object --backend tripo"
-echo "  python test/test_api_3d_object.py"
-echo "  python test/harness/smoke.py --kind tpose --backend seedream"
-echo "  python test/test_api_gen_tpose_image.py"
-echo "  python test/harness/smoke.py --kind audio --backend seed_audio"
-echo "  python test/test_api_audio.py"
-echo "  python test/harness/smoke.py --kind cg_video --backend seedance"
-echo "  python test/harness/smoke.py --kind cg_video --backend minimax-h3"
+echo "  python tests/harness/smoke.py --kind 3d_object --backend tripo"
+echo "  python tests/test_api_3d_object.py"
+echo "  python tests/harness/smoke.py --kind tpose --backend seedream"
+echo "  python tests/test_api_gen_tpose_image.py"
+echo "  python tests/harness/smoke.py --kind audio --backend seed_audio"
+echo "  python tests/test_api_audio.py"
+echo "  python tests/harness/smoke.py --kind cg_video --backend seedance"
+echo "  python tests/harness/smoke.py --kind cg_video --backend minimax-h3"
 echo
 echo "Check a balance (free, needs a key):"
 echo "  python -c \"from models.gen_3d_object import TripoModel; print(TripoModel().balance())\""

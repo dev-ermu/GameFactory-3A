@@ -745,7 +745,7 @@ def evaluate_bound_motion(mesh, rig, weights, config, poles):
 
 def export_bound_motion(mesh, rig, weights, selected, config, output, report, *, ffmpeg):
     from operators.gen_motion.funcs.vibe_motion_utils.rigging_utils.export import animated_glb
-    from test.test_vibe_rigging import glb_document, rig_preview, write_video
+    from tests.test_vibe_rigging import glb_document, rig_preview, write_video
     import struct
     action, result, vertices = selected['payload']
     data = animated_glb(mesh, rig, weights, result['clip'], config=config['export']['glb'])
@@ -790,7 +790,7 @@ def export_bound_motion(mesh, rig, weights, selected, config, output, report, *,
 
 def export_example_videos(*, ffmpeg, output_dir=VIDEO_OUTPUT_DIRECTORY, names=FIXTURE_NAMES):
     """Write real H.264 previews only when explicitly requested, never during tests."""
-    from test.test_vibe_rigging import write_video
+    from tests.test_vibe_rigging import write_video
 
     output_dir = Path(output_dir).resolve()
     names = tuple(names)

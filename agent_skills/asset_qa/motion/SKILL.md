@@ -89,7 +89,7 @@ additionally supply `skinning`, `skin_quality` and `export.glb` (`bind_tolerance
 `sum_tolerance`, `material`, `interpolation`).
 No creature geometry, rig preset or skin preset is loaded automatically. For FBX,
 use `vibe_retarget` with the same mesh/skin settings, integer rhythm fps and a bpy
-runtime. Mesh tests live in `<repo_path>/test/test_vibe_rigging.py`.
+runtime. Mesh tests live in `<repo_path>/tests/test_vibe_rigging.py`.
 
 ### Required visual rigging workflow
 
@@ -130,7 +130,7 @@ Follow this order for an unrigged model:
    never add proximity links across disconnected surfaces. Asset-specific object
    and seam selectors in the example are task constraints, not model predictions.
 6. **Adjust bone orientation using the action.** With `--with-motion`, call
-   `<repo_path>/test/test_vibe_motion.py` to generate the explicit position/rhythm/IK action.
+   `<repo_path>/tests/test_vibe_motion.py` to generate the explicit position/rhythm/IK action.
    Hold skin weights and action settings fixed while comparing bounded rest-pole
    and pre-bend candidates. Accept only improvements that preserve geometric and
    reprojection budgets. Recompute bind matrices when rest joints change. Export
@@ -158,7 +158,7 @@ Use the existing CLI, keeping each command on one shell line:
   --with-motion --ffmpeg "<ffmpeg_path>"`. Optionally supply
   `--config "<repo_path>/test/vibe_motion_examples/rigging_example.json"` with a short
   request. The CLI adds only the test-side QA/export settings already declared in
-  `<repo_path>/test/test_vibe_rigging.py`; production functions do not supply asset defaults.
+  `<repo_path>/tests/test_vibe_rigging.py`; production functions do not supply asset defaults.
 - Explicitly replay a completed estimate: add `--annotations "<annotations_path>"`.
   Substitute the actual completed annotation file path; no fixed parent directory
   is required. Keep its sibling `projection/` artifacts and choose a fresh
@@ -319,7 +319,7 @@ index in the mesh it consumed. The rig artifacts therefore include that exact
 OBJ. Retargeting binds weights against the same vertex order — any conversion
 that reorders vertices between rig and retarget silently ruins the skin.
 
-Stub-test without CUDA: inject `StubPuppeteerModel` from `<repo_path>/test/harness/stubs.py`.
+Stub-test without CUDA: inject `StubPuppeteerModel` from `<repo_path>/tests/harness/stubs.py`.
 
 ## 2. Motion Generation
 
@@ -415,8 +415,8 @@ Motion retarget has many legitimate edge cases (odd BVH hierarchies, engine
 axis packs, IK feet, non-humanoid props, new mocap libraries). If
 `mapping_auto` / `world_delta` / import fails for a real asset and the gap is
 in our code — not bad input — the agent should **patch the retarget stack**
-under `<repo_path>/operators/gen_motion/funcs/` (and tests under `<repo_path>/test/test_gen_motion.py`
-/ `<repo_path>/test/test_rigging_retarget.py`) so the next run goes through the operator.
+under `<repo_path>/operators/gen_motion/funcs/` (and tests under `<repo_path>/tests/test_gen_motion.py`
+/ `<repo_path>/tests/test_rigging_retarget.py`) so the next run goes through the operator.
 Keep format constants in `<repo_path>/operators/gen_motion/funcs/retarget_utils/formats.py` in sync with fetch /
 rig / CLI validation.
 
@@ -605,7 +605,7 @@ python -m unittest test.test_gen_motion
 
 Synthetic humanoid fixture (mesh + Mixamo-named BVH + matching Puppeteer
 rig), for local repro without licensed assets. Use
-`<repo_path>/test/test_rigging_retarget.py` from the repository root:
+`<repo_path>/tests/test_rigging_retarget.py` from the repository root:
 
 ```python
 from test.test_rigging_retarget import build_all

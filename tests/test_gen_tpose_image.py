@@ -1,5 +1,5 @@
 """
-test/test_gen_tpose_image.py
+tests/test_gen_tpose_image.py
 
 Integration test: loads QwenEditModel + RMBGModel, runs the gen_tpose_image
 pipeline on the tasks in tpose_gen_collect.jsonl, asserts that transparent
@@ -8,7 +8,7 @@ T-pose PNG files are created.
 Run from repo root:
     QWEN_EDIT_CKPT=/path/to/Qwen-Image-Edit-2511 \
     RMBG_CKPT=/path/to/RMBG-1.4 \
-    python test/test_tpose_gen.py
+    python tests/test_tpose_gen.py
 """
 from __future__ import annotations
 

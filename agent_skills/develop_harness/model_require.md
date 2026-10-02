@@ -27,7 +27,7 @@ Examples:
 | R1.2 | **Never construct an output path.** Return in-memory data (PIL / numpy / tensor / trimesh). | The operator owns artifact placement. |
 | R1.3 | **No `argparse`, no `if __name__ == "__main__"` business logic.** | CLI belongs to `run.py`. |
 | R1.4 | **No task semantics.** No `task_id`, no `game_id`, no prompt templates for a specific task. | Prompts belong to `<REPO_PATH>/operators/<task>/funcs/`. |
-| R1.5 | Heavy imports (`torch`, `diffusers`, vendored repos) go **inside** `__init__` / `_load()` when they are optional, so the module can be imported on a CPU box. | `<REPO_PATH>/test/harness/smoke.py` must import the chain without weights. |
+| R1.5 | Heavy imports (`torch`, `diffusers`, vendored repos) go **inside** `__init__` / `_load()` when they are optional, so the module can be imported on a CPU box. | `<REPO_PATH>/tests/harness/smoke.py` must import the chain without weights. |
 | R1.6 | Fail fast with an **actionable** message when an environment prerequisite is missing. | Refer to the `o_voxel` check in `trellis_2_model.py`. |
 
 ### R1.2 — the one exception
@@ -158,5 +158,5 @@ value range**.
 - [ ] `unload()` present and idempotent for large models
 - [ ] Return shape / dtype / range documented
 - [ ] Added to the table in `<REPO_PATH>/models/README.md`
-- [ ] A matching stub exists in `<REPO_PATH>/test/harness/stubs.py`, and
-      `python test/harness/smoke.py --kind <kind>` passes
+- [ ] A matching stub exists in `<REPO_PATH>/tests/harness/stubs.py`, and
+      `python tests/harness/smoke.py --kind <kind>` passes

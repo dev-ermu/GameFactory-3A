@@ -122,7 +122,7 @@ Against **Blender 5.0.1** (pip `bpy` wheel, Python 3.11, no display, no GPU):
 
 It is a diagnostic for a Blender installation, not a unit test — what it checks
 is a property of the machine. The host-side logic that has no `bpy` in it is
-covered by `test/test_world_asset.py`.
+covered by `tests/test_world_asset.py`.
 
 ### Two Blender 5.0.1 findings worth keeping
 

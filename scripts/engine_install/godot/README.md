@@ -21,9 +21,9 @@ Windows Command Prompt:
 scripts\engine_install\godot\install.cmd --json > godot-install-result.json
 ```
 
-The installer uses only Python's standard library and supports Python 3.8 and
-newer. Neither installation nor the Godot adapter requires Python 3.12. The
-repository's Godot tests are executed on Python 3.8.10 as a compatibility gate.
+The installer uses only Python's standard library and requires Python 3.14 or
+newer. The repository's Godot tests are executed on Python 3.14 as a
+compatibility gate.
 
 A successful JSON result contains `ok=true`, `action`, exact version/platform,
 official URLs, SHA-512, validated executable, PATH shim, and configuration-file

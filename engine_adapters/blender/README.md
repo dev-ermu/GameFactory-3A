@@ -281,7 +281,7 @@ Run against **Blender 5.0.1** (pip `bpy` wheel, Python 3.11, no display, no GPU)
   to diagnose.
 
 The host side — job files, argument shapes, tier defaults — is covered by
-`test/test_world_asset.py`, which needs no Blender.
+`tests/test_world_asset.py`, which needs no Blender.
 
 The interactive mode was verified on **Blender 4.5.12** against all three shipped
 templates: keys and mouse reaching each genre's rules, the session loop's fixed

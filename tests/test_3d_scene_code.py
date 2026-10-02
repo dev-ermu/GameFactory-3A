@@ -1,5 +1,5 @@
 """
-test/test_3d_scene_code.py
+tests/test_3d_scene_code.py
 
 Tests for the code-built `3d_scene` route: terrain, layout and sizing written
 as Python, checked as a greybox, then detailed.
@@ -10,11 +10,11 @@ writes the file — a validator that disagrees with the writer passes scenes tha
 are wrong on disk.
 
 Run from repo root:
-    python test/test_3d_scene_code.py
-    python test/test_3d_scene_code.py --export
-    python test/test_3d_scene_code.py --export --source ../terrain-opus --variant opus
-    python test/test_3d_scene_code.py --render --variants gpt6 --frames 0
-    python test/test_3d_scene_code.py --video      # export and record turntables
+    python tests/test_3d_scene_code.py
+    python tests/test_3d_scene_code.py --export
+    python tests/test_3d_scene_code.py --export --source ../terrain-opus --variant opus
+    python tests/test_3d_scene_code.py --render --variants gpt6 --frames 0
+    python tests/test_3d_scene_code.py --video      # export and record turntables
 
 Demo helpers and viewer assets live in test/terrain_code_test. --export and
 --render forward their options to the respective helper (--help lists them).
@@ -2786,8 +2786,8 @@ def record_videos(out_dir: Path = OUT_DIR, frames: int = 150) -> int:
     Install playwright and Pillow, plus ffmpeg on PATH. Windows uses Edge;
     on other systems install Chromium with `python -m playwright install`.
     """
-    from test.terrain_code_test.terrain_whitebox_demo import export_scenes
-    from test.terrain_code_test.render_terrain_whitebox import render
+    from tests.terrain_code_test.terrain_whitebox_demo import export_scenes
+    from tests.terrain_code_test.render_terrain_whitebox import render
 
     if export_scenes(_REPO_ROOT, out_dir, "gpt6"):
         return 1
@@ -2803,7 +2803,7 @@ def run_demo(argv: list[str]) -> int:
         helper = Path(__file__).resolve().parent / "terrain_code_test" / "terrain_whitebox_demo.py"
         return subprocess.call([sys.executable, str(helper), *options])
     if mode == "--render":
-        from test.terrain_code_test.render_terrain_whitebox import main
+        from tests.terrain_code_test.render_terrain_whitebox import main
 
         return main(options)
     if mode == "--video":

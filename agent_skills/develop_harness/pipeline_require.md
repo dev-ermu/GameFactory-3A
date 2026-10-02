@@ -127,10 +127,10 @@ TASK_JSONL["motion"]         = "motion_tasks.jsonl"
 TASK_COLLECT_JSONL["motion"] = "motion_gen_collect.jsonl"
 ```
 
-Then `python test/harness/smoke.py --kind motion` verifies that the tables, the
+Then `python tests/harness/smoke.py --kind motion` verifies that the tables, the
 operator and the on-disk layout all agree.
 
-## R7 — `test/test_<task>.py`
+## R7 — `tests/test_<task>.py`
 
 | # | Rule |
 |---|------|
@@ -151,4 +151,4 @@ operator and the on-disk layout all agree.
 - [ ] Summaries via `paths.write_results_summary` (per-game mode)
 - [ ] `eval.py` reads existing artifacts only; it does not import `run.py` or trigger generation
 - [ ] `python pipeline/assets_gen/<task>/run.py --help` works without CUDA
-- [ ] `python test/harness/smoke.py --kind <kind>` passes
+- [ ] `python tests/harness/smoke.py --kind <kind>` passes

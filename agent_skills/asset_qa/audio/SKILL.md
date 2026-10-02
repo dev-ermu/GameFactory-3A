@@ -16,7 +16,7 @@ Task dict / JSONL → GenAudioOperator → selected audio model → WAV + meta.j
 - Model implementations: `<REPO_PATH>/models/gen_audio/`
 - Task and artifact handling: `<REPO_PATH>/operators/gen_audio/`
 - Runner and batch execution: `<REPO_PATH>/pipeline/assets_gen/gen_audio/`
-- Free smoke checks: `<REPO_PATH>/test/harness/`
+- Free smoke checks: `<REPO_PATH>/tests/harness/`
 - Generated results: `<REPO_PATH>/test_data/outputs/<game_id>/<run_id>/assets/audio/<task_id>/`
 
 Use `<REPO_PATH>/pipeline/common/paths.py` for output locations. Mechanics and UI belong in
@@ -191,8 +191,8 @@ python pipeline/assets_gen/gen_audio/run.py \
 1. Run free checks before any paid cloud call:
 
    ```bash
-   python test/harness/smoke.py --kind audio --backend seed_audio
-   python test/test_api_audio.py
+   python tests/harness/smoke.py --kind audio --backend seed_audio
+   python tests/test_api_audio.py
    ```
 
    The API contract test uses a fake HTTP client and consumes no credits.

@@ -1,18 +1,12 @@
 """
-test/test_api_3d_object.py
+针对`agent_skills/develop_harness/api_model_require.md`R9的闭源3D后端`TripoModel`，`MeshyModel`的离线合约测试。
 
-Offline contract test for the closed-source 3D backends (`TripoModel`,
-`MeshyModel`) against `agent_skills/develop_harness/api_model_require.md` R9.
+**没有网络，没有API密钥，没有GPU。**每个HTTP边界都被一个计算调用的伪传输所取代，
+这使得“缓存命中发送零请求”和“402永远不会重试”完全可以测试。
 
-**No network, no API key, no GPU.** Every HTTP boundary is replaced by a fake
-transport that counts calls, which is what makes "a cache hit sends zero
-requests" and "a 402 is never retried" testable at all.
-
-Run from repo root:
-    python test/test_api_3d_object.py
+运行方式:
+    python tests/test_api_3d_object.py
 """
-from __future__ import annotations
-
 import inspect
 import os
 import sys
@@ -20,16 +14,21 @@ import tempfile
 import unittest
 from pathlib import Path
 
+# 仓库根入 sys.path：`tests.harness` 与 `models.*` 都要靠它解析，
+# 这样 `python tests/test_api_3d_object.py` 的脚本式运行也成立。
 _REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(_REPO_ROOT))
-sys.path.insert(0, str(_REPO_ROOT / "test" / "harness"))
 
-import stubs  # noqa: E402  (harness fixtures: make_ref_image, make_minimal_glb)
-
-from models.common import cloud_api  # noqa: E402
-from models.common.glb_utils import glb_summary, glb_triangle_count  # noqa: E402
-from models.gen_3d_object.meshy_model import MeshyModel  # noqa: E402
-from models.gen_3d_object.tripo_model import TripoModel  # noqa: E402
+from models.common import cloud_api
+from models.common.glb_utils import glb_summary, glb_triangle_count
+from models.gen_3d_object.meshy_model import MeshyModel
+from models.gen_3d_object.tripo_model import TripoModel
+from tests.harness import (
+    build_operator,
+    make_minimal_glb,
+    make_ref_image,
+    make_textured_glb,
+)
 
 
 # ── Fake transport ────────────────────────────────────────────────────────────
@@ -122,13 +121,13 @@ MESHY_SCRIPT_IMAGE = {
 
 def make_tripo(**kw) -> TripoModel:
     model = TripoModel(api_key="test-key", **kw)
-    model._client = FakeClient(TRIPO_SCRIPT, stubs.make_minimal_glb(triangles=3))
+    model._client = FakeClient(TRIPO_SCRIPT, make_minimal_glb(triangles=3))
     return model
 
 
 def make_meshy(**kw) -> MeshyModel:
     model = MeshyModel(api_key="test-key", **kw)
-    model._client = FakeClient(MESHY_SCRIPT_IMAGE, stubs.make_minimal_glb(triangles=3))
+    model._client = FakeClient(MESHY_SCRIPT_IMAGE, make_minimal_glb(triangles=3))
     return model
 
 
@@ -155,7 +154,7 @@ class TestConstruction(unittest.TestCase):
                 saved = os.environ.pop(env, None)
                 try:
                     with self.assertRaises(cloud_api.CloudAPIAuthError) as ctx:
-                        cls().infer(image=stubs.make_ref_image())
+                        cls().infer(image=make_ref_image())
                     message = str(ctx.exception)
                     self.assertIn(env, message)        # names the variable
                     self.assertIn(".env", message)     # and where to set it
@@ -229,7 +228,7 @@ class TestInference(unittest.TestCase):
 
     def test_tripo_image_to_3d(self):
         model = make_tripo()
-        data = model.infer(image=stubs.make_ref_image(), seed=7)
+        data = model.infer(image=make_ref_image(), seed=7)
         self.assertTrue(data.startswith(b"glTF"))
         self.assertEqual(model.last_call_info["task_id"], "tripo_task_1")
         self.assertEqual(model.last_call_info["credits"], 40)
@@ -245,7 +244,7 @@ class TestInference(unittest.TestCase):
 
     def test_meshy_image_to_3d(self):
         model = make_meshy()
-        data = model.infer(image=stubs.make_ref_image(), seed=7)
+        data = model.infer(image=make_ref_image(), seed=7)
         self.assertTrue(data.startswith(b"glTF"))
         self.assertEqual(model.last_call_info["task_id"], "meshy_task_1")
 
@@ -261,7 +260,7 @@ class TestInference(unittest.TestCase):
         Meshy rejects with a terminal 400. Clamping keeps R6 true.
         """
         model = make_meshy()
-        model.infer(image=stubs.make_ref_image(), decimation_target=1_000_000)
+        model.infer(image=make_ref_image(), decimation_target=1_000_000)
         self.assertEqual(model._client.requests[0], "POST /openapi/v1/image-to-3d")
 
     def test_infer_and_save_writes_the_caller_path(self):
@@ -269,14 +268,14 @@ class TestInference(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             out = Path(tmp) / "nested" / "model.glb"
             returned = make_tripo().infer_and_save(
-                image=stubs.make_ref_image(), output_path=str(out))
+                image=make_ref_image(), output_path=str(out))
             self.assertEqual(returned, str(out))
             self.assertTrue(out.is_file())
             self.assertEqual(glb_triangle_count(out.read_bytes()), 3)
 
     def test_infer_and_save_requires_output_path(self):
         with self.assertRaises(ValueError):
-            make_tripo().infer_and_save(image=stubs.make_ref_image())
+            make_tripo().infer_and_save(image=make_ref_image())
 
 
 class TestCache(unittest.TestCase):
@@ -284,7 +283,7 @@ class TestCache(unittest.TestCase):
 
     def test_cache_hit_sends_no_requests(self):
         with tempfile.TemporaryDirectory() as tmp:
-            image = stubs.make_ref_image()
+            image = make_ref_image()
 
             first = make_tripo(cache_dir=tmp)
             data1 = first.infer(image=image, seed=1)
@@ -300,7 +299,7 @@ class TestCache(unittest.TestCase):
 
     def test_cache_misses_when_a_parameter_changes(self):
         with tempfile.TemporaryDirectory() as tmp:
-            image = stubs.make_ref_image()
+            image = make_ref_image()
             make_tripo(cache_dir=tmp).infer(image=image, seed=1)
 
             other = make_tripo(cache_dir=tmp)
@@ -395,7 +394,7 @@ class TestGLBUtils(unittest.TestCase):
     def test_triangle_count(self):
         for n in (1, 2, 17):
             with self.subTest(triangles=n):
-                self.assertEqual(glb_triangle_count(stubs.make_minimal_glb(n)), n)
+                self.assertEqual(glb_triangle_count(make_minimal_glb(n)), n)
 
     def test_summary_of_a_non_glb(self):
         info = glb_summary(b"not a glb at all")
@@ -407,7 +406,7 @@ class TestGLBUtils(unittest.TestCase):
         The engine importers are validated against this fixture, so the material
         and the embedded texture have to actually be in the file.
         """
-        info = glb_summary(stubs.make_textured_glb())
+        info = glb_summary(make_textured_glb())
         self.assertEqual(info["triangles"], 12)      # a cube
         self.assertEqual(info["materials"], 1)
         self.assertEqual(info["textures"], 1)
@@ -422,11 +421,11 @@ class TestOperatorIntegration(unittest.TestCase):
 
         for backend in ("trellis2", "tripo", "meshy"):
             with self.subTest(backend=backend):
-                op = stubs.build_operator("3d_object", run_id="_unittest",
+                op = build_operator("3d_object", run_id="_unittest",
                                           model_key=backend)
                 result = op.run({"game_id": "_unittest_game",
                                  "task_id": f"t_{backend}",
-                                 "image": stubs.make_ref_image()})
+                                 "image": make_ref_image()})
                 glb = Path(result["glb_path"])
                 self.assertTrue(glb.is_file())
                 self.assertIsNotNone(glb_triangle_count(glb.read_bytes()))

@@ -81,7 +81,7 @@ Watch-outs:
 - Do not expect clean infinite outdoor horizons from this path
 
 Entry points: `<REPO_PATH>/pipeline/assets_gen/gen_3d_scene/{run,eval,render}.py`,
-`<REPO_PATH>/test/test_3D_scene_gen.py`.
+`<REPO_PATH>/tests/test_3D_scene_gen.py`.
 
 ## Ground first, then objects — plane / terrain + objects
 
@@ -276,9 +276,9 @@ Entry points:
 
 - `python -m operators.gen_3d_scene.funcs.terrain_code_edit` — write every
   template as a GLB and print its problem count
-- `python <REPO_PATH>/test/test_3d_scene_code.py` — 40 tests, no weights, no GPU,
+- `python <REPO_PATH>/tests/test_3d_scene_code.py` — 40 tests, no weights, no GPU,
   no network
-- `python <REPO_PATH>/test/test_3d_scene_code.py --video` — record a turntable
+- `python <REPO_PATH>/tests/test_3d_scene_code.py --video` — record a turntable
   per landform for review
 
 Review artifacts land in `<REPO_PATH>/test_data/outputs/_test_3d_scene_code/`,
