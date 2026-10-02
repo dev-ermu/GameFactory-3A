@@ -35,12 +35,17 @@ python -m pip install requests
 python -m pip install pillow numpy scipy
 
 echo
-echo "Done. Set the key for whichever backend you use:"
-echo "  export TRIPO_API_KEY=...   # https://platform.tripo3d.ai/api-keys"
-echo "  export MESHY_API_KEY=...   # https://www.meshy.ai/api"
-echo "  export SEED_AUDIO_API_KEY=...  # POST https://openspeech.bytedance.com/api/v3/tts/create"
-echo "  export ARK_API_KEY=...      # https://console.volcengine.com/ark"
-echo "  export MINIMAX_API_KEY=...  # https://platform.minimax.io"
+echo "Done. Now configure the project in ONE place:"
+echo "  cp .env.example .env"
+echo "  # then edit .env and fill in, for whichever backend you use:"
+echo "  #   TRIPO_API_BASE / TRIPO_API_KEY          3D objects (Tripo)"
+echo "  #   MESHY_API_BASE / MESHY_API_KEY          3D objects (Meshy)"
+echo "  #   ARK_API_BASE / ARK_API_KEY              image (Seedream) + video (Seedance)"
+echo "  #   SEED_AUDIO_API_BASE / SEED_AUDIO_API_KEY  dialogue + sound effects"
+echo "  #   MINIMAX_API_BASE / MINIMAX_API_KEY      video (Hailuo)"
+echo "  #   TOKENHUB_API_BASE / TOKENHUB_API_KEY    cloud rigging / animation"
+echo "  # The API base URL is REQUIRED, not defaulted: the public endpoint is"
+echo "  # not reachable from every network."
 echo
 echo "Verify without spending credits or touching the network:"
 echo "  python test/harness/smoke.py --kind 3d_object --backend tripo"

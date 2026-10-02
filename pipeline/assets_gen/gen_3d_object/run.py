@@ -59,7 +59,7 @@ if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 # ──────────────────────────────────────────────────────────────────────────────
 
-from pipeline.common import paths  # noqa: E402
+from pipeline.common import config, paths  # noqa: E402
 
 #: Registered task kind — keys into paths.TASK_* tables.
 TASK_KIND = "3d_object"
@@ -78,6 +78,10 @@ BACKENDS: dict[str, tuple[str, str]] = {
     "tripo": ("v3.1-20260211", "TRIPO_MODEL"),
     "meshy": ("meshy-6", "MESHY_MODEL"),
 }
+
+#: 属于闭源云 API 的后端。它们需要在 `.env` 里配置对应服务商；其余后端加载本地
+#: 权重，需要一台跑得动的机器。
+CLOUD_BACKENDS = ("tripo", "meshy")
 
 
 def resolve_ckpt(backend: str, cli_value: str | None) -> str:
@@ -200,9 +204,9 @@ def main():
     parser.add_argument("--ckpt",      default=None,
                         help="Weights (trellis2) or model version id (cloud). "
                              "Precedence: this flag > env var > backend default")
-    parser.add_argument("--cache-dir", default=os.environ.get("AAAGF_API_CACHE"),
+    parser.add_argument("--cache-dir", default=config.api_cache_dir(),
                         help="Cloud backends: reuse identical requests instead of "
-                             "paying for them twice")
+                             "paying for them twice (default: $AAAGF_API_CACHE)")
     parser.add_argument("--low-poly",  action="store_true",
                         help="Cloud backends: ask the service for low-poly "
                              "topology (mesh-particle VFX); better than local decimation")
@@ -258,6 +262,13 @@ def main():
         print("[run] every task carries a spec: no model loaded, no GPU needed")
         model = None
     else:
+        # 在这里就失败，而不是等到第一个任务：云端后端需要 `.env` 里的凭证。
+        if args.backend in CLOUD_BACKENDS:
+            config.require_cloud_or_exit(
+                (args.backend,),
+                context=f"3D-object backend {args.backend!r}",
+            )
+
         ckpt = resolve_ckpt(args.backend, args.ckpt)
         backend_kwargs = {}
         if args.backend != "trellis2":

@@ -12,11 +12,26 @@ _REPO_ROOT = Path(__file__).resolve().parents[3]
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
-from pipeline.common import paths  # noqa: E402
+from pipeline.common import config, paths  # noqa: E402
 
 
 TASK_KIND = "motion"
 DEFAULT_TASKS = paths.collect_jsonl(TASK_KIND)
+
+#: 由 TokenHub 云模型（而非本地模型）承担的 task_type。
+CLOUD_TASK_TYPES = frozenset({"cloud_rig", "cloud_humanoid"})
+
+
+def _guard_local_runtimes(task_types: set[str]) -> None:
+    """在加载任何运行时之前，先检查这一批任务会用到哪些。
+
+    云端 task_type 需要的是 `.env` 凭证，而不是 GPU。
+    """
+    if task_types & CLOUD_TASK_TYPES:
+        config.require_cloud_or_exit(
+            ("tokenhub",),
+            context="cloud motion backend (tokenhub: rigging / animation)",
+        )
 
 
 def load_retarget_runtime(
@@ -503,6 +518,7 @@ def main() -> None:
     )
     if demo_requested:
         task = _demo_task(args, parser)
+        _guard_local_runtimes({args.task_type})
         operator = _build_operator_for_types(
             args,
             {args.task_type},
@@ -516,6 +532,7 @@ def main() -> None:
     if not task_types:
         print("[run] No matching tasks - nothing to do.")
         return
+    _guard_local_runtimes(task_types)
     operator = _build_operator_for_types(args, task_types, run_id)
     print(f"[run] run_id={run_id}  tasks={paths.rel_to_repo(tasks_path)}")
     results = run_from_jsonl(

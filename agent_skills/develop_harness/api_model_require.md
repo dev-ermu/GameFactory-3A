@@ -26,7 +26,7 @@ semantics) and R6 (swappability).
 | **R9.4** | `unload()` exists, is idempotent and closes the HTTP session. It never invalidates cached credentials. | Overrides R4.1–R4.3. |
 | **R9.5** | `seed` is forwarded when the provider supports it, otherwise accepted and ignored. The docstring must say **server-side reproducibility is not guaranteed**. Never fake determinism by seeding locally. | Overrides R3.3 / R3.4. |
 | **R9.6** | Task-based APIs (submit → poll → download) are hidden behind the synchronous `infer()`. `timeout` and `poll_interval` are constructor arguments; the timeout default errs **long** (generation runs into the tens of minutes). On timeout raise an error that **contains the `task_id`**, so the run can be recovered manually. | R3.1 stays synchronous for the caller. A tripped budget refunds nothing — the task finishes server-side and only the download is lost — so a short default costs credits while a long one costs nothing. |
-| **R9.7** | The API key is read from an **environment variable at first call**, never at construction, never from a file in the repo. When missing, fail fast with the variable name and the sign-up URL (R1.6). | Constructing a model must not require credentials — `<REPO_PATH>/test/harness` imports it. |
+| **R9.7** | Both the **API key** and the **API base URL** are read at **first call**, never at construction. When either is missing, fail fast naming the variable and pointing at `<REPO_PATH>/.env`. A base URL is **required, never defaulted**: the public endpoint is not reachable from every network, so a silent fallback looks like working configuration until the first billed call fails. Use `cloud_api.require_api_key()` / `cloud_api.require_api_base()`. | Constructing a model must not require credentials — `<REPO_PATH>/test/harness` imports it. A wrong or unreachable endpoint must be a configuration error, not a mystery failure at request time. |
 | **R9.8** | Support `cache_dir`. A request identified by `(model_path, prompt / image hash, all inference params, output_format)` that is already in the cache returns **without any network traffic**. Every real call logs `task_id`, elapsed seconds, credits consumed (when reported) and the output size. | Every call is billed. Re-running a pipeline must not re-bill. |
 | **R9.9** | Support `max_retries` with exponential backoff, and **classify** failures: retryable (5xx, 429, connection reset, read timeout) vs. terminal (400 bad params, 401/403 auth, 402 insufficient credits, task rejected). Never retry a terminal failure. **Classify on the response body, not only the status code**: providers return "out of credit" under an auth status, which by status alone is indistinguishable from a bad key, and a caller must be able to tell them apart. | Network failure is the normal case, not the exception. |
 
@@ -42,6 +42,24 @@ HTTP session, retry/backoff, error classification, response cache and the pollin
 loop are **not** duplicated per provider. They live in `<REPO_PATH>/models/common/cloud_api.py`
 and are shared across families (`gen_3d_object`, `gen_audio`, `gen_cg_video`, …).
 Provider-specific request bodies stay in the wrapper.
+
+### R9.12 — one configuration source
+
+Every credential, base URL, backend switch and cache location is read from
+**one place**: `<REPO_PATH>/global_config.py`, which loads `<REPO_PATH>/.env`
+(template: `.env.example`). A wrapper must not invent its own env-var name, read
+a `.env` of its own, or fall back to a literal endpoint.
+
+`global_config` is a **top-level, stdlib-only** module on purpose: `models/` must
+not import `pipeline/` (R1.1), and both layers need the same configuration, so it
+belongs to neither. `models/common/cloud_api.py` imports it at module load, so a
+wrapper used outside a Pipeline runner still sees the file.
+
+Pipeline runners call `pipeline.common.config.require_cloud_or_exit(...)` in
+`main()`, before loading anything, for every slot that resolves to a cloud
+backend, so a misconfiguration is reported in the first second rather than during
+the first task. A task whose cloud credentials are missing does not run at all;
+the runner exits with code **2**.
 
 ---
 
@@ -77,7 +95,7 @@ def __init__(self, model_path: str = "v3.1-20260211", device: str = "cuda", ...)
     self.device = device
 ```
 
-**③ This file** — the deviation must map onto one of R9.1–R9.11. If it does not,
+**③ This file** — the deviation must map onto one of R9.1–R9.12. If it does not,
 add a rule here first.
 
 ### The canonical deviation ids
@@ -103,7 +121,9 @@ Use these ids so every cloud wrapper reads the same way.
 - [ ] `model_path` default is a **real provider version string**; aliases accepted
 - [ ] `Model()` constructs with **no API key present** and no network access
 - [ ] `device="cpu"` does not raise
-- [ ] missing key → error naming the env var **and** the sign-up URL
+- [ ] missing key → error naming the env var and pointing at `.env`
+- [ ] missing base URL → error naming the env var and pointing at `.env`; the
+      documented endpoint appears only as an example, never as a fallback (R9.7)
 - [ ] `infer()` blocks until done; timeout error carries the `task_id`
 - [ ] terminal errors (400 / 401 / 402) are **not** retried
 - [ ] a cache hit performs **zero** HTTP requests
@@ -120,7 +140,8 @@ Use these ids so every cloud wrapper reads the same way.
 
 - Free tiers are small. Bring a chain up on the **stub** first; spend real credits
   only on the final verification.
-- API keys live in environment variables. A key must never reach the repository,
-  a log line, a `meta.json` or a cache filename.
+- API keys and base URLs live in `<REPO_PATH>/.env` (template: `.env.example`),
+  read through `<REPO_PATH>/global_config.py` (R9.12). A key must never reach the
+  repository, a log line, a `meta.json` or a cache filename.
 - Commercial-use rights differ between free and paid tiers on every provider.
   Confirm the tier before any generated asset is published.

@@ -6,14 +6,14 @@ The same provider can fill either AudioGen model slot: construct it with
 foley and ambience. It returns the same in-memory waveform contract as Qwen3-TTS
 and Woosh, so artifact writing remains in ``GenAudioOperator``.
 
-API endpoint:
-https://openspeech.bytedance.com/api/v3/tts/create
+请求路径：`{SEED_AUDIO_API_BASE}/api/v3/tts/create`。路径属于 API 契约，base 由
+`.env` 提供 —— 代码里不含任何 URL 字面量。
 
-Environment:
-    SEED_AUDIO_API_KEY       required on the first real API request
-    SEED_AUDIO_API_BASE      optional API root override
-    SEED_AUDIO_MODEL         optional model id (default seed-audio-1.0)
-    SEED_AUDIO_SPEAKER_ID    optional provider speaker resource id
+环境变量（统一写在 `<repo>/.env`，见 `.env.example`）：
+    SEED_AUDIO_API_KEY       首次真实 API 请求时必需
+    SEED_AUDIO_API_BASE      首次真实 API 请求时必需；代码不含端点示例，绝不静默回退
+    SEED_AUDIO_MODEL         可选，模型 id（默认 seed-audio-1.0）
+    SEED_AUDIO_SPEAKER_ID    可选，服务商侧的音色资源 id
 """
 from __future__ import annotations
 
@@ -29,11 +29,12 @@ from models.gen_audio.seed_audio_utils import (
     encode_wav_base64,
 )
 
-DEFAULT_API_BASE = "https://openspeech.bytedance.com"
+#: `.env` 变量名；URL 由用户填写在 `.env` 里，代码不保留 URL 字面量（R9.7）。
+ENV_KEY = "SEED_AUDIO_API_KEY"
+ENV_BASE = "SEED_AUDIO_API_BASE"
 DEFAULT_MODEL = "seed-audio-1.0"
+#: 请求路径，拼接在 `.env` 配置的 base 之后（路径属于 API 契约，不是用户配置）。
 CREATE_PATH = "/api/v3/tts/create"
-API_ENDPOINT = f"{DEFAULT_API_BASE}{CREATE_PATH}"
-SIGNUP_URL = "https://console.volcengine.com/speech/"
 SUPPORTED_MODES = ("dialogue", "sound_effect")
 
 
@@ -67,7 +68,9 @@ class SeedAudioModel:
         self.device = device  # accepted for model-slot parity; the service is remote
         self.mode = str(mode).lower()
         self.api_key = api_key
-        self.api_base = api_base or os.environ.get("SEED_AUDIO_API_BASE") or DEFAULT_API_BASE
+        # [R9.7] 必填项，且在首次调用时才解析。端点由用户在 .env 里配置，代码
+        # 不含任何 URL 示例。
+        self.api_base = api_base
         self.speaker_id = speaker_id or os.environ.get("SEED_AUDIO_SPEAKER_ID")
         self.cache_dir = cache_dir
         self.sample_rate = int(sample_rate)
@@ -103,16 +106,20 @@ class SeedAudioModel:
 
     @property
     def client(self) -> SeedAudioAPIClient:
-        """Resolve credentials lazily, so construction and harness runs stay offline."""
+        """惰性解析凭证，使构造与 harness 运行都不触网。"""
         if self._client is None:
             key = cloud_api.require_api_key(
                 self.api_key,
-                "SEED_AUDIO_API_KEY",
-                SIGNUP_URL,
+                ENV_KEY,
+                who="SeedAudioModel",
+            )
+            base = cloud_api.require_api_base(
+                self.api_base,
+                ENV_BASE,
                 who="SeedAudioModel",
             )
             self._client = SeedAudioAPIClient(
-                self.api_base,
+                base,
                 key,
                 timeout=self.http_timeout,
                 max_retries=self.max_retries,

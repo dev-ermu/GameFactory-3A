@@ -158,7 +158,23 @@ class TestConstruction(unittest.TestCase):
                         cls().infer(image=stubs.make_ref_image())
                     message = str(ctx.exception)
                     self.assertIn(env, message)        # names the variable
-                    self.assertIn("http", message)     # and the sign-up URL
+                    self.assertIn(".env", message)     # and where to set it
+                finally:
+                    if saved is not None:
+                        os.environ[env] = saved
+
+    def test_missing_api_base_fails_fast_and_actionably(self):
+        """R9.7 — API 根地址是必填项，绝不静默回退到默认值。"""
+        for cls, env in ((TripoModel, "TRIPO_API_BASE"),
+                         (MeshyModel, "MESHY_API_BASE")):
+            with self.subTest(cls=cls.__name__):
+                saved = os.environ.pop(env, None)
+                try:
+                    with self.assertRaises(cloud_api.CloudAPIConfigError) as ctx:
+                        cls(api_key="test-key").client
+                    message = str(ctx.exception)
+                    self.assertIn(env, message)         # 指出变量名
+                    self.assertIn(".env", message)      # 以及该写在哪里
                 finally:
                     if saved is not None:
                         os.environ[env] = saved

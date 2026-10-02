@@ -36,18 +36,17 @@ CONTRACT DEVIATIONS (model_require.md targets local-weight models;
   C9  (new)     → R9.9  `max_retries` with exponential backoff; retryable
                         (5xx/429/transport) vs. terminal (4xx) split.
 
-Environment:
-    TOKENHUB_API_KEY   — required at first infer(), not at construction.
-                         Obtain from console.cloud.tencent.com/tokenhub
-                         then open: console.cloud.tencent.com/tokenhub/inference
-                         to enable post-pay billing for the tripo-3d-* models.
-    TOKENHUB_API_BASE  — optional override (default https://tokenhub.tencentmaas.com)
+Environment (all in `<repo>/.env`; see `.env.example`):
+    TOKENHUB_API_KEY     — required at first infer(), not at construction. The
+                           provider console also has a billing page where post-pay
+                           must be enabled for the tripo-3d-* models, otherwise
+                           every call fails.
+    TOKENHUB_API_BASE    — 首次 infer() 时必需。代码不含端点示例，绝不静默采用。
 """
 from __future__ import annotations
 
 import hashlib
 import logging
-import os
 import time
 from typing import Any, Optional
 
@@ -59,8 +58,6 @@ logger = logging.getLogger(__name__)
 
 ENV_KEY = "TOKENHUB_API_KEY"
 ENV_BASE = "TOKENHUB_API_BASE"
-DEFAULT_API_BASE = "https://tokenhub.tencentmaas.com"
-SIGNUP_URL = "https://console.cloud.tencent.com/tokenhub"
 
 #: Verified from /v1/models on tokenhub.tencentmaas.com.
 MODEL_RIG_CHECK = "tripo-3d-rigging-check"
@@ -120,10 +117,6 @@ _FAILED = frozenset({"failed", "cancelled", "canceled", "banned", "expired"})
 
 _SUBMIT_PATH = "/v1/api/3d/submit"
 _QUERY_PATH = "/v1/api/3d/query"
-
-
-def _api_base() -> str:
-    return os.environ.get(ENV_BASE, DEFAULT_API_BASE).rstrip("/")
 
 
 def resolve_mesh_url(mesh_url: Optional[str], mesh: Optional[bytes]) -> str:
@@ -189,7 +182,8 @@ class _TripoCloudBase:
         self.poll_interval = poll_interval
         self.max_retries = max_retries
         self.cache_dir = cache_dir
-        self.api_base = api_base or _api_base()
+        # [R9.7] 必填项，且在首次调用时才解析。端点由用户在 .env 里配置，代码
+        self.api_base = api_base
         self.http_timeout = http_timeout
         self.verbose = verbose
 
@@ -214,13 +208,15 @@ class _TripoCloudBase:
 
     @property
     def client(self) -> cloud_api.CloudAPIClient:
-        """[C6/R9.7] Lazy — key is read here, not in __init__."""
+        """[C6/R9.7] 惰性解析——凭证在这里读取，不在 __init__ 中。"""
         if self._client is None:
+            who = self.__class__.__name__
             key = cloud_api.require_api_key(
-                self.api_key, ENV_KEY, SIGNUP_URL,
-                who=self.__class__.__name__)
+                self.api_key, ENV_KEY, who=who)
+            base = cloud_api.require_api_base(
+                self.api_base, ENV_BASE, who=who)
             self._client = cloud_api.CloudAPIClient(
-                self.api_base, key,
+                base, key,
                 timeout=self.http_timeout,
                 max_retries=self.max_retries,
             )

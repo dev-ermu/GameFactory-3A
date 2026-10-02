@@ -34,8 +34,9 @@ The root stays next to the test set so any evaluator finds inputs and outputs si
 by side. Generated artifacts get large — point ``$AAAGF_OUTPUT_ROOT`` at a scratch
 disk to relocate the whole tree without touching code.
 
-This module has **no third-party dependencies** and imports no models, so it is
-safe to import from anywhere (including CPU-only tooling and tests).
+本模块**不依赖任何第三方库**，也不 import 任何 model，因此可以在任何地方安全 import
+（包括纯 CPU 的工具与测试）。它唯一的项目内依赖是 `global_config`——那个只依赖标准库
+的配置模块；先加载它，才能在读取任何变量之前把 `<repo>/.env` 放进 `os.environ`。
 """
 from __future__ import annotations
 
@@ -46,6 +47,15 @@ import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Optional
+
+# 先加载 `.env`，再读取下面任何变量。`global_config` 位于顶层且只依赖标准库，
+# 因此 `models/` 可以 import 它而不必 import `pipeline/`（model_require.md R1.1）。
+_CONFIG_ROOT = Path(__file__).resolve().parents[2]
+if str(_CONFIG_ROOT) not in sys.path:
+    sys.path.insert(0, str(_CONFIG_ROOT))
+import global_config as _global_config  # noqa: E402
+
+_global_config.load()
 
 # ── Roots ─────────────────────────────────────────────────────────────────────
 

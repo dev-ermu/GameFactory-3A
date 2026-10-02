@@ -1,13 +1,12 @@
-# third_party/
+# 第三方
 
-Landing area for **externally cloned repositories** that 3AGameFactory depends on
-but does not vendor, for example:
+3AGameFactory依赖但不提供供应商的**外部克隆存储库**的登录区域，例如：
 
-- geometry and asset libraries such as `trimesh`
-- engine-related material, shader, or asset-pack repositories
-- third-party generation runtimes checked out from source
+- 几何图形和资源库例如`trimesh`。
+- 与引擎相关的材质、着色器或资源包存储库。
+- 从源代码检出的第三方生成运行时
 
-Clone each dependency into its own subdirectory:
+将每个依赖项克隆到自己的子目录中：
 
 ```text
 third_party/
@@ -16,6 +15,4 @@ third_party/
 └── <runtime-repo>/
 ```
 
-This folder is **git-ignored by default** except for this README. Every clone
-keeps its own upstream licence; verify those terms before shipping generated
-content.
+默认情况下，此文件夹为**git忽略**，此README除外。每个clone保留自己的上游licence，在生成内容之前检查这些条款内容。

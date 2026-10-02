@@ -79,6 +79,18 @@ money, so the agent must **stop and ask** rather than assume a key exists.
 | Audio | Seed Audio via Volcengine | <https://console.volcengine.com/speech/> | `SEED_AUDIO_API_KEY` |
 | CG video | Seedance via Ark, then MiniMax Hailuo | <https://console.volcengine.com/ark>, <https://platform.minimax.io/user-center/basic-information/interface-key> | `ARK_API_KEY`, `MINIMAX_API_KEY` |
 
+Every one of these goes into **`<REPO_PATH>/.env`**, the single configuration
+file (`cp .env.example .env`), read by `<REPO_PATH>/global_config.py`. Each
+provider needs **both** its `*_API_BASE` and its `*_API_KEY`; the base URL is
+required and has no silent default, because the public endpoint is not reachable
+from every network.
+
+The local route is the default for 3D object, image/T-pose and audio, and it needs
+a CUDA GPU plus tens of GB of weights and disk. If the machine cannot run it,
+switch that slot to its cloud backend in `.env` and fill in the provider's
+`*_API_BASE` and `*_API_KEY`: the Pipeline runners refuse to start while either is
+unset, so an unusable local route surfaces immediately rather than mid-task.
+
 Before the first paid call:
 
 1. **Pause.** Do not run a paid backend, and never invent, guess, or reuse a key

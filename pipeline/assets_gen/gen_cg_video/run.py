@@ -15,7 +15,7 @@ _REPO_ROOT = Path(__file__).resolve().parents[3]
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
-from pipeline.common import paths  # noqa: E402
+from pipeline.common import config, paths  # noqa: E402
 
 TASK_KIND = "cg_video"
 DEFAULT_CKPT = "doubao-seedance-2-0-260128"
@@ -25,6 +25,13 @@ DEFAULT_TASKS = paths.collect_jsonl(TASK_KIND)
 BACKENDS: dict[str, tuple[str, str]] = {
     "seedance": (DEFAULT_CKPT, "SEEDANCE_MODEL"),
     "minimax-h3": ("MiniMax-Hailuo-2.3", "MINIMAX_VIDEO_MODEL"),
+}
+
+#: 每个云端后端需要哪个 `.env` 服务商。`minimax-h3` 的 `local` 运行方式完全不需要
+#: 服务商，因此它只在 api 路线下才被校验。
+BACKEND_PROVIDERS: dict[str, tuple[str, ...]] = {
+    "seedance": ("ark",),
+    "minimax-h3": ("minimax",),
 }
 
 
@@ -139,8 +146,9 @@ def main() -> None:
     )
     parser.add_argument(
         "--cache-dir",
-        default=os.environ.get("GAMEFACTORY3A_API_CACHE"),
-        help="Reuse identical billed requests without network traffic",
+        default=config.api_cache_dir(),
+        help="Reuse identical billed requests without network traffic "
+             "(default: $GAMEFACTORY3A_API_CACHE)",
     )
     parser.add_argument("--timeout", type=int, default=1800)
     parser.add_argument("--poll-interval", type=float, default=3.0)
@@ -310,12 +318,28 @@ def main() -> None:
             "fast_pretreatment": args.fast_pretreatment,
             "verbose": True,
         }
+    # 在生成之前失败。Seedance 一定是云端；MiniMax H3 的 `api` / `local` 是在模型
+    # 内部决定的，所以它的检查放在构造之后（构造本身免费），此时 `model.runtime` 已知。
+    if args.backend == "seedance":
+        config.require_cloud_or_exit(
+            BACKEND_PROVIDERS["seedance"],
+            context=f"CG-video backend {args.backend!r}",
+        )
+
     model = load_model(
         ckpt,
         device=args.device,
         backend=args.backend,
         **backend_kwargs,
     )
+
+    if args.backend == "minimax-h3":
+        if getattr(model, "runtime", None) != "local":
+            config.require_cloud_or_exit(
+                BACKEND_PROVIDERS["minimax-h3"],
+                context="CG-video backend 'minimax-h3' (api runtime)",
+            )
+
     operator = make_operator(
         model,
         output_dir=args.out_dir,

@@ -160,6 +160,36 @@
 和特定引擎游戏时的入口文档。它会将 Agent 路由到对应的资产 Skill 和引擎
 API 上下文。
 
+### 配置：只有一个地方
+
+所有配置项——云端凭证、API 根地址、各任务用哪个后端、缓存与输出目录——都从
+**项目根目录的 `.env`** 读取，由根目录的 `global_config.py` 统一加载。
+
+```text
+1. cp .env.example .env
+2. 编辑 .env，填写你要用的服务商：
+     TRIPO_API_BASE / TRIPO_API_KEY          3D 物体（Tripo）
+     MESHY_API_BASE / MESHY_API_KEY          3D 物体（Meshy，可出 FBX）
+     ARK_API_BASE   / ARK_API_KEY            图像 Seedream + 视频 Seedance
+     SEED_AUDIO_API_BASE / SEED_AUDIO_API_KEY  对白 + 音效
+     MINIMAX_API_BASE    / MINIMAX_API_KEY   视频 Hailuo
+     TOKENHUB_API_BASE   / TOKENHUB_API_KEY  云端绑骨 / 动画
+3. 在 .env 里把要用的槽位切到云端（默认是本地路线）：
+     AAAGF_3D_BACKEND=tripo
+     TPOSE_GEN_BACKEND=seedream
+     AAAGF_DIALOGUE_BACKEND=seed_audio
+     AAAGF_SOUND_EFFECT_BACKEND=seed_audio
+     GAMEFACTORY3A_VIDEO_BACKEND=seedance
+```
+
+**API 根地址是必填项，没有默认值。** 公开端点并非在所有网络下都可访问，
+静默回退只会在第一次计费调用时才失败，所以缺失时直接报错并给出 `.env` 写法。
+Pipeline 的 runner 会在加载任何模型之前调用 `require_cloud_or_exit()`，凭证缺失
+时立刻中断（退出码 2），而不是等到任务跑到一半才失败。
+
+本地路线仍需要 CUDA GPU、数十 GB 显存与磁盘。本机不满足条件时请改走云端：
+把对应槽位开关切到云端后端，并按上面的要求把该服务商的三项配齐。
+
 ### 为 3AGameFactory 框架贡献代码
 
 这与“使用框架生成游戏”是两条独立路径。若要新增或修改模型封装、Operator

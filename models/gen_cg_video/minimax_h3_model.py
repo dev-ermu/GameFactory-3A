@@ -46,8 +46,9 @@ from models.gen_cg_video.utils import VideoGenerationInput, VideoGenerationMode
 
 logger = logging.getLogger(__name__)
 
-SIGNUP_URL = "https://platform.minimax.io/user-center/basic-information/interface-key"
-DEFAULT_API_BASE = "https://api.minimax.io"
+#: `.env` 变量名；URL 由用户填写在 `.env` 里，代码不保留 URL 字面量（R9.7）。
+ENV_KEY = "MINIMAX_API_KEY"
+ENV_BASE = "MINIMAX_API_BASE"
 DEFAULT_MODEL = "MiniMax-Hailuo-2.3"
 DEFAULT_LOCAL_MODEL = "Comfy-Org/MiniMax-H3"
 MODEL_ALIASES = {
@@ -480,7 +481,9 @@ class MiniMaxH3Model:
         self.resolution = str(resolution).upper()
         self.prompt_optimizer = bool(prompt_optimizer)
         self.fast_pretreatment = bool(fast_pretreatment)
-        self.api_base = api_base or os.environ.get("MINIMAX_API_BASE") or DEFAULT_API_BASE
+        # [R9.7] 只有 api 运行方式需要它；在首次调用时才解析，使构造函数既不要求
+        # 凭证也不触网。端点由用户在 .env 里配置，代码不含任何 URL 示例。
+        self.api_base = api_base
         self.http_timeout = http_timeout
         self.verbose = verbose
 
@@ -522,15 +525,18 @@ class MiniMaxH3Model:
 
     @property
     def client(self) -> cloud_api.CloudAPIClient:
-        """Return the lazily authenticated API client."""
+        """返回惰性完成鉴权的 API 客户端。"""
         if self.runtime != "api":
             raise RuntimeError("the HTTP client is only available in api runtime")
         if self._client is None:
             key = cloud_api.require_api_key(
-                self.api_key, "MINIMAX_API_KEY", SIGNUP_URL, who="MiniMaxH3Model"
+                self.api_key, ENV_KEY, who="MiniMaxH3Model"
+            )
+            base = cloud_api.require_api_base(
+                self.api_base, ENV_BASE, who="MiniMaxH3Model"
             )
             self._client = cloud_api.CloudAPIClient(
-                self.api_base,
+                base,
                 key,
                 timeout=self.http_timeout,
                 # [CONTRACT-DEVIATION C9] Shared HTTP retry classification.

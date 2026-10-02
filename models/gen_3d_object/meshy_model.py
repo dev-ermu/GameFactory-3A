@@ -4,7 +4,7 @@ models/gen_3d_object/meshy_model.py
 MeshyModel — wrapper around Meshy's cloud 3D-generation API (image-to-3D and
 text-to-3D), producing GLB / FBX / OBJ / USDZ / STL.
 
-Reference: https://docs.meshy.ai/  (base https://api.meshy.ai)
+Reference: https://docs.meshy.ai/
 
 Second backend for the `gen_3d_object` slot. Its `infer` / `infer_and_save`
 signatures are identical to `TripoModel`'s and positionally identical to
@@ -30,12 +30,12 @@ replace it live in agent_skills/develop_harness/api_model_require.md):
   C9  (new)     → R9.9  `max_retries` + exponential backoff; retryable and
                         terminal failures are split.
 
-Environment:
-    MESHY_API_KEY   required at the first infer() call, not at construction.
-                    Get one at https://www.meshy.ai/api  (a `msy_dummy_...`
-                    test-mode key returns canned assets without spending credits).
-    MESHY_API_BASE  optional override of the API root.
-    `pip install requests` is needed for the API backends only.
+环境变量（统一写在 `<repo>/.env`，见 `.env.example`）：
+    MESHY_API_KEY        在首次 infer() 调用时必需，构造时不需要（`msy_dummy_...`
+                         测试模式 Key 会返回预置资产且不消耗 credits）。
+    MESHY_API_BASE       在首次 infer() 调用时必需。代码里不含端点示例，由你从
+                         服务商控制台取当前值填入。
+    `pip install requests` 仅 API 后端需要。
 
 Usage:
     from models.gen_3d_object.meshy_model import MeshyModel
@@ -45,7 +45,6 @@ Usage:
 from __future__ import annotations
 
 import logging
-import os
 import time
 from pathlib import Path
 from typing import Any, Optional
@@ -55,9 +54,9 @@ from models.common.glb_utils import glb_summary
 
 logger = logging.getLogger(__name__)
 
-SIGNUP_URL = "https://www.meshy.ai/api"
-
-DEFAULT_API_BASE = "https://api.meshy.ai"
+#: `.env` 变量名；URL 由用户填写在 `.env` 里，代码不保留 URL 字面量（R9.7）。
+ENV_KEY = "MESHY_API_KEY"
+ENV_BASE = "MESHY_API_BASE"
 
 #: Short names accepted for `model_path`. Unknown values pass through untouched.
 MODEL_ALIASES: dict[str, str] = {
@@ -102,7 +101,8 @@ class MeshyModel:
         refine:     Text-to-3D only. Meshy's preview stage returns an untextured
                     mesh; the refine stage textures it and costs extra credits.
                     Ignored when `texture=False`.
-        api_base:   Override the API root (defaults to `$MESHY_API_BASE`).
+        api_base:   覆盖 API 根地址。为 None 时读取 `.env` 中的 `$MESHY_API_BASE`；
+                    该变量缺失即报错（R9.7）。
         verbose:    Print task progress; off by default (R3.7).
     """
 
@@ -151,8 +151,9 @@ class MeshyModel:
         self.topology = topology
         self.should_remesh = should_remesh
         self.refine = refine
-        self.api_base = (api_base or os.environ.get("MESHY_API_BASE")
-                         or DEFAULT_API_BASE)
+        # [R9.7] API 根地址是必填项，且在首次调用时才解析。
+        # 端点由用户在 .env 里配置，代码不含任何 URL 示例。
+        self.api_base = api_base
         self.http_timeout = http_timeout
         self.verbose = verbose
         self.model_specific = model_specific
@@ -173,12 +174,14 @@ class MeshyModel:
 
     @property
     def client(self) -> cloud_api.CloudAPIClient:
-        """HTTP client, created on first use. [R9.7] The key is resolved here."""
+        """HTTP 客户端，首次使用时创建。[R9.7] 凭证在这里解析。"""
         if self._client is None:
             key = cloud_api.require_api_key(
-                self.api_key, "MESHY_API_KEY", SIGNUP_URL, who="MeshyModel")
+                self.api_key, ENV_KEY, who="MeshyModel")
+            base = cloud_api.require_api_base(
+                self.api_base, ENV_BASE, who="MeshyModel")
             self._client = cloud_api.CloudAPIClient(
-                self.api_base, key,
+                base, key,
                 timeout=self.http_timeout,
                 max_retries=self.max_retries,
             )

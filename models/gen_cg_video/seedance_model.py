@@ -14,12 +14,16 @@ CONTRACT DEVIATIONS (model_require.md targets local-weight models;
   C7  R1.2              `infer_and_save(..., output_path)` writes caller's path.
   C8  (new)     -> R9.8  identical billed requests use the response cache.
   C9  (new)     -> R9.9  shared HTTP retries classify terminal failures.
+
+环境变量（统一写在 `<repo>/.env`，见 `.env.example`）：
+    ARK_API_KEY   在首次 infer() 调用时必需，构造时不需要。
+    ARK_API_BASE  在首次 infer() 调用时必需。只作示例、绝不静默回退，因为 Ark 端点
+                  并非在所有网络下都可达。
 """
 
 from __future__ import annotations
 
 import logging
-import os
 import time
 from pathlib import Path
 from typing import Any, Optional
@@ -29,8 +33,9 @@ from models.gen_cg_video.utils import VideoGenerationInput, VideoGenerationMode
 
 logger = logging.getLogger(__name__)
 
-SIGNUP_URL = "https://console.volcengine.com/ark/region:ark+cn-beijing/apikey"
-DEFAULT_API_BASE = "https://ark.cn-beijing.volces.com/api/v3"
+#: `.env` 变量名；URL 由用户填写在 `.env` 里，代码不保留 URL 字面量（R9.7）。
+ENV_KEY = "ARK_API_KEY"
+ENV_BASE = "ARK_API_BASE"
 DEFAULT_MODEL = "doubao-seedance-2-0-260128"
 
 MODEL_ALIASES: dict[str, str] = {
@@ -90,7 +95,9 @@ class SeedanceModel:
         self.ratio = ratio
         self.generate_audio = generate_audio
         self.watermark = watermark
-        self.api_base = api_base or os.environ.get("ARK_API_BASE") or DEFAULT_API_BASE
+        # [R9.7] 必填项，且在首次调用时才解析。端点由用户在 .env 里配置，代码
+        # 不含任何 URL 示例。
+        self.api_base = api_base
         self.http_timeout = http_timeout
         self.verbose = verbose
 
@@ -106,13 +113,16 @@ class SeedanceModel:
 
     @property
     def client(self) -> cloud_api.CloudAPIClient:
-        """Create the authenticated HTTP client on first use (R9.7)."""
+        """首次使用时创建带鉴权的 HTTP 客户端（R9.7）。"""
         if self._client is None:
             key = cloud_api.require_api_key(
-                self.api_key, "ARK_API_KEY", SIGNUP_URL, who="SeedanceModel"
+                self.api_key, ENV_KEY, who="SeedanceModel"
+            )
+            base = cloud_api.require_api_base(
+                self.api_base, ENV_BASE, who="SeedanceModel"
             )
             self._client = cloud_api.CloudAPIClient(
-                self.api_base,
+                base,
                 key,
                 timeout=self.http_timeout,
                 max_retries=self.max_retries,

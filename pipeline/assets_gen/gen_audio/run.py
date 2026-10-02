@@ -29,7 +29,7 @@ _REPO_ROOT = Path(__file__).resolve().parents[3]
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
-from pipeline.common import paths  # noqa: E402
+from pipeline.common import config, paths  # noqa: E402
 from models.gen_audio.woosh_utils import (  # noqa: E402
     DEFAULT_WOOSH_RELEASE_BASE_URL,
 )
@@ -212,8 +212,8 @@ def main() -> None:
     )
     parser.add_argument(
         "--seed-audio-api-base",
-        default=os.environ.get("SEED_AUDIO_API_BASE"),
-        help="Optional Seed Audio API root override.",
+        default=config.get("SEED_AUDIO_API_BASE"),
+        help="Override the Seed Audio API root configured in .env.",
     )
     parser.add_argument(
         "--seed-audio-speaker-id",
@@ -234,8 +234,9 @@ def main() -> None:
     )
     parser.add_argument(
         "--cache-dir",
-        default=os.environ.get("AAAGF_API_CACHE"),
-        help="Cloud API response cache; reuse identical requests instead of paying twice.",
+        default=config.api_cache_dir(),
+        help="Cloud API response cache; reuse identical requests instead of "
+             "paying twice (default: $AAAGF_API_CACHE).",
     )
     parser.add_argument("--game", default=None,
                         help=f"Game project id. Known: {paths.list_games() or '<none>'}")
@@ -282,6 +283,15 @@ def main() -> None:
             parser.error("A sound-effect demo requires --prompt.")
 
     active_filter = route if single_demo else args.only_audio_type
+
+    # 在加载模型之前先失败：Seed Audio 槽位需要 `.env` 配置。
+    if active_filter != "sound_effect" and args.dialogue_backend == "seed_audio":
+        config.require_cloud_or_exit(
+            ("seed_audio",), context="dialogue backend 'seed_audio'")
+    if active_filter != "dialogue" and args.sound_effect_backend == "seed_audio":
+        config.require_cloud_or_exit(
+            ("seed_audio",), context="sound-effect backend 'seed_audio'")
+
     dialogue_model = None
     sound_effect_model = None
     if active_filter != "sound_effect":

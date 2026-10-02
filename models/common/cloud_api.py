@@ -5,12 +5,17 @@ Shared plumbing for closed-source ("cloud API") model wrappers — the part of
 Tripo / Meshy / Rodin / ElevenLabs / Kling wrappers that is identical no matter
 what the provider generates.
 
-Contract: `agent_skills/develop_harness/api_model_require.md` R9.
-This module owns R9.6 (submit → poll → download behind a blocking call),
-R9.7 (API key from the environment, at call time), R9.8 (response cache, so a
-re-run is not re-billed) and R9.9 (retry with backoff, retryable vs. terminal).
+契约见 `agent_skills/develop_harness/api_model_require.md` R9。
+本模块实现 R9.6（submit → poll → download 藏在一次阻塞调用之后）、R9.7（凭证**与
+API 根地址**都在调用时从配置读取）、R9.8（响应缓存，避免重跑二次计费）以及
+R9.9（带退避的重试，区分可重试／终态失败）。
 
 It knows nothing about 3D, audio or video — only HTTP, money and failure modes.
+
+配置只有一个来源：`<repo>/.env`。import 本模块即会加载它（经 `global_config`），
+因此脱离 Pipeline runner 单独使用的 wrapper 也能读到该文件。Key 与 API 根地址都是
+必填项：硬编码端点不可取，因为公开端点并非在所有网络下都可达，而静默回退只会在
+第一次计费调用时失败。
 
 Dependencies: stdlib at import time; `requests` is imported lazily on first use
 so `test/harness/smoke.py` keeps working on a machine that does not have it.
@@ -18,9 +23,10 @@ so `test/harness/smoke.py` keeps working on a machine that does not have it.
 Usage:
     from models.common import cloud_api
 
-    key = cloud_api.require_api_key(None, "TRIPO_API_KEY",
-                                    "https://platform.tripo3d.ai/api-keys")
-    client = cloud_api.CloudAPIClient("https://openapi.tripo3d.ai/v3", key)
+    # 只传环境变量名。URL 一律来自 `.env`，调用方不携带任何 URL 字面量。
+    key = cloud_api.require_api_key(None, "TRIPO_API_KEY")
+    base = cloud_api.require_api_base(None, "TRIPO_API_BASE")
+    client = cloud_api.CloudAPIClient(base, key)
     data = client.request("POST", "/generation/text-to-model", json={...})
 """
 from __future__ import annotations
@@ -29,12 +35,40 @@ import hashlib
 import json
 import logging
 import os
+import sys
 import time
 from pathlib import Path
 from typing import Any, Callable, Iterable, Optional
 
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
+
+
+def _load_project_env() -> None:
+    """在**不** import `pipeline/` 的前提下让 `<repo>/.env` 生效（R1.1）。
+
+    `global_config` 是顶层、纯标准库模块，因此 model 可以 import 它而不依赖编排层。
+    找不到该模块也不致命：wrapper 会退回原来的行为，只读进程环境变量。
+    """
+    try:
+        import global_config  # noqa: PLC0415
+    except ModuleNotFoundError:
+        root = Path(__file__).resolve().parents[2]
+        if str(root) not in sys.path:
+            sys.path.insert(0, str(root))
+        try:
+            import global_config  # noqa: PLC0415
+        except ModuleNotFoundError:  # pragma: no cover - vendored use
+            return
+
+    try:
+        global_config.load()
+    except Exception:  # pragma: no cover - configuration must never crash import
+        logger.debug("[cloud_api] could not load .env", exc_info=True)
+
+
+#: 在任何 wrapper 读取变量之前，先用 `.env` 填充 os.environ。
+_load_project_env()
 
 #: HTTP statuses worth retrying — transient by nature.
 RETRYABLE_STATUS: frozenset[int] = frozenset({408, 409, 425, 429, 500, 502, 503, 504})
@@ -98,19 +132,25 @@ class CloudTaskTimeout(CloudAPIError):
     """The task did not reach a terminal state within `timeout` seconds."""
 
 
+class CloudAPIConfigError(CloudAPIError):
+    """必需配置项缺失，例如 API 根地址。
+
+    属于终态错误：重试也无法变出一个不存在的配置项。
+    """
+
+
 # ── Credentials ───────────────────────────────────────────────────────────────
 
 
-def require_api_key(value: Optional[str], env_var: str, signup_url: str,
-                    *, who: str = "This model") -> str:
+def require_api_key(value: Optional[str], env_var: str, *,
+                    who: str = "This model") -> str:
     """
     Resolve an API key, failing fast with an actionable message (R1.6 / R9.7).
 
     Args:
-        value:      Explicit key passed to the constructor, or None.
-        env_var:    Environment variable to fall back to.
-        signup_url: Where a human gets a key.
-        who:        Name used in the error message.
+        value:       Explicit key passed to the constructor, or None.
+        env_var:     Environment variable to fall back to.
+        who:         Name used in the error message.
 
     Returns:
         The key.
@@ -123,9 +163,40 @@ def require_api_key(value: Optional[str], env_var: str, signup_url: str,
         return key.strip()
     raise CloudAPIAuthError(
         f"{who} needs an API key and none was found.\n"
-        f"  1. get one at {signup_url}\n"
-        f"  2. export {env_var}=<your key>          # never commit it\n"
+        f"  1. set {env_var}=<your key> in .env          # never commit it\n"
         f"     (or pass api_key=... to the constructor)"
+    )
+
+
+def require_api_base(value: Optional[str], env_var: str, *,
+                     who: str = "This model") -> str:
+    """
+    解析 API 根地址；未配置时立即失败（R9.7）。
+
+    Base URL 是**必填**而非带默认值：公开端点并非在所有网络下都可达，硬编码的回退会
+    一直表现得像「配置正常」，直到第一次计费调用失败。代码里同样不保留端点示例——
+    服务商会改域名，过期示例只会误导；当前值从服务商控制台取。
+
+    Args:
+        value:      构造函数显式传入的 base，或 None。
+        env_var:    回退读取的环境变量名。
+        who:        出现在错误信息里的名称。
+
+    Returns:
+        去掉尾部斜杠的 base URL。
+
+    Raises:
+        CloudAPIConfigError: 拿不到 base URL。
+    """
+    base = (value or os.environ.get(env_var) or "").strip()
+    if base:
+        return base.rstrip("/")
+    raise CloudAPIConfigError(
+        f"{who} needs its API base URL and none was configured.\n"
+        f"  1. copy the endpoint from the provider's console into {env_var} "
+        f"in .env\n"
+        f"  The base URL is required, not defaulted, because the public "
+        f"endpoint is not reachable from every network."
     )
 
 

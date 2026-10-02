@@ -24,10 +24,9 @@ _REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(_REPO_ROOT))
 
 from models.common import cloud_api  # noqa: E402
+from models.gen_audio import seed_audio_model  # noqa: E402
 from models.gen_audio.seed_audio_model import (  # noqa: E402
-    API_ENDPOINT,
     CREATE_PATH,
-    DEFAULT_API_BASE,
     SeedAudioModel,
 )
 from models.gen_audio.seed_audio_utils import SeedAudioAPIClient  # noqa: E402
@@ -46,7 +45,7 @@ def make_wav(sample_rate: int = 24_000, duration: float = 0.25) -> bytes:
     return buffer.getvalue()
 
 
-class FakeClient:
+class FakeClient(object):
     def __init__(self, response: dict, artifact: bytes | None = None):
         self.response = response
         self.artifact = artifact
@@ -89,12 +88,12 @@ class TestConstruction(unittest.TestCase):
             inspect.signature(cloud_api.CloudAPIClient.request).parameters,
         )
 
-    def test_china_api_endpoint_is_the_default(self):
-        self.assertEqual(DEFAULT_API_BASE, "https://openspeech.bytedance.com")
-        self.assertEqual(
-            API_ENDPOINT,
-            "https://openspeech.bytedance.com/api/v3/tts/create",
-        )
+    def test_no_endpoint_is_baked_into_the_wrapper(self):
+        """端点必须来自 `.env`：模块里不得再残留任何默认 base 或完整 URL。"""
+        self.assertFalse(hasattr(seed_audio_model, "DEFAULT_API_BASE"))
+        self.assertFalse(hasattr(seed_audio_model, "API_ENDPOINT"))
+        self.assertFalse(hasattr(seed_audio_model, "SIGNUP_URL"))
+        self.assertIsNone(SeedAudioModel().api_base)
 
     def test_constructs_without_key_and_accepts_cpu(self):
         saved = os.environ.pop("SEED_AUDIO_API_KEY", None)
@@ -107,21 +106,36 @@ class TestConstruction(unittest.TestCase):
                 os.environ["SEED_AUDIO_API_KEY"] = saved
 
     def test_missing_key_is_actionable(self):
-        saved = os.environ.pop("SEED_AUDIO_API_KEY", None)
+        saved_key = os.environ.pop("SEED_AUDIO_API_KEY", None)
         try:
             with self.assertRaises(cloud_api.CloudAPIAuthError) as ctx:
                 SeedAudioModel().infer(text="发现目标")
-            self.assertIn("SEED_AUDIO_API_KEY", str(ctx.exception))
-            self.assertIn("http", str(ctx.exception))
+            message = str(ctx.exception)
+            self.assertIn("SEED_AUDIO_API_KEY", message)
         finally:
-            if saved is not None:
-                os.environ["SEED_AUDIO_API_KEY"] = saved
+            if saved_key is not None:
+                os.environ["SEED_AUDIO_API_KEY"] = saved_key
 
     def test_custom_api_key_header(self):
-        client = SeedAudioModel(api_key="secret").client
+        client = SeedAudioModel(
+            api_key="secret", api_base="https://example.test"
+        ).client
         self.assertIsInstance(client, SeedAudioAPIClient)
         self.assertEqual(client.auth_header, "X-Api-Key")
         self.assertEqual(client.auth_template, "{key}")
+
+    def test_missing_api_base_fails_fast_and_actionably(self):
+        """R9.7 — API 根地址是必填项，绝不静默回退到默认值。"""
+        saved = os.environ.pop("SEED_AUDIO_API_BASE", None)
+        try:
+            with self.assertRaises(cloud_api.CloudAPIConfigError) as ctx:
+                SeedAudioModel(api_key="secret").client
+            message = str(ctx.exception)
+            self.assertIn("SEED_AUDIO_API_BASE", message)
+            self.assertIn(".env", message)
+        finally:
+            if saved is not None:
+                os.environ["SEED_AUDIO_API_BASE"] = saved
 
     def test_seed_audio_client_owns_request_headers(self):
         captured_headers = []

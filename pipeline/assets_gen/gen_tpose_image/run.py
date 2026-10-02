@@ -46,7 +46,7 @@ if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 # ──────────────────────────────────────────────────────────────────────────────
 
-from pipeline.common import paths  # noqa: E402
+from pipeline.common import config, paths  # noqa: E402
 
 #: Registered task kind — keys into paths.TASK_* tables.
 TASK_KIND = "tpose"
@@ -185,7 +185,12 @@ def main():
     gen_ckpt = args.gen_ckpt
     if gen_ckpt is None:
         env_name = "SEEDREAM_MODEL" if args.gen_backend == "seedream" else "QWEN_EDIT_CKPT"
-        gen_ckpt = os.environ.get(env_name)
+        gen_ckpt = config.get(env_name)
+
+    # 在加载任何东西之前先失败：云端生成后端需要 `.env` 里的凭证。
+    if args.gen_backend == "seedream":
+        config.require_cloud_or_exit(
+            ("ark",), context="T-pose generator backend 'seedream'")
 
     gen_model = load_gen_model(
         gen_ckpt,

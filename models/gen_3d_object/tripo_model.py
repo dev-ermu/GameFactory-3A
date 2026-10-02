@@ -4,7 +4,7 @@ models/gen_3d_object/tripo_model.py
 TripoModel — wrapper around Tripo3D's cloud 3D-generation API (image-to-3D and
 text-to-3D), producing a GLB.
 
-Reference: https://developers.tripo3d.ai/  (v3 API, base https://openapi.tripo3d.ai/v3)
+Reference: https://developers.tripo3d.ai/  (v3 API)
 
 CONTRACT DEVIATIONS (model_require.md targets local-weight models; the rules that
 replace it live in agent_skills/develop_harness/api_model_require.md):
@@ -25,11 +25,11 @@ replace it live in agent_skills/develop_harness/api_model_require.md):
   C9  (new)     → R9.9  `max_retries` + exponential backoff; retryable (5xx/429/
                         transport) and terminal (400/401/402) failures are split.
 
-Environment:
-    TRIPO_API_KEY   required at the first infer() call, not at construction.
-                    Get one at https://platform.tripo3d.ai/api-keys
-    TRIPO_API_BASE  optional override of the API root.
-    `pip install requests` is needed for the API backends only.
+环境变量（统一写在 `<repo>/.env`，见 `.env.example`）：
+    TRIPO_API_KEY        在首次 infer() 调用时必需，构造时不需要。
+    TRIPO_API_BASE       在首次 infer() 调用时必需。代码里不含端点示例，由你从
+                         服务商控制台取当前值填入。
+    `pip install requests` 仅 API 后端需要。
 
 Usage:
     from models.gen_3d_object.tripo_model import TripoModel
@@ -40,7 +40,6 @@ Usage:
 from __future__ import annotations
 
 import logging
-import os
 import time
 from pathlib import Path
 from typing import Any, Optional
@@ -50,10 +49,10 @@ from models.common.glb_utils import glb_summary
 
 logger = logging.getLogger(__name__)
 
-#: Where a human gets a key. Quoted verbatim in the fail-fast message (R1.6).
-SIGNUP_URL = "https://platform.tripo3d.ai/api-keys"
-
-DEFAULT_API_BASE = "https://openapi.tripo3d.ai/v3"
+#: `.env` 变量名。URL 一律由用户填写在该变量里，代码不保留任何 URL 字面量：
+#: 服务商会改域名，写死的地址只会变成过期信息（R9.7）。
+ENV_KEY = "TRIPO_API_KEY"
+ENV_BASE = "TRIPO_API_BASE"
 
 #: Short names accepted for `model_path`, mapped to the ids the API expects.
 #: Unknown values are passed through untouched, so a version released after this
@@ -113,7 +112,8 @@ class TripoModel:
                     (`smart_low_poly`) instead of decimating locally.
         texture / pbr / quad / texture_quality / geometry_quality:
                     Forwarded verbatim to the generation endpoint.
-        api_base:   Override the API root (defaults to `$TRIPO_API_BASE`).
+        api_base:   覆盖 API 根地址。为 None 时读取 `.env` 中的 `$TRIPO_API_BASE`；
+                    该变量缺失即报错（R9.7）。
         verbose:    Print task progress; off by default (R3.7).
     """
 
@@ -167,8 +167,9 @@ class TripoModel:
         self.quad = quad
         self.texture_quality = texture_quality
         self.geometry_quality = geometry_quality
-        self.api_base = (api_base or os.environ.get("TRIPO_API_BASE")
-                         or DEFAULT_API_BASE)
+        # [R9.7] API 根地址是必填项，且在首次调用时才解析，因此构造函数既不要求
+        # 凭证也不触网。端点由用户在 .env 里配置，代码不含任何 URL 示例。
+        self.api_base = api_base
         self.http_timeout = http_timeout
         self.verbose = verbose
         self.model_specific = model_specific
@@ -185,17 +186,19 @@ class TripoModel:
     @property
     def client(self) -> cloud_api.CloudAPIClient:
         """
-        HTTP client, created on first use.
+        HTTP 客户端，首次使用时创建。
 
-        [C6/R9.7] The API key is resolved here rather than in `__init__`, so the
-        wrapper can be imported and constructed on a machine with no credentials
-        (which is exactly what `test/harness/smoke.py` does).
+        [C6/R9.7] API Key 与 API 根地址都在这里解析，而不是在 `__init__` 中，因此
+        wrapper 可以在没有凭证的机器上被 import 和构造（`test/harness/smoke.py`
+        正是这么做的）。
         """
         if self._client is None:
             key = cloud_api.require_api_key(
-                self.api_key, "TRIPO_API_KEY", SIGNUP_URL, who="TripoModel")
+                self.api_key, ENV_KEY, who="TripoModel")
+            base = cloud_api.require_api_base(
+                self.api_base, ENV_BASE, who="TripoModel")
             self._client = cloud_api.CloudAPIClient(
-                self.api_base, key,
+                base, key,
                 timeout=self.http_timeout,
                 max_retries=self.max_retries,
             )

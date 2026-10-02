@@ -34,6 +34,25 @@ relative to the repository root. Always resolve a path from `<REPO_PATH>/` befor
 opening it. Shell commands inside fenced code blocks stay repo-root-relative:
 run them with `<REPO_PATH>` as the working directory.
 
+## Configuration
+
+Configuration belongs at the very start of a game request, before any asset work.
+
+**Configuration is one file.** Every credential, API base URL, backend choice and
+cache location comes from `<REPO_PATH>/.env` (template: `.env.example`), loaded by
+`<REPO_PATH>/global_config.py`. Each cloud provider needs both `*_API_BASE` and
+`*_API_KEY`; the Pipeline runners call `require_cloud_or_exit()` before loading
+anything, so a missing one is reported in the first second together with the exact
+`.env` lines to add.
+
+Never export a key ad hoc and never assume a default endpoint. Confirm the
+providers the plan needs are filled in, and that the slots are switched off their
+local defaults (`AAAGF_3D_BACKEND`, `TPOSE_GEN_BACKEND`,
+`AAAGF_DIALOGUE_BACKEND`, `AAAGF_SOUND_EFFECT_BACKEND`,
+`GAMEFACTORY3A_VIDEO_BACKEND`). A local route needs a CUDA GPU plus tens of GB of
+weights and disk; if the machine does not have that, plan the cloud route (or a
+licensed/downloaded asset) instead of starting.
+
 ## End-to-end game-generation workflow
 
 Follow this order for every game request. Do not jump directly to code or asset
