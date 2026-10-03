@@ -1,5 +1,4 @@
 """Rigging regressions and an OBJ test CLI."""
-from __future__ import annotations
 
 from collections import Counter
 from contextlib import suppress

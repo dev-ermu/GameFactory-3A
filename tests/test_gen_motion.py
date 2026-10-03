@@ -1,5 +1,4 @@
 """Tests for gen_motion and its Puppeteer motion-retarget function."""
-from __future__ import annotations
 
 import importlib
 import json

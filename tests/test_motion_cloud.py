@@ -30,7 +30,6 @@ Usage:
     TOKENHUB_API_KEY=sk-... python tests/test_motion_cloud.py --real \
         --mesh-url https://example.com/tpose_body_lo.glb --out-format fbx
 """
-from __future__ import annotations
 
 import argparse
 import os

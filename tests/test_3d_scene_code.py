@@ -21,7 +21,6 @@ Demo helpers and viewer assets live in test/terrain_code_test. --export and
 --video accepts --output and --frames. Rendering requires playwright, Pillow,
 ffmpeg for videos, and Edge on Windows or Playwright Chromium elsewhere.
 """
-from __future__ import annotations
 
 import json
 import math

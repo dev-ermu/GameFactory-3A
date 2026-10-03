@@ -1,5 +1,4 @@
 """Resolve project-specific Unreal assets for the VFX integration tests."""
-from __future__ import annotations
 
 import os
 

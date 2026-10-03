@@ -33,7 +33,6 @@ Usage:
         --image path/to/character.png --task-id my_test \
         --description "A cheerful anime character with a red hat."
 """
-from __future__ import annotations
 
 import argparse
 import json
@@ -184,8 +183,13 @@ def main():
 
     gen_ckpt = args.gen_ckpt
     if gen_ckpt is None:
-        env_name = "SEEDREAM_MODEL" if args.gen_backend == "seedream" else "QWEN_EDIT_CKPT"
-        gen_ckpt = config.get(env_name)
+        # 只有云端 seedream 后端的模型 id 可由 `.env` 覆盖；本地 qwen_edit 后端
+        # 固定用模块常量 `DEFAULT_GEN_CKPT`（本场景不接受环境变量传入权重路径）。
+        gen_ckpt = (
+            config.settings.seedream_model
+            if args.gen_backend == "seedream"
+            else None
+        )
 
     # 在加载任何东西之前先失败：云端生成后端需要 `.env` 里的凭证。
     if args.gen_backend == "seedream":

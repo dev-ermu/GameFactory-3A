@@ -1,5 +1,4 @@
 """Open the approved A3Game VFX assets for interactive UE review."""
-from __future__ import annotations
 
 import unreal
 

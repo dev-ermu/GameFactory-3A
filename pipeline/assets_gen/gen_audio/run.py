@@ -17,7 +17,6 @@ Examples:
         --audio-type dialogue --text "发现目标" \
         --cache-dir test_data/outputs/_api_cache
 """
-from __future__ import annotations
 
 import argparse
 import json
@@ -212,7 +211,7 @@ def main() -> None:
     )
     parser.add_argument(
         "--seed-audio-api-base",
-        default=config.get("SEED_AUDIO_API_BASE"),
+        default=config.settings.seed_audio_api_base,
         help="Override the Seed Audio API root configured in .env.",
     )
     parser.add_argument(

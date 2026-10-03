@@ -1,7 +1,6 @@
-"""Run from the repository root: python tests/test_3d_object_compose.py.
-
-Build a rigid body + armour + weapon preview. Edit CONFIG below to use your
-own assets. This example does not test skinned clothing or cloth simulation.
+"""
+构建rigid body，armour，weapon预览（刚体，护甲，武器）。
+编辑下面的CONFIG以使用您自己的资产。此示例不测试蒙皮服装或布料模拟。
 """
 from pathlib import Path
 import json

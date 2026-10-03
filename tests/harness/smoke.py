@@ -28,7 +28,6 @@ Usage:
     python tests/harness/smoke.py --kind 3d_object --backend tripo   # API backend
     python tests/harness/smoke.py --kind tpose --backend seedream    # API backend
 """
-from __future__ import annotations
 
 import argparse
 import json

@@ -3,7 +3,6 @@
 Requires playwright, Pillow and ffmpeg. On Windows the installed Edge browser
 is used; elsewhere run `python -m playwright install chromium` once.
 """
-from __future__ import annotations
 
 import argparse
 from functools import partial

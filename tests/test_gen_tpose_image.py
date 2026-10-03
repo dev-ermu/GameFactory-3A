@@ -6,11 +6,9 @@ pipeline on the tasks in tpose_gen_collect.jsonl, asserts that transparent
 T-pose PNG files are created.
 
 Run from repo root:
-    QWEN_EDIT_CKPT=/path/to/Qwen-Image-Edit-2511 \
     RMBG_CKPT=/path/to/RMBG-1.4 \
     python tests/test_tpose_gen.py
 """
-from __future__ import annotations
 
 import os
 import sys
@@ -22,8 +20,9 @@ _REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(_REPO_ROOT))
 # ─────────────────────────────────────────────────────────────────────────────
 
-# Local paths take priority; if empty, models are downloaded from HuggingFace.
-GEN_CKPT  = os.environ.get("QWEN_EDIT_CKPT", "Qwen/Qwen-Image-Edit-2511")
+# The generator checkpoint is fixed (the pipeline's DEFAULT_GEN_CKPT); only the mask
+# stage can be redirected at a local copy of the weights.
+GEN_CKPT  = None
 MASK_CKPT = os.environ.get("RMBG_CKPT",       "briaai/RMBG-1.4")
 MASK_TYPE = os.environ.get("MASK_TYPE",       "rmbg")   # "rmbg" or "depth"
 TASKS = _REPO_ROOT / "test_data" / "test_samples" / "tpose_gen_collect.jsonl"

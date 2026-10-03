@@ -1,7 +1,5 @@
 """Contract tests for the non-interactive Godot installer."""
 
-from __future__ import annotations
-
 import hashlib
 import importlib.util
 import json

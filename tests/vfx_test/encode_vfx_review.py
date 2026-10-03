@@ -1,5 +1,4 @@
 """Encode UE MRQ PNG sequences into review MP4s and contact sheets."""
-from __future__ import annotations
 
 import argparse
 import json

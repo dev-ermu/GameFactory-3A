@@ -19,7 +19,6 @@ Run from repo root:
     python tests/test_3D_scene_gen.py
     AAAGF_RUN_GPU_TESTS=1 python tests/test_3D_scene_gen.py
 """
-from __future__ import annotations
 
 import os
 import sys

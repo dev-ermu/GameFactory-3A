@@ -9,12 +9,11 @@ Run:
 
     python tests/test_3d_object_spec.py
 
-Companion to `test_3d_object_gen.py`, which covers the generated route. No
-dependencies, no network, no GPU, no model — which is the point. This is the
-one 3D asset path that can be regression-tested at all: a generated mesh is
-one sample of a model's behaviour and cannot be varied, so `test_3d_object_gen`
-can only check that a file appeared. A spec is data, so the mesh that follows
-from it is deterministic and every gate has a case that must fail.
+Companion to the generated route. No dependencies, no network, no GPU, no model —
+which is the point. This is the one 3D asset path that can be regression-tested at
+all: a generated mesh is one sample of a model's behaviour and cannot be varied, so
+a generation test can only check that a file appeared. A spec is data, so the mesh
+that follows from it is deterministic and every gate has a case that must fail.
 
 Two classes of check here, and the second is the one that matters.
 
@@ -32,8 +31,6 @@ Two classes of check here, and the second is the one that matters.
 
 [1] https://github.com/img2threejs/img2threejs
 """
-
-from __future__ import annotations
 
 import json
 import math

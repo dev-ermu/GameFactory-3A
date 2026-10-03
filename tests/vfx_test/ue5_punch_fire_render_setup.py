@@ -1,5 +1,4 @@
 """Create an isolated MRQ preset for the A3Game punch/fire review."""
-from __future__ import annotations
 
 import os
 

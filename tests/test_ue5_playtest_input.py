@@ -1,5 +1,4 @@
 """Regression tests for the UE5 Windows playtest input phases."""
-from __future__ import annotations
 
 import ctypes
 import unittest

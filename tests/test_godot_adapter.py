@@ -1,7 +1,5 @@
 """CPU-only contract tests for the Godot 4 adapter."""
 
-from __future__ import annotations
-
 import base64
 import hashlib
 import io
@@ -377,15 +375,36 @@ class GodotAdapterTests(unittest.TestCase):
                 "A3GAME_GODOT_ARTIFACT_REGISTRY": "",
                 "A3GAME_DATA_ROOT": "",
                 "A3GAME_ARTIFACT_REGISTRY": "",
+                # 本机 `.env` / 用户级环境变量里的真实 Godot 与项目路径不得漏进
+                # 测试：置空即可（`_first_environment_value` 把空串视为未设置），
+                # 否则本机配置会覆盖这里构造的临时项目。
+                "A3GAME_GODOT_EXECUTABLE": "",
+                "A3GAME_GODOT": "",
+                "AAAGF_GODOT": "",
+                "A3GAME_GODOT_PROJECT": "",
+                "AAAGF_GODOT_PROJECT": "",
             },
             clear=False,
         )
         self.environment_patch.start()
         self.addCleanup(self.environment_patch.stop)
 
-        self.fake_godot = self.root / "godot4"
-        self.fake_godot.write_text(FAKE_GODOT, encoding="utf-8")
-        self.fake_godot.chmod(0o755)
+        # 假 Godot 必须在**当前平台可执行**。POSIX 靠 shebang + chmod 启动；
+        # Windows 上 shebang 无效、`chmod` 也只改只读属性，因此必须包一层 `.cmd`
+        # 转发给当前解释器（`subprocess` 在 `shell=False` 下即可执行 `.cmd`）。
+        # 否则版本探测直接以 `[WinError 193] %1 不是有效的 Win32 应用程序` 失败。
+        if os.name == "nt":
+            fake_script = self.root / "godot4.py"
+            fake_script.write_text(FAKE_GODOT, encoding="utf-8")
+            self.fake_godot = self.root / "godot4.cmd"
+            self.fake_godot.write_text(
+                f'@echo off\r\n"{sys.executable}" "{fake_script}" %*\r\n',
+                encoding="utf-8",
+            )
+        else:
+            self.fake_godot = self.root / "godot4"
+            self.fake_godot.write_text(FAKE_GODOT, encoding="utf-8")
+            self.fake_godot.chmod(0o755)
         self.project = self.root / "GodotProject"
         self.client = GodotClient(
             project_path=self.project,

@@ -36,7 +36,6 @@ MiniMax local checkpoint:
 
 Set ``CG_VIDEO_TEST_TASK_ID`` to reproduce only one task from the JSONL.
 """
-from __future__ import annotations
 
 import json
 import os

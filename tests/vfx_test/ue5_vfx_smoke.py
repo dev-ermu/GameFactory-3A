@@ -1,5 +1,4 @@
 """Unreal Editor integration smoke test for the reusable VFX functions."""
-from __future__ import annotations
 
 import sys
 from pathlib import Path

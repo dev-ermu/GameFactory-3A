@@ -1,5 +1,4 @@
 """Tighten framing for the six UE VFX review Level Sequences."""
-from __future__ import annotations
 
 import unreal
 

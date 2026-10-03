@@ -11,7 +11,6 @@ Run from repo root:
     WOOSH_TEXT_CONDITIONER_CKPT=/path/to/TextConditionerA \
     python tests/test_audio_gen.py
 """
-from __future__ import annotations
 
 import os
 import sys

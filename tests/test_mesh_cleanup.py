@@ -19,8 +19,6 @@ the review sheet — but an over-eager one, which quietly eats a crate's
 bottom or a plinth and shows up much later as a hole in the shadow.
 """
 
-from __future__ import annotations
-
 import shutil
 import sys
 import tempfile

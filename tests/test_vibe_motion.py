@@ -1,5 +1,4 @@
 """Position-first motion regressions using JSON inputs."""
-from __future__ import annotations
 
 from copy import deepcopy
 import json

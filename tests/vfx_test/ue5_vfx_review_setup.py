@@ -1,5 +1,4 @@
 """Create deterministic MRQ configs for fire/smoke visual review renders."""
-from __future__ import annotations
 
 import os
 

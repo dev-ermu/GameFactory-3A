@@ -1,5 +1,4 @@
 """Report CineCamera spawnable templates used by the UE VFX review sequences."""
-from __future__ import annotations
 
 import unreal
 

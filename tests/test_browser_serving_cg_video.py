@@ -1,7 +1,5 @@
 """Contract checks for Browser Serving CG-video job orchestration."""
 
-from __future__ import annotations
-
 import contextlib
 import json
 import os

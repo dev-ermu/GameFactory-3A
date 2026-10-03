@@ -13,7 +13,6 @@ Usage:
 
 每当你添加一个模型slot时，都需要添加一个stub。`smoke.py`会按照类型查找它们。
 """
-from __future__ import annotations
 
 import json
 import shutil

@@ -9,11 +9,7 @@ Run from repo root:
     SEEDREAM_MODEL=doubao-seedream-5-0-260128 \
     RMBG_CKPT=briaai/RMBG-1.4 \
     python -m unittest tests.test_api_gen_tpose_image -v
-
-Identical Seedream requests reuse the response cache unless
-``AAAGF_SEEDREAM_DISABLE_CACHE=1`` is set.
 """
-from __future__ import annotations
 
 import json
 import os
