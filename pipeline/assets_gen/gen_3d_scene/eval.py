@@ -22,7 +22,6 @@ Usage, with EVAL=pipeline/assets_gen/gen_3d_scene/eval.py:
     python $EVAL --game gameA_cyberpunk_shooter --run-id 20260806_120000
     python $EVAL --game gameA_cyberpunk_shooter --run-id baseline --compare-to tuned
 """
-from __future__ import annotations
 
 import argparse
 import ast

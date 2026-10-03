@@ -36,7 +36,6 @@ Usage:
     from operators.gen_3d_scene.funcs.points_to_mesh import points_to_mesh
     mesh = points_to_mesh(points, colors, valid=mask, focal=intrinsics[0, 0])
 """
-from __future__ import annotations
 
 from typing import Optional
 

@@ -1,5 +1,4 @@
 """Runtime configuration helpers used by the Qwen3-TTS model wrapper."""
-from __future__ import annotations
 
 from typing import Any, Optional
 

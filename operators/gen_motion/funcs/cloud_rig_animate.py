@@ -20,7 +20,6 @@ API constraints these helpers encode:
     `spec="tripo"`; mixamo output is for DCC import only.
   * Motion comes from a fixed preset library, not from a text description.
 """
-from __future__ import annotations
 
 from typing import Any, Optional
 

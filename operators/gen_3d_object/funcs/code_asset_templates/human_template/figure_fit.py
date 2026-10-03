@@ -25,7 +25,6 @@ which is the point: the same code measures any figure a generator returns, and
 `fit_report` states what it found so a wrong reading is visible rather than
 silently wearing armour in the wrong place.
 """
-from __future__ import annotations
 
 from typing import Any, Sequence
 

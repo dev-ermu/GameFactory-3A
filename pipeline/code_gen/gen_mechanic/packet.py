@@ -1,7 +1,5 @@
 """Prepare deterministic outer-Agent Mechanic task packets."""
 
-from __future__ import annotations
-
 from collections.abc import Mapping
 from pathlib import Path
 from typing import Any

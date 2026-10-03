@@ -1,5 +1,4 @@
 'Export a fitted, skinned character and local quaternion animation as GLB.'
-from __future__ import annotations
 
 import json
 import struct

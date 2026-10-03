@@ -8,7 +8,6 @@ three local checkpoint directories: Woosh-DFlow, Woosh-AE, and
 TextConditionerA. Their paths are passed independently so loading never depends
 on the process working directory. The public weights are licensed CC-BY-NC.
 """
-from __future__ import annotations
 
 import gc
 from pathlib import Path

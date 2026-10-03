@@ -1,5 +1,4 @@
 """Mesh projections and sequential visual estimation; all intermediates belong to the run output."""
-from __future__ import annotations
 
 from copy import deepcopy
 from hashlib import sha256

@@ -19,8 +19,6 @@ say "this is a surface, generate it". Collapsing the two would report a missing
 strategy as a considered judgement.
 """
 
-from __future__ import annotations
-
 from . import routing
 
 __all__ = ["SUBJECTS", "claim"]

@@ -45,8 +45,6 @@ cache is pointed at ``test_data/.appearance_cache``, so a re-run with an
 unchanged prompt is free.
 """
 
-from __future__ import annotations
-
 import concurrent.futures
 import io
 import json

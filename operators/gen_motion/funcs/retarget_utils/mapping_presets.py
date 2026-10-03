@@ -7,7 +7,6 @@ per-mesh, so pass ``mapping_path`` or let ``mapping_auto`` derive one.
 
 CLI: ``--list`` / ``--identify motion.bvh``
 """
-from __future__ import annotations
 
 import argparse
 import json

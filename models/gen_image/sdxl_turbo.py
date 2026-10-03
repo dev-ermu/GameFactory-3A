@@ -28,7 +28,6 @@ Usage:
     model = SDXLTurboModel(model_path="path/to/sdxl-turbo")
     image = model.generate(prompt="a wooden treasure chest ...", seed=42)
 """
-from __future__ import annotations
 
 import gc
 

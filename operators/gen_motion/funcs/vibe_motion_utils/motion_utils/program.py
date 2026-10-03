@@ -1,5 +1,4 @@
 """Validate complete trajectory programs without supplying motion or solver defaults."""
-from __future__ import annotations
 
 from copy import deepcopy
 from dataclasses import dataclass

@@ -1,7 +1,5 @@
 """Compatibility entrypoint for the pinned MoMask inference script."""
 
-from __future__ import annotations
-
 import runpy
 import sys
 from collections.abc import Iterable

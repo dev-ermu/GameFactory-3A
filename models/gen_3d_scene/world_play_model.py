@@ -43,7 +43,6 @@ has to be the assembled directory from step 3; see `check_model_path`:
     )
     frames = model.infer(image, prompt="a misty pine forest", pose="w-8, right-4")
 """
-from __future__ import annotations
 
 import gc
 import os

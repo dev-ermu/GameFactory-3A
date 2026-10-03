@@ -9,7 +9,6 @@ For each mapped bone and frame:
 The target rotation is then converted back through its posed parent into a
 local pose quaternion.  This avoids depending on matching local bone roll.
 """
-from __future__ import annotations
 
 import argparse
 import json

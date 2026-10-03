@@ -1,7 +1,5 @@
 """Prepare or finalize one outer-Agent Generate-UI task."""
 
-from __future__ import annotations
-
 import argparse
 import json
 import re

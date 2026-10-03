@@ -1,5 +1,4 @@
 """Text-to-motion step: thin pass-through to an injected model."""
-from __future__ import annotations
 
 from typing import Any
 

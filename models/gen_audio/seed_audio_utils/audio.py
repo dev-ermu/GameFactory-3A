@@ -1,5 +1,4 @@
 """WAV conversion helpers used at the Seed Audio HTTP boundary."""
-from __future__ import annotations
 
 import base64
 import io

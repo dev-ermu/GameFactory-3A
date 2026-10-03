@@ -9,7 +9,6 @@ and require a measurable pose change (``pose_animated``).
 
 Use ``--allow-no-mesh`` for armature-only exports.
 """
-from __future__ import annotations
 
 import argparse
 import json

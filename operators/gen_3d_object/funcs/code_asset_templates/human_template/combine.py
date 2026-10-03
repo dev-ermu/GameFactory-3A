@@ -2,7 +2,6 @@
 
 Sockets are metadata; this route does not bind meshes to individual bones.
 """
-from __future__ import annotations
 
 import json
 import math

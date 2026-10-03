@@ -14,8 +14,6 @@ Interface parity with `QwenEditModel` (R6):
                   示例给出，绝不会被静默采用——它并非在所有网络下都可达。
 """
 
-from __future__ import annotations
-
 import io
 import logging
 import time

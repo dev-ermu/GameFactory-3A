@@ -1,7 +1,5 @@
 """UI artifact validation and workspace finalization."""
 
-from __future__ import annotations
-
 import re
 from collections.abc import Mapping, Sequence
 from pathlib import Path, PurePosixPath

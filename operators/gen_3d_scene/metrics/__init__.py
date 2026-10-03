@@ -20,7 +20,6 @@ Usage:
     from operators.gen_3d_scene.metrics import evaluate
     scores = evaluate(result, task)
 """
-from __future__ import annotations
 
 from pathlib import Path
 from typing import Any

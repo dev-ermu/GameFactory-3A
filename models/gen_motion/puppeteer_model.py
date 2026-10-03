@@ -10,7 +10,6 @@ and use torchrun.  The public 3AGameFactory interface remains memory based.
 Puppeteer rigging requires CUDA.  Constructing the wrapper on CPU is supported
 for harness tests, but ``infer()`` fails fast with an actionable error.
 """
-from __future__ import annotations
 
 import os
 import shutil

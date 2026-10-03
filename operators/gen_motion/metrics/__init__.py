@@ -1,5 +1,4 @@
 """Read-only structural metrics for rig, motion and retarget artifacts."""
-from __future__ import annotations
 
 import json
 import re

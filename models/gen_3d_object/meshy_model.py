@@ -42,7 +42,6 @@ Usage:
     model = MeshyModel(model_path="meshy-6", output_format="fbx")
     path = model.infer_and_save(image, output_path="out/model.fbx", seed=42)
 """
-from __future__ import annotations
 
 import logging
 import time

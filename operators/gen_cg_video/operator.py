@@ -13,7 +13,6 @@ Output layout — two modes, chosen by whether ``output_dir`` is supplied:
   ``test_data/outputs/<game>/<run>/assets/cg_video/<task>/video.mp4``
 * legacy flat mode: ``<output_dir>/<task_id>.mp4``
 """
-from __future__ import annotations
 
 import time
 from pathlib import Path

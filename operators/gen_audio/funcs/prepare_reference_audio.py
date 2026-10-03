@@ -1,5 +1,4 @@
 """Reference-audio loading step for voice-clone dialogue tasks."""
-from __future__ import annotations
 
 import wave
 from pathlib import Path

@@ -1,5 +1,4 @@
 """Design root, contact, child-joint and end-effector trajectories before solving IK."""
-from __future__ import annotations
 
 import numpy as np
 from scipy.spatial.transform import Rotation

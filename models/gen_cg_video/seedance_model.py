@@ -21,8 +21,6 @@ CONTRACT DEVIATIONS (model_require.md targets local-weight models;
                   并非在所有网络下都可达。
 """
 
-from __future__ import annotations
-
 import logging
 import time
 from pathlib import Path

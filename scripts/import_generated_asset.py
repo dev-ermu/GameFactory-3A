@@ -56,8 +56,6 @@ Environment (so the flags can be omitted):
     AAAGF_BLENDER         path to blender(.exe), or a python that can import bpy
 """
 
-from __future__ import annotations
-
 import argparse
 import glob
 import hashlib

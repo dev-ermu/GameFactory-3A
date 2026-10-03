@@ -4,7 +4,6 @@ Host-side retarget driver: validate paths, then run bpy modules as subprocesses.
 Success is judged by output files (existence, size, mtime), not exit code —
 bpy can crash on shutdown after a valid FBX is already written.
 """
-from __future__ import annotations
 
 import os
 import shutil

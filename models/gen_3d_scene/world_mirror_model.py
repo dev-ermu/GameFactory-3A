@@ -18,7 +18,6 @@ Usage:
     prediction = model.infer([frame_0, frame_1, frame_2])   # list[PIL.Image]
     prediction["points"].shape                              # (3, H, W, 3)
 """
-from __future__ import annotations
 
 import gc
 import json

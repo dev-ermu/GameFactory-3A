@@ -45,7 +45,6 @@ Usage:
     from models.common.glb_writer import write_spec_glb
     write_spec_glb(spec, "model.glb")     # spec: see code_asset.validate_spec
 """
-from __future__ import annotations
 
 import json
 import math

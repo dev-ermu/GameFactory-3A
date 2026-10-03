@@ -19,7 +19,6 @@ piece has something to attach to *before* the resolver runs, so a kit written
 against a body that does not provide `forearm-l` is refused by name rather
 than as a resolution failure deep in a graph walk.
 """
-from __future__ import annotations
 
 from typing import Any, Iterable, Sequence
 

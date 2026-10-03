@@ -17,7 +17,6 @@ single reference image.
 Both are resolved lazily: importing this package must stay cheap and must not
 require the vendored network code, the HY-WorldPlay checkout, or `torch`.
 """
-from __future__ import annotations
 
 from typing import Any
 

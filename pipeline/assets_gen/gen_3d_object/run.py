@@ -46,7 +46,6 @@ Usage:
     python pipeline/assets_gen/gen_3d_object/run.py \
         --image path/to/image.png --task-id my_test
 """
-from __future__ import annotations
 
 import argparse
 import json

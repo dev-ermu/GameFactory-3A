@@ -1,5 +1,4 @@
 """Isolated Blender worker for wearable_fit. Coordinates here are Z-up metres."""
-from __future__ import annotations
 
 import json
 import heapq

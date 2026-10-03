@@ -1,5 +1,4 @@
 """Distance-kernel skin weights with anchored topology diffusion."""
-from __future__ import annotations
 import numpy as np
 from .types import RigResult
 from .mesh import CreatureMesh, point_to_segment_distance

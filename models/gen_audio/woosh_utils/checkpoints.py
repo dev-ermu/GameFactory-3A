@@ -1,5 +1,4 @@
 """Download and install the Woosh-DFlow checkpoints from the official release."""
-from __future__ import annotations
 
 import os
 import shutil

@@ -1,7 +1,5 @@
 """Prepare or finalize one outer-Agent Generate-Mechanic task."""
 
-from __future__ import annotations
-
 import argparse
 import json
 import sys

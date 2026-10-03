@@ -43,7 +43,6 @@ Environment (all in `<repo>/.env`; see `.env.example`):
                            every call fails.
     TOKENHUB_API_BASE    — 首次 infer() 时必需。代码不含端点示例，绝不静默采用。
 """
-from __future__ import annotations
 
 import hashlib
 import logging

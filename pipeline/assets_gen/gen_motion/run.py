@@ -1,5 +1,4 @@
 """Run unified rigging, text-to-motion and retarget tasks."""
-from __future__ import annotations
 
 import argparse
 import json

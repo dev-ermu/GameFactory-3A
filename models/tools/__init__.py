@@ -16,7 +16,6 @@ and pulls in only the backend you actually name. Eagerly re-exporting them would
 drag `transformers` and `torchvision` into every caller, including ones that only
 want a small ONNX model.
 """
-from __future__ import annotations
 
 from typing import Any
 

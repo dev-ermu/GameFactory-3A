@@ -1,5 +1,4 @@
 """Calibrated multiview reconstruction followed by bounded landmark-guided fitting."""
-from __future__ import annotations
 import numpy as np
 from .types import RigResult
 from .templates import resolve_rig_config, require_config, finite_number, integer

@@ -7,7 +7,6 @@ The upstream repository owns top-level packages named ``models`` and ``utils``
 and assumes its own working directory.  A subprocess prevents those namespaces
 from colliding with 3AGameFactory while this wrapper exposes an in-memory API.
 """
-from __future__ import annotations
 
 import os
 import shutil

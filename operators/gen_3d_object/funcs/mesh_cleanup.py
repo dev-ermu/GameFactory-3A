@@ -42,8 +42,6 @@ measured from whatever stands above the floor band, so a wide subject
 keeps its wide base and a narrow one does not acquire confetti.
 """
 
-from __future__ import annotations
-
 from pathlib import Path
 from typing import Any
 

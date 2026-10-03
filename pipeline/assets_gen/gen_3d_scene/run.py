@@ -43,7 +43,6 @@ Usage, with RUN=pipeline/assets_gen/gen_3d_scene/run.py:
     python $RUN --no-dedup                        # upstream's stacked sheets
     python $RUN --out-dir outputs/3d_scene        # legacy flat output
 """
-from __future__ import annotations
 
 import argparse
 import json

@@ -10,8 +10,6 @@ uses an optional, isolated Blender worker for garment fitting and skinning.
 Geometry checks are adapted from https://github.com/img2threejs/img2threejs.
 """
 
-from __future__ import annotations
-
 import re
 from pathlib import Path
 from typing import Any, Callable, Literal, Sequence

@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 """Install a pinned official Godot 4 editor build without third-party packages."""
 
-from __future__ import annotations
-
 import argparse
 import hashlib
 import json

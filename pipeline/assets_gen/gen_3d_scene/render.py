@@ -20,7 +20,6 @@ Usage:
     python $RENDER scene.glb scene.png
     python $RENDER scene.glb wide.png --angles 0 30 60 90 --width 960
 """
-from __future__ import annotations
 
 import argparse
 import sys

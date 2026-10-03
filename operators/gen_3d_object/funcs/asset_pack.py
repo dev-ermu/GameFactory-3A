@@ -21,8 +21,6 @@ Mixamo-derived characters on licence; Lantern (9.2 MB) and AntiqueCamera
 (17 MB) on cost, being PBR showcase pieces with 4K atlases.
 """
 
-from __future__ import annotations
-
 import urllib.request
 from pathlib import Path
 from typing import Any, Iterable

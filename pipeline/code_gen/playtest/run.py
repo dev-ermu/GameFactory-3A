@@ -10,8 +10,6 @@ libraries Chromium is missing from this image. `--recorder-root` supplies
 all three from one conventional layout.
 """
 
-from __future__ import annotations
-
 import argparse
 import json
 import sys

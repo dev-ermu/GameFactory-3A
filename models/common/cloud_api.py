@@ -29,7 +29,6 @@ Usage:
     client = cloud_api.CloudAPIClient(base, key)
     data = client.request("POST", "/generation/text-to-model", json={...})
 """
-from __future__ import annotations
 
 import hashlib
 import json

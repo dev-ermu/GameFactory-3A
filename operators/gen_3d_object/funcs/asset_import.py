@@ -17,8 +17,6 @@ rules that are easy to get wrong:
    unit box; ``scale_hint_metres`` is how a prop ends up prop-sized.
 """
 
-from __future__ import annotations
-
 import shutil
 from pathlib import Path
 from typing import Any, Mapping

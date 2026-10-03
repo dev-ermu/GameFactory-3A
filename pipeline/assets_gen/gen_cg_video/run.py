@@ -4,7 +4,6 @@ pipeline/assets_gen/gen_cg_video/run.py
 CG video generation runner. Seedance and the hybrid MiniMax H3 backend fill the
 same model slot without changing the operator or task schema.
 """
-from __future__ import annotations
 
 import argparse
 import json

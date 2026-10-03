@@ -59,8 +59,6 @@ A generated body, measured and dressed — the order reverses:
     ])
 """
 
-from __future__ import annotations
-
 import re
 
 from .. import routing

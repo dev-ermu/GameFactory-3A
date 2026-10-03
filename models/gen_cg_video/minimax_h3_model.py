@@ -29,8 +29,6 @@ Usage:
     data = model.infer(request)  # encoded MP4 bytes
 """
 
-from __future__ import annotations
-
 import gc
 import io
 import logging

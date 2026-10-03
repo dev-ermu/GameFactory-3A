@@ -3,7 +3,6 @@
 Classification uses triangle centroids in normalized Y-up coordinates.
 Triangles are retained whole, with their UVs and materials.
 """
-from __future__ import annotations
 
 import math
 from typing import Any, Callable, Sequence

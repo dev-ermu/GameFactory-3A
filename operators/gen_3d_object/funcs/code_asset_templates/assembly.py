@@ -19,8 +19,6 @@ materials, the part list. This assembles the *parts*, by filling in the
 never needs this; a rifle uses both.
 """
 
-from __future__ import annotations
-
 from typing import Any, Iterable, Sequence
 
 #: Axis each part is chained along when a link does not say. Z, because

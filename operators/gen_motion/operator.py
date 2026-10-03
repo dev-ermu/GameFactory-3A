@@ -1,5 +1,4 @@
 """Unified operator for rigging, text-to-motion and motion retargeting."""
-from __future__ import annotations
 
 import logging
 import time

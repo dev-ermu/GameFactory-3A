@@ -11,7 +11,6 @@ Usage:
     glb = model.infer(image)        # PIL.Image → trimesh.Scene (GLB)
     glb.export("output.glb")
 """
-from __future__ import annotations
 
 import os
 import sys

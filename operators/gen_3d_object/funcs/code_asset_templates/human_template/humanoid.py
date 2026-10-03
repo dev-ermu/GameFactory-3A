@@ -27,7 +27,6 @@ Sizes are in metres for a 1.72 m figure. Anything can be overridden by the
 caller; `LANDMARKS` exists so a caller who scales the figure does not have to
 rediscover where the knee is.
 """
-from __future__ import annotations
 
 from typing import Any
 

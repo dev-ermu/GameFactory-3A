@@ -47,8 +47,6 @@ Usage::
     scene_assets.fetch_scene_assets(games=["game_archer_explorer"])
 """
 
-from __future__ import annotations
-
 import hashlib
 import json
 import shutil

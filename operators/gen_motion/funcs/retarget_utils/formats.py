@@ -1,5 +1,4 @@
 """Shared format constants for host-side validation (no bpy import)."""
-from __future__ import annotations
 
 # Mesh formats both Blender and trimesh can read with matching vertex order.
 SUPPORTED_MESH_SUFFIXES = (".glb", ".gltf", ".obj", ".ply", ".stl", ".fbx")

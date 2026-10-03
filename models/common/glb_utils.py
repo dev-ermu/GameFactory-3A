@@ -21,7 +21,6 @@ Usage:
     mesh = read_glb_mesh(open("part.glb", "rb").read())
     print(len(mesh["positions"]), mesh["low"], mesh["high"])
 """
-from __future__ import annotations
 
 import json
 import math

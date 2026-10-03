@@ -44,7 +44,6 @@ Usage:
     ground.terrain      # a `Terrain` for `write_scene`
     ground.marks        # {"water": (-3.5, 18.5), "surface": -8.4, ...}
 """
-from __future__ import annotations
 
 import math
 from dataclasses import dataclass, field

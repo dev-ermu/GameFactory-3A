@@ -1,7 +1,5 @@
 """Download only the Puppeteer and HumanML3D weights used by 3AGameFactory."""
 
-from __future__ import annotations
-
 import argparse
 import os
 import zipfile

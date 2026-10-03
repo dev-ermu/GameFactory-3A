@@ -1,5 +1,4 @@
 """Small dependency-free resampling step used before WAV export."""
-from __future__ import annotations
 
 
 def resample_audio(waveform, source_rate: int, target_rate: int):

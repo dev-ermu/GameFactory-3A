@@ -2,7 +2,6 @@
 
 Adapted from the Puppeteer ``export.py`` and ``export_glb.py`` utilities.
 """
-from __future__ import annotations
 
 from collections import defaultdict
 from pathlib import Path

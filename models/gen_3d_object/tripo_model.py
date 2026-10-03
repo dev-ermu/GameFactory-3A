@@ -37,7 +37,6 @@ Usage:
     path = model.infer_and_save(image, output_path="out/model.glb", seed=42)
     print(model.last_call_info)   # task_id, elapsed, credits, triangles
 """
-from __future__ import annotations
 
 import logging
 import time

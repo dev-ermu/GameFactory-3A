@@ -8,8 +8,6 @@ Importing this package registers the built-in strategies. ``fit_wearable``
 loads its optional Blender bridge only when called.
 """
 
-from __future__ import annotations
-
 from . import assembly, compose, human_template, rigid_template, routing, surface
 
 __all__ = [

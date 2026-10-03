@@ -32,7 +32,6 @@ Usage:
     ground = landforms.basin(size=70.0)         # or drive the two by hand
     terrain, props = foreground.basin(ground, hamlets=3)
 """
-from __future__ import annotations
 
 from typing import Any
 

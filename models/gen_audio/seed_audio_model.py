@@ -15,7 +15,6 @@ and Woosh, so artifact writing remains in ``GenAudioOperator``.
     SEED_AUDIO_MODEL         可选，模型 id（默认 seed-audio-1.0）
     SEED_AUDIO_SPEAKER_ID    可选，服务商侧的音色资源 id
 """
-from __future__ import annotations
 
 import base64
 import binascii

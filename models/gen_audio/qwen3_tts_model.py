@@ -7,7 +7,6 @@ Install the optional backend with ``pip install -U qwen-tts``.  The wrapper
 supports CustomVoice, VoiceDesign, and Base/voice-clone checkpoints and returns
 audio in memory; artifact paths are owned by the audio operator.
 """
-from __future__ import annotations
 
 import gc
 from typing import Any, Optional

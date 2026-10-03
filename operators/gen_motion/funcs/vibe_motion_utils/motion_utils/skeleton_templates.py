@@ -1,5 +1,4 @@
 """Explicit rest skeletons and animation data; no built-in skeletons or motion presets."""
-from __future__ import annotations
 
 from dataclasses import dataclass
 import numpy as np

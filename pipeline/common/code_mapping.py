@@ -1,7 +1,5 @@
 """Task-neutral helpers for outer-Agent code-generation pipelines."""
 
-from __future__ import annotations
-
 import re
 import importlib
 from collections.abc import Mapping, Sequence

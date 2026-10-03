@@ -1,5 +1,4 @@
 """Sample position curves using named events and interpolation modes."""
-from __future__ import annotations
 
 from dataclasses import dataclass
 from numbers import Real

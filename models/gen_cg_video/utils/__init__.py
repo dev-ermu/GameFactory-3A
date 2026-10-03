@@ -1,7 +1,5 @@
 """Shared request types for cinematic / CG video generation models."""
 
-from __future__ import annotations
-
 from dataclasses import dataclass
 from enum import Enum
 

@@ -1,5 +1,4 @@
 """Evaluate existing motion artifacts without invoking models or Blender."""
-from __future__ import annotations
 
 import argparse
 import json

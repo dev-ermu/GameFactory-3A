@@ -16,8 +16,6 @@ wants them, so no part tables are shipped here. What is shipped is the joining
 — see :mod:`..assembly`, whose docstrings carry worked examples.
 """
 
-from __future__ import annotations
-
 from .. import routing
 from ..assembly import chain, group, mirrored
 

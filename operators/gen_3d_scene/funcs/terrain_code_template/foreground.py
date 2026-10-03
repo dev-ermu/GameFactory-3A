@@ -66,7 +66,6 @@ Usage:
     ground = landforms.basin()
     terrain, props = foreground.basin(ground)
 """
-from __future__ import annotations
 
 import math
 import random

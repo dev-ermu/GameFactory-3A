@@ -35,7 +35,6 @@ Usage:
     print(te.check_scene(scene))
     te.write_scene(scene, "greybox.glb")
 """
-from __future__ import annotations
 
 import math
 import random

@@ -1,7 +1,5 @@
 """Evaluate finalized Generate-Mechanic artifacts without generation."""
 
-from __future__ import annotations
-
 import argparse
 import json
 import sys

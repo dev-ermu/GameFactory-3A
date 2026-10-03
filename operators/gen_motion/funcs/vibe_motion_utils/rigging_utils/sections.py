@@ -1,5 +1,4 @@
 """Extract cross sections with caller-configured sampling and geometric tolerances."""
-from __future__ import annotations
 from dataclasses import dataclass
 import numpy as np
 from .mesh import BodyFrame, CreatureMesh

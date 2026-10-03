@@ -15,7 +15,6 @@ Pipeline:
      square canvas and resize to a fixed target size (1024 by default) so the
      result is directly consumable by downstream 3D pipelines (e.g. TRELLIS.2).
 """
-from __future__ import annotations
 
 import numpy as np
 from PIL import Image

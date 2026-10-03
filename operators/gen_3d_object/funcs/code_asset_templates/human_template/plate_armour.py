@@ -17,7 +17,6 @@ Each piece is a manufactured object, which is why the whole kit is stated
 rather than generated: `suits_code_asset` routes "plate armour cuirass" to
 `code` and the wearer to `generate`, and this file is the `code` half.
 """
-from __future__ import annotations
 
 from typing import Any
 

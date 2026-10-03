@@ -18,8 +18,6 @@ shadows into the albedo permanently, invents whatever the image did not
 show, and ends the mesh where a crop ended the subject.
 """
 
-from __future__ import annotations
-
 from typing import Any
 
 #: Appended to every prompt.

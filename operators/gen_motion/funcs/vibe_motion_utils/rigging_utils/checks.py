@@ -1,5 +1,4 @@
 """Separate conservative solid certification from open-mesh enclosure evidence."""
-from __future__ import annotations
 import numpy as np
 from .templates import require_config, finite_number, integer
 

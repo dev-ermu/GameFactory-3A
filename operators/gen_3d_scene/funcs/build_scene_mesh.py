@@ -25,7 +25,6 @@ Usage:
     mesh = build_scene_mesh(prediction)
     mesh.export("scene.glb")
 """
-from __future__ import annotations
 
 from typing import Optional
 

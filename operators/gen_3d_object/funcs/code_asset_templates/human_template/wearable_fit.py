@@ -2,7 +2,6 @@
 
 Blender dependencies are loaded only in the worker process.
 """
-from __future__ import annotations
 
 import json
 import math

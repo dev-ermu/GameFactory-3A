@@ -1,5 +1,4 @@
 """Resolve caller-defined attachment points and grip parameters."""
-from __future__ import annotations
 
 from copy import deepcopy
 import math

@@ -49,7 +49,6 @@ Usage:
     })
     print(result["tpose_rgba_path"])
 """
-from __future__ import annotations
 
 import time
 from pathlib import Path

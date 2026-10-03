@@ -2,7 +2,6 @@
 
 Parts are parented to the figure; this module does not bind them to bones.
 """
-from __future__ import annotations
 
 from typing import Any, Sequence
 

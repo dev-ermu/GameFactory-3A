@@ -20,7 +20,6 @@ Usage:
     from operators.gen_3d_scene.funcs.scene_mask import scene_mask
     masks = scene_mask(prediction, sky_masks=None)   # (S, H, W) bool
 """
-from __future__ import annotations
 
 from typing import Optional
 

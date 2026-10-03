@@ -4,7 +4,6 @@ Ingest an external motion clip (Mixamo, CMU, …) for retargeting.
 Manual sources (login-gated) refuse automated download — pass a local path.
 Writes ``*_motion_source.json`` next to the clip for licence tracking.
 """
-from __future__ import annotations
 
 import json
 import shutil

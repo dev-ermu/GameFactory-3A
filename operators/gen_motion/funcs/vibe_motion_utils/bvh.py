@@ -1,5 +1,4 @@
 'Serialize motion clips as Y-up BVH with ZXY rotation channels.'
-from __future__ import annotations
 
 from typing import Any
 

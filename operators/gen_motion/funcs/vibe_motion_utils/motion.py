@@ -1,5 +1,4 @@
 """Public position-first motion generation and diagnostics."""
-from __future__ import annotations
 
 import numpy as np
 from .motion_utils.checks import metrics

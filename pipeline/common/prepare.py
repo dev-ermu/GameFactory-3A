@@ -1,7 +1,5 @@
 """Generic workspace preparation for outer-Agent code generation."""
 
-from __future__ import annotations
-
 from collections.abc import Mapping, Sequence
 from datetime import datetime
 from pathlib import Path

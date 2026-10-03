@@ -8,7 +8,6 @@ Output modes:
   * per-game: resolved by ``pipeline.common.paths`` as one directory per task
   * legacy:   <output_dir>/<task_id>.wav
 """
-from __future__ import annotations
 
 import time
 import wave

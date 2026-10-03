@@ -1,5 +1,4 @@
 """Seed Audio-specific HTTP client and request headers."""
-from __future__ import annotations
 
 import threading
 import uuid

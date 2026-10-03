@@ -36,8 +36,6 @@ therefore registering a package, not extending a shared list:
 strategies on one name make the route depend on import order.
 """
 
-from __future__ import annotations
-
 import re
 from dataclasses import dataclass, field
 from typing import Any, Callable, Iterable

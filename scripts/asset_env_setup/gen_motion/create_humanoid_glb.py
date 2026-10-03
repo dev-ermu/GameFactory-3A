@@ -1,5 +1,4 @@
 """Create a watertight, single-mesh T-pose humanoid GLB for integration tests."""
-from __future__ import annotations
 
 import argparse
 from pathlib import Path

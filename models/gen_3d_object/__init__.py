@@ -16,7 +16,6 @@ The cloud wrappers import nothing heavier than the stdlib at module level, so
 importing this package stays cheap. `Trellis2Model` is resolved lazily because
 importing it manipulates `sys.path` for the vendored TRELLIS.2 tree.
 """
-from __future__ import annotations
 
 from typing import Any
 
