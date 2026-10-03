@@ -16,7 +16,6 @@ Or through Blender itself:
     blender --background --factory-startup \\
         --python engine_adapters/blender/runtime/serve.py -- --port 30021
 """
-from __future__ import annotations
 
 import argparse
 import sys

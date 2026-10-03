@@ -3,7 +3,6 @@
 The values summarize VFX-edit/data/kb and VFX-appearance experiments. A style
 contract is not a substitute for a Niagara material/system that consumes it.
 """
-from __future__ import annotations
 
 from copy import deepcopy
 from typing import Any

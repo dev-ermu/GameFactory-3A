@@ -1,7 +1,5 @@
 """UE generic mesh/material/texture/effect importer."""
 
-from __future__ import annotations
-
 from engine_adapters.ue5._internal.transport import Transport
 
 from ..asset_types import ASSET_TYPE_SUFFIXES, default_dest_for_asset_type

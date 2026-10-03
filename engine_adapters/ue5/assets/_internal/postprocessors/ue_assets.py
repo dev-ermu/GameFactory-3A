@@ -1,7 +1,5 @@
 """Resolve raw UE import paths into classified package assets."""
 
-from __future__ import annotations
-
 from time import sleep
 
 from engine_adapters.ue5.assets._internal.artifacts.models import normalize_backend_path

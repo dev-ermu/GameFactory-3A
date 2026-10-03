@@ -22,7 +22,6 @@ Both fighters are AI. They differ only in the aggression / block / heavy
 weights the spec gives them, which is enough to make the two read as different
 characters on screen.
 """
-from __future__ import annotations
 
 import os
 import sys

@@ -7,8 +7,6 @@ the constants that describe a view live here and the code that draws one
 is imported only when a render is actually requested.
 """
 
-from __future__ import annotations
-
 #: Camera positions, named by the axis the camera sits on. "Looking from
 #: +Z" is the only description of a view that cannot be misread.
 VIEW_AXES: tuple[str, ...] = ("+z", "-z", "+x", "-x", "+y")

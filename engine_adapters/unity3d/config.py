@@ -1,7 +1,5 @@
 """Configuration for the stable UnityClient API."""
 
-from __future__ import annotations
-
 import os
 import re
 from dataclasses import dataclass

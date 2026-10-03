@@ -1,7 +1,5 @@
 """UE Python script builders for asset imports."""
 
-from __future__ import annotations
-
 import textwrap
 from pathlib import Path
 

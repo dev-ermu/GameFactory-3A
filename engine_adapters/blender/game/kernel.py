@@ -18,7 +18,6 @@ and every random draw comes from `self.rng`, so a generated mechanic that
 scored badly can be re-run and watched. A benchmark that cannot reproduce its
 own failure cannot diagnose it.
 """
-from __future__ import annotations
 
 import argparse
 import json

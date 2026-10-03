@@ -12,7 +12,6 @@ animation hierarchies the same shape.
 The suffix-to-operator table is shared from `import_generated/import_mesh.py`,
 so a build that imports `.usdz` offline imports it into the runtime too.
 """
-from __future__ import annotations
 
 from typing import List, Optional
 

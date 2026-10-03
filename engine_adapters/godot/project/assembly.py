@@ -13,8 +13,6 @@ is copied only at assembly time and can depend on the mechanic's public
 autoload/runtime contract, never on private gameplay nodes.
 """
 
-from __future__ import annotations
-
 import json
 import re
 import shutil

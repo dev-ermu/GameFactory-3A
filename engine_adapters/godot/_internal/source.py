@@ -1,7 +1,5 @@
 """Resolve generated 3AGameFactory artifacts from task descriptors."""
 
-from __future__ import annotations
-
 import json
 import math
 import os

@@ -1,7 +1,5 @@
 """Import native Unreal and generated A3Game effect packages."""
 
-from __future__ import annotations
-
 from dataclasses import replace
 from pathlib import Path, PurePosixPath
 from typing import Any

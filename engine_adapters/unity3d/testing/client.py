@@ -1,7 +1,5 @@
 """Stable Unity Test Framework operations for UnityClient v1."""
 
-from __future__ import annotations
-
 import subprocess
 import xml.etree.ElementTree as ET
 from pathlib import Path

@@ -1,7 +1,5 @@
 """Safe staging for uploaded native Unreal scene content."""
 
-from __future__ import annotations
-
 import os
 import re
 import shutil

@@ -1,0 +1,16 @@
+annotated-types==0.8.0
+certifi==2026.7.22
+charset-normalizer==3.5.1
+idna==3.19
+numpy==2.5.3
+pillow==12.3.0
+pydantic==2.13.5
+pydantic-settings==2.15.0
+pydantic_core==2.46.5
+python-dotenv==1.2.4
+requests==2.34.2
+scipy==1.18.1
+trimesh==5.1.0
+typing-inspection==0.4.4
+typing_extensions==4.16.0
+urllib3==2.8.0

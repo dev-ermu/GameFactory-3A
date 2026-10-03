@@ -1,7 +1,5 @@
 """Stable Agent-facing facade for Unity3D engine environment operations."""
 
-from __future__ import annotations
-
 import json
 import shutil
 from pathlib import Path

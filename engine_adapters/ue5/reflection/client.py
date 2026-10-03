@@ -1,7 +1,5 @@
 """Stable Unreal asset reflection operations for UEClient v1."""
 
-from __future__ import annotations
-
 from typing import Any
 
 from .._internal.transport import PythonRPCTransport

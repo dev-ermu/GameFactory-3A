@@ -13,7 +13,6 @@ This runs on a background thread and deliberately imports no `bpy`. It hands
 `(type, payload)` to a callback that must only queue the command; see
 `subsystem.Subsystem` for why.
 """
-from __future__ import annotations
 
 import json
 import socket

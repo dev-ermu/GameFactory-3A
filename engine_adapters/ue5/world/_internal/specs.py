@@ -1,7 +1,5 @@
 """WorldSpec schema definitions for A3Game world composition."""
 
-from __future__ import annotations
-
 import re
 from dataclasses import dataclass, field
 from typing import Any

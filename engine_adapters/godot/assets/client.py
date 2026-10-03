@@ -1,7 +1,5 @@
 """Stable generated-asset import operations for GodotClient v1."""
 
-from __future__ import annotations
-
 import hashlib
 import json
 import re

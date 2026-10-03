@@ -1,7 +1,5 @@
 """UE composition root for the generic Editor import pipeline."""
 
-from __future__ import annotations
-
 from typing import Any
 
 from engine_adapters.ue5.assets._internal.builders import UEArtifactBuilder

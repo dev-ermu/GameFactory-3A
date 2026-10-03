@@ -38,7 +38,6 @@ glTF is authored -Z forward and the importer maps that onto -Y, while actors her
 face +Y at yaw 0 — the same half-turn the racing cars needed. `face()` applies it,
 so callers work in the game's own yaw and never see the model's.
 """
-from __future__ import annotations
 
 from math import pi, radians, sin
 from typing import Optional, Sequence

@@ -30,7 +30,6 @@ above are the vocabulary it writes in — see `../examples/`
 for four worked examples and `../../../agent_skills/engine_context/blender_api.md`
 for the API caveats they were written against.
 """
-from __future__ import annotations
 
 __all__ = ["kernel", "prims", "materials", "assets", "figures", "clips", "hud",
            "camera_rigs", "recorder", "controls", "interactive"]

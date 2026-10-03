@@ -6,8 +6,6 @@ encode provider requests; those responsibilities remain with the task and the
 injected model factory.
 """
 
-from __future__ import annotations
-
 import hashlib
 import json
 import os

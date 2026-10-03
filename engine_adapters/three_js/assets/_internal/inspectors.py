@@ -4,8 +4,6 @@ These probes are pure Python so validation, reflection, and metadata
 extraction stay available without a Node process or a browser.
 """
 
-from __future__ import annotations
-
 import json
 import struct
 from pathlib import Path

@@ -1,7 +1,5 @@
 """Stable environment observation operations for UnityClient v1."""
 
-from __future__ import annotations
-
 from typing import Any
 
 from .._internal.transport import (

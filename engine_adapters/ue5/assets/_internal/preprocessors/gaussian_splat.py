@@ -1,7 +1,5 @@
 """Prepare Gaussian Splat PLY files for the XV3dGS Unreal importer."""
 
-from __future__ import annotations
-
 import tempfile
 from contextlib import contextmanager
 from dataclasses import dataclass

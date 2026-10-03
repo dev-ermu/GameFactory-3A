@@ -1,7 +1,5 @@
 """UE Python scripts for registering native .uasset/.umap content packs."""
 
-from __future__ import annotations
-
 import textwrap
 
 

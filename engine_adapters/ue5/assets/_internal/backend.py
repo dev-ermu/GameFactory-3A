@@ -1,7 +1,5 @@
 """Backend contracts for engine-specific asset pipeline plugins."""
 
-from __future__ import annotations
-
 from typing import Protocol
 
 from .types import AssetQuery, ImportRequest, ValidationResult

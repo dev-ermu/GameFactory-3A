@@ -30,7 +30,6 @@ mechanic passes `kernel.cast` the colliders it built, and everything else is
 transparent to a ray by construction. A mechanic that casts *without* that set
 will find the HUD in front of its muzzle.
 """
-from __future__ import annotations
 
 from typing import Optional, Sequence
 

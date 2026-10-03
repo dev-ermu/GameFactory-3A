@@ -1,7 +1,5 @@
 """File and format inspection before an asset reaches Unreal Engine."""
 
-from __future__ import annotations
-
 from pathlib import Path
 from typing import Any
 

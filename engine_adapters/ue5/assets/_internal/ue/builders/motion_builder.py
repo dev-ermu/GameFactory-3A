@@ -1,7 +1,5 @@
 """Motion import script builder."""
 
-from __future__ import annotations
-
 from engine_adapters.ue5.assets._internal.types import ImportRequest
 
 from ..scripts.import_scripts import _build_motion_import_script, _motion_import_name

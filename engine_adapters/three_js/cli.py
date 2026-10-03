@@ -1,7 +1,5 @@
 """Public command-line entry points backed only by ThreeClient."""
 
-from __future__ import annotations
-
 import argparse
 import json
 import time

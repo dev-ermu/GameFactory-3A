@@ -12,7 +12,6 @@ Everything lands under one collection below a single root empty, giving the
 environment one transform to scale or offset and one thing to delete when the
 next world replaces it — a generated scene is routinely hundreds of objects.
 """
-from __future__ import annotations
 
 from pathlib import Path
 from typing import Tuple

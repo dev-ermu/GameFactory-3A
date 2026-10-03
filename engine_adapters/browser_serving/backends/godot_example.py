@@ -1,7 +1,5 @@
 """Godot example backend implemented only through public GodotClient."""
 
-from __future__ import annotations
-
 import json
 import logging
 import socket

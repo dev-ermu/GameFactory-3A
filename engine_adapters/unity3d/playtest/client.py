@@ -35,8 +35,6 @@ A live GUI Editor on the same project is refused: the recording needs a
 dedicated Editor instance, and two Editors cannot share one ``Library``.
 """
 
-from __future__ import annotations
-
 import json
 import shutil
 import subprocess

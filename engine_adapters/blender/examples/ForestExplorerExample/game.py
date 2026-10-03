@@ -6,7 +6,6 @@ light-arrow projectile share a cooldown. The hero starts armed — opening the
 chest is a recon beat, not a weapon pickup. Unattended, an AI drives the same
 Controls surface a human would.
 """
-from __future__ import annotations
 
 import os
 import sys

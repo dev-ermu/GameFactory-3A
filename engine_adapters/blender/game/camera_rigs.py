@@ -21,7 +21,6 @@ Actors are modelled **facing +Y**, so an actor's `rotation_euler.z =
 radians(yaw)` points it the same way the same yaw points a camera. Getting this
 consistent once is why the shooting code can aim with the camera's own numbers.
 """
-from __future__ import annotations
 
 from math import cos, radians, sin
 from typing import Optional, Sequence

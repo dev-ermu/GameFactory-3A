@@ -1,7 +1,5 @@
 """Dev server and runtime control transport for the three.js adapter."""
 
-from __future__ import annotations
-
 import json
 import urllib.error
 import urllib.request

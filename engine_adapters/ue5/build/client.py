@@ -1,7 +1,5 @@
 """Stable Unreal build operations for UEClient v1."""
 
-from __future__ import annotations
-
 import os
 import re
 import subprocess

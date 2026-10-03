@@ -1,7 +1,5 @@
 """Public contracts for the engine-agnostic browser serving adapter."""
 
-from __future__ import annotations
-
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any, BinaryIO, Mapping, Protocol

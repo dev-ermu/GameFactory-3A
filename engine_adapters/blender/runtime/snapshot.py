@@ -11,7 +11,6 @@ is imported from there rather than copied.
 `save_blend` is the escape hatch: everything the headless renderer had to skip,
 grease pencil and unbaked smoke, is in the file and draws in the Blender GUI.
 """
-from __future__ import annotations
 
 import time
 from pathlib import Path

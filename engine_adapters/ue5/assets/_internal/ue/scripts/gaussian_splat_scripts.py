@@ -1,7 +1,5 @@
 """UE Python scripts for importing XV3dGS Gaussian Splat assets."""
 
-from __future__ import annotations
-
 import textwrap
 
 

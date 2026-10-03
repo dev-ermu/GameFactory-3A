@@ -1,7 +1,5 @@
 """UE motion importer."""
 
-from __future__ import annotations
-
 from engine_adapters.ue5._internal.transport import Transport
 
 from ..config import DEFAULT_MOTION_DEST

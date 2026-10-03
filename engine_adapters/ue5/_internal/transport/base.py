@@ -1,7 +1,5 @@
 """Private transport contract for communicating with Unreal Engine."""
 
-from __future__ import annotations
-
 from typing import Any, Protocol
 
 

@@ -1,7 +1,5 @@
 """Generic runtime session state and UDP bridge for GodotClient v1."""
 
-from __future__ import annotations
-
 import json
 import math
 import socket

@@ -1,7 +1,5 @@
 """Artifact records and registry for the three.js web backend."""
 
-from __future__ import annotations
-
 import hashlib
 import json
 import re

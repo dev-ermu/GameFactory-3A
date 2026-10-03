@@ -1,7 +1,5 @@
 """Public command-line entry points backed only by UEClient."""
 
-from __future__ import annotations
-
 import argparse
 import json
 import time

@@ -1,7 +1,5 @@
 """Stable material and asset binding operations for UnityClient v1."""
 
-from __future__ import annotations
-
 from typing import Any, Mapping
 
 from .._internal.transport.unity_editor import UnityEditorTransport

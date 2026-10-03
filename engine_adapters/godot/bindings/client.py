@@ -1,7 +1,5 @@
 """Stable material binding operations for GodotClient v1."""
 
-from __future__ import annotations
-
 import json
 import math
 import re

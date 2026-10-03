@@ -1,7 +1,5 @@
 """Stable build operations for UnityClient v1."""
 
-from __future__ import annotations
-
 import re
 import sys
 from pathlib import Path

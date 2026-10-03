@@ -1,7 +1,5 @@
 """Node toolchain transport for the three.js adapter."""
 
-from __future__ import annotations
-
 import os
 import shutil
 import subprocess

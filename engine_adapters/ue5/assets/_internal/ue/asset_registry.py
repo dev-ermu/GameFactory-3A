@@ -1,7 +1,5 @@
 """UE Asset Registry queries for the asset pipeline."""
 
-from __future__ import annotations
-
 import textwrap
 from typing import Optional
 

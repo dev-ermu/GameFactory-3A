@@ -1,7 +1,5 @@
 """Asset service wrapping backend and registry."""
 
-from __future__ import annotations
-
 from typing import Any, Optional
 
 from engine_adapters.unity3d.assets._internal.artifacts import ArtifactRegistry, build_artifact_records

@@ -1,7 +1,5 @@
 """Filesystem primitives for adapter-managed persistent state."""
 
-from __future__ import annotations
-
 import os
 import platform
 import stat

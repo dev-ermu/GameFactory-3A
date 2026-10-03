@@ -9,8 +9,6 @@ This transport uses the ``-batchmode -quit -executeMethod`` CLI pattern:
 4. The Python transport reads the JSON report and returns it
 """
 
-from __future__ import annotations
-
 import glob
 import json
 import os

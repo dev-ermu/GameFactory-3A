@@ -1,7 +1,5 @@
 """UE asset import operations for the asset pipeline."""
 
-from __future__ import annotations
-
 import textwrap
 from pathlib import Path
 from typing import Any

@@ -8,7 +8,6 @@ not share a filesystem with their author. A `/Library/...` path is therefore
 virtual — it resolves against a root this process is configured with, so one
 command file works against a laptop and a render box. Anything else is literal.
 """
-from __future__ import annotations
 
 import os
 from pathlib import Path

@@ -1,7 +1,5 @@
 """Stable Agent-facing facade for blender environment operations."""
 
-from __future__ import annotations
-
 from pathlib import Path
 from typing import Any
 

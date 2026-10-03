@@ -16,7 +16,6 @@ unable to exit.** The bundled Mantaflow scripts are out of step with the
 compiled module (`LevelsetGrid has no attribute setConst`); deleting the objects
 does not undo it, only emptying the file does — see `Subsystem.shutdown`.
 """
-from __future__ import annotations
 
 from typing import Tuple
 

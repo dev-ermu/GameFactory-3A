@@ -1,7 +1,5 @@
 """Stable Unity editor process operations for UnityClient v1."""
 
-from __future__ import annotations
-
 import subprocess
 from pathlib import Path
 from typing import Any, Sequence

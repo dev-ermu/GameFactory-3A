@@ -1,7 +1,5 @@
 """UE asset registry adapter."""
 
-from __future__ import annotations
-
 from engine_adapters.ue5._internal.transport import Transport
 
 from engine_adapters.ue5.assets._internal.types import AssetQuery

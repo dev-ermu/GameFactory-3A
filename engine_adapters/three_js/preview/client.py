@@ -19,8 +19,6 @@ under the project's ``.a3game/previews`` directory and never staged into
 ``public/``.
 """
 
-from __future__ import annotations
-
 import re
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Sequence

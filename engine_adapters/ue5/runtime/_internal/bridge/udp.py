@@ -1,7 +1,5 @@
 """UDP transport for the A3GamePlayable runtime receiver."""
 
-from __future__ import annotations
-
 import json
 import socket
 from typing import Any

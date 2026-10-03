@@ -4,8 +4,6 @@ Coordinates follow the three.js convention: right-handed, Y-up, metres,
 radians for Euler rotations.
 """
 
-from __future__ import annotations
-
 import re
 from dataclasses import dataclass, field
 from math import isfinite

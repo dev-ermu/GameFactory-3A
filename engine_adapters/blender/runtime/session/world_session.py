@@ -17,7 +17,6 @@ a spectator join with no entity at all.
 
 No `bpy` here — pure bookkeeping, exercisable without Blender installed.
 """
-from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum

@@ -24,7 +24,6 @@ accuracy number in the report counts shots that reached a body.
 The player is an AI. A generated mechanic has to be judged unattended, so the
 "player" is a scripted policy driving the same input surface a human would.
 """
-from __future__ import annotations
 
 import os
 import sys

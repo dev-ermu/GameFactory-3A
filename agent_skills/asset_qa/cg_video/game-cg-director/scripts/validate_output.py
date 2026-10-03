@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 """Validate a game-cg-director JSON file without calling an LLM."""
 
-from __future__ import annotations
-
 import argparse
 import json
 import re

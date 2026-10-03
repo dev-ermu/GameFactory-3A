@@ -1,7 +1,5 @@
 """Python SDK for the public Browser Serving HTTP API."""
 
-from __future__ import annotations
-
 import json
 import os
 from typing import Any, Mapping

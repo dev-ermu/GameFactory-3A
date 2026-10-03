@@ -1,7 +1,5 @@
 """Repository adapter over the current JSON-backed ArtifactRegistry."""
 
-from __future__ import annotations
-
 from typing import Any
 
 from engine_adapters.ue5.assets._internal.artifacts.models import ArtifactRecord

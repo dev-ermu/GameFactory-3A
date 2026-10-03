@@ -1,7 +1,5 @@
 """Stable project inspection operations for UEClient v1."""
 
-from __future__ import annotations
-
 import json
 import os
 import re

@@ -1,7 +1,5 @@
 """World draft, validation, and package services for three.js."""
 
-from __future__ import annotations
-
 import hashlib
 import json
 import time

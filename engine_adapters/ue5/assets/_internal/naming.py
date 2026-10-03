@@ -1,7 +1,5 @@
 """Naming helpers shared by private UE asset services."""
 
-from __future__ import annotations
-
 import re
 
 

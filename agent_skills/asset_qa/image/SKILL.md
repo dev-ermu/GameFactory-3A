@@ -190,7 +190,6 @@ and leaves no production output after success. Run the local checkpoint integrat
 test when Qwen and RMBG weights plus a GPU are intentionally available:
 
 ```bash
-QWEN_EDIT_CKPT=Qwen/Qwen-Image-Edit-2511 \
 RMBG_CKPT=briaai/RMBG-1.4 \
 python -m unittest test.test_gen_tpose_image -v
 ```

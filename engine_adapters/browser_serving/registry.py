@@ -1,7 +1,5 @@
 """Engine backend registration and alias resolution."""
 
-from __future__ import annotations
-
 from .contracts import EngineBackend, UnknownEngineError
 
 

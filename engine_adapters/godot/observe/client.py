@@ -1,7 +1,5 @@
 """Stable environment readiness probes for GodotClient v1."""
 
-from __future__ import annotations
-
 import math
 from typing import Any
 

@@ -1,7 +1,5 @@
 """Lazy registry for asset pipeline backends."""
 
-from __future__ import annotations
-
 import os
 from threading import RLock
 

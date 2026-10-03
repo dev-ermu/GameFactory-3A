@@ -13,7 +13,6 @@ is shared and still being edited, append when the session must be
 self-contained, since `save_blend` of a linked scene writes a file full of
 pointers to a machine that may not be there later.
 """
-from __future__ import annotations
 
 from pathlib import Path
 

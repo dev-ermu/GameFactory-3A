@@ -1,7 +1,5 @@
 """UE Python scripts for managed PBR material creation and mesh binding."""
 
-from __future__ import annotations
-
 import re
 import textwrap
 from typing import Any

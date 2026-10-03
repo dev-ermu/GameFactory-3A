@@ -9,7 +9,6 @@ scene, so the UDP receiver never touches Blender — it parses a datagram onto
 thread, turns one into a `bpy.ops` call. Every deadlock and silent corruption
 this runtime could have comes from crossing that boundary.
 """
-from __future__ import annotations
 
 import queue
 from typing import Optional, Tuple

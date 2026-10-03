@@ -1,7 +1,5 @@
 """Shared helpers for installing native Unreal Content directories."""
 
-from __future__ import annotations
-
 import shutil
 from pathlib import Path
 from typing import Any

@@ -23,7 +23,6 @@ CLI:
         --python engine_adapters/blender/render_preview.py -- \\
         --src model.glb --out previews/ --mode orbit --format mp4
 """
-from __future__ import annotations
 
 import json
 import math

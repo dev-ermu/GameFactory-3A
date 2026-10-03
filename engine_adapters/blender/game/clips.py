@@ -11,7 +11,6 @@ Clip names differ across packs, so roles map onto a list of aliases. A missing
 clip is a no-op — the figure holds its rest pose rather than throwing, which is
 the same degrade-don't-crash rule `figures.attach` uses for a missing mesh.
 """
-from __future__ import annotations
 
 import re
 from typing import Optional

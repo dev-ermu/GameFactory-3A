@@ -1,7 +1,5 @@
 """Asset administration UI on port 7860 using only Browser Serving APIs."""
 
-from __future__ import annotations
-
 import json
 from pathlib import Path
 from typing import Any

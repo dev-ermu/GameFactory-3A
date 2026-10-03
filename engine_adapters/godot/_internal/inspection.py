@@ -1,7 +1,5 @@
 """Native Godot resource inspection and import-validation helpers."""
 
-from __future__ import annotations
-
 import json
 import os
 import re

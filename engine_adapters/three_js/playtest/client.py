@@ -19,8 +19,6 @@ therefore explicit parameters rather than assumptions:
   like a browser launch error rather than a missing library.
 """
 
-from __future__ import annotations
-
 import json
 import math
 from pathlib import Path

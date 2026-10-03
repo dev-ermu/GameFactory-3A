@@ -29,8 +29,6 @@ model, which is what ``ThreeClient.preview`` and the
 ``imported_asset_orientation`` agent skill are for.
 """
 
-from __future__ import annotations
-
 import math
 from typing import Any, Mapping
 

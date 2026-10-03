@@ -1,7 +1,5 @@
 """Build backend-neutral ArtifactRecord values from UE import output."""
 
-from __future__ import annotations
-
 from dataclasses import replace
 
 from engine_adapters.ue5.assets._internal.artifacts.models import (

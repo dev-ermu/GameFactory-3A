@@ -17,8 +17,6 @@ pose an orientation check wants anyway: an animated frame would confuse
 "which way does this model face" with "where is it in its walk cycle".
 """
 
-from __future__ import annotations
-
 import base64
 import json
 import struct

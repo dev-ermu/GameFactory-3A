@@ -34,7 +34,6 @@ Batch mode reads a `*_results_summary.json` written by
 `pipeline/assets_gen/gen_3d_object/run.py`:
     ... -script="... --summary <path to 3d_object_results_summary.json>"
 """
-from __future__ import annotations
 
 import json
 import os

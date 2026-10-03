@@ -11,7 +11,6 @@ Keeping the clip separate from the character is what lets one walk cycle drive
 every character whose skeleton it fits, which is why they were retargeted
 through gen_motion (`operators/.../retarget_utils`) first.
 """
-from __future__ import annotations
 
 from typing import Optional
 

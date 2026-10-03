@@ -1,7 +1,5 @@
 """Unity3D example backend implemented only through public UnityClient."""
 
-from __future__ import annotations
-
 import socket
 import subprocess
 import sys

@@ -1,7 +1,5 @@
 """Artifact model helpers for A3Game-managed asset lifecycle."""
 
-from __future__ import annotations
-
 import hashlib
 import re
 from dataclasses import dataclass, field

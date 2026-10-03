@@ -13,7 +13,6 @@ ground whenever the pivot rose to a character's chest.
 The lighting is deliberately dull, a key and a fill: flattering light hides
 exactly the seams and inverted normals this stage exists to catch.
 """
-from __future__ import annotations
 
 from math import radians
 from typing import Optional

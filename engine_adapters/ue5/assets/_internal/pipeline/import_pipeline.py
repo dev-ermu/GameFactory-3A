@@ -1,7 +1,5 @@
 """Generic orchestration for Editor import pipelines."""
 
-from __future__ import annotations
-
 from abc import ABC, abstractmethod
 
 from engine_adapters.ue5.assets._internal.types import ImportRequest

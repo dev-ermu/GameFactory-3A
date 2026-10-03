@@ -16,7 +16,6 @@ Mantaflow is a usable runtime for everything else, and a diagnostic that reports
     python -m engine_adapters.blender.runtime.selftest
     OUT_DIR=D:/scratch/runtime python -m engine_adapters.blender.runtime.selftest
 """
-from __future__ import annotations
 
 import os
 import sys

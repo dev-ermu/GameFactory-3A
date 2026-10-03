@@ -8,7 +8,6 @@ and renders in Cycles without a bake. Emission is a short window from the
 current frame so the burst reads as an event; a continuous emitter is better
 authored as part of the set.
 """
-from __future__ import annotations
 
 from typing import Tuple
 

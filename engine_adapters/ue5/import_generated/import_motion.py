@@ -10,7 +10,6 @@ Do not use the static ``import_mesh.py`` sibling (it forces non-skeletal).
         --src retargeted.fbx --engine ue5 --kind motion \\
         --uproject /path/to/MyGame.uproject
 """
-from __future__ import annotations
 
 import json
 import os

@@ -1,7 +1,5 @@
 """Stable engine-native test execution for GodotClient v1."""
 
-from __future__ import annotations
-
 import json
 import math
 import os

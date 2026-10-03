@@ -1,7 +1,5 @@
 """Unity-specific asset import dispatcher."""
 
-from __future__ import annotations
-
 import shutil
 import tarfile
 from pathlib import Path

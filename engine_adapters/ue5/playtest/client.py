@@ -33,8 +33,6 @@ state snapshots depend on the target project's plugins; the recorder records
 what actually happened rather than assuming either is available.
 """
 
-from __future__ import annotations
-
 import json
 import ctypes
 import os

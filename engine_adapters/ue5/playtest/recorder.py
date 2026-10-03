@@ -15,8 +15,6 @@ between engine versions, so every call is resolved defensively and every
 failure is recorded in the report instead of raising.
 """
 
-from __future__ import annotations
-
 import json
 import os
 import sys

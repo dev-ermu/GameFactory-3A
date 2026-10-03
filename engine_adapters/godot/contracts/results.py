@@ -1,7 +1,5 @@
 """Stable result structures returned by GodotClient v1 operations."""
 
-from __future__ import annotations
-
 import json
 from dataclasses import dataclass, field
 from typing import Any

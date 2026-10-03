@@ -1,7 +1,5 @@
 """Application service delegating browser operations to engine backends."""
 
-from __future__ import annotations
-
 from pathlib import Path
 from typing import Any, BinaryIO, Mapping
 

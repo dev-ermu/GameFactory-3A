@@ -1,7 +1,5 @@
 """Stable Godot resource reflection operations for GodotClient v1."""
 
-from __future__ import annotations
-
 from typing import Any
 
 from .._internal import GodotTransport, inspect_godot_resource

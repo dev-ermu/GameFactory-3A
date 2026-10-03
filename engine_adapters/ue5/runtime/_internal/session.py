@@ -6,8 +6,6 @@ does not own authoritative world physics. UE remains the source of truth for
 actual actor transforms once the runtime bridge is connected.
 """
 
-from __future__ import annotations
-
 from collections import defaultdict, deque
 from dataclasses import asdict, dataclass, field
 from queue import Empty, Queue

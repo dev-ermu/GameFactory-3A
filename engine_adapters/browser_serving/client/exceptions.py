@@ -1,7 +1,5 @@
 """Exceptions raised by the Browser Serving HTTP client."""
 
-from __future__ import annotations
-
 from typing import Any
 
 

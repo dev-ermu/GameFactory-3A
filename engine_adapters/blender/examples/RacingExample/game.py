@@ -22,7 +22,6 @@ Both are what a chase camera actually films.
 Progress, laps and overtakes all come off one number — arc length along the
 centreline — which is what makes "who is ahead" answerable at all on a loop.
 """
-from __future__ import annotations
 
 import os
 import sys

@@ -1,7 +1,5 @@
 """Stable animation asset operations for UEClient v1."""
 
-from __future__ import annotations
-
 from typing import Any, Mapping
 
 from ..assets import UEAssetsClient

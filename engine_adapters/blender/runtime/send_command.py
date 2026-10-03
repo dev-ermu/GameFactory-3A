@@ -17,7 +17,6 @@ Usage:
     python -m engine_adapters.blender.runtime.send_command \\
         --type render_snapshot --payload '{"samples": 16}'
 """
-from __future__ import annotations
 
 import argparse
 import json

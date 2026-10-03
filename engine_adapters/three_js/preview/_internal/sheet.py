@@ -8,8 +8,6 @@ image the model is shown — a filename is not visible to a reader that
 was handed only pixels.
 """
 
-from __future__ import annotations
-
 import math
 from pathlib import Path
 from typing import Any, Mapping, Sequence

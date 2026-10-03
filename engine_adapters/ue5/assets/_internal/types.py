@@ -1,7 +1,5 @@
 """Shared asset pipeline request and result types."""
 
-from __future__ import annotations
-
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path

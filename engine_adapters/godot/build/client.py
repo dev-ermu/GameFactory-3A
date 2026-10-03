@@ -1,7 +1,5 @@
 """Stable Godot export operations for GodotClient v1."""
 
-from __future__ import annotations
-
 import hashlib
 import hmac
 import json

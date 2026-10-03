@@ -23,7 +23,6 @@ Interpolation is set once at the end:
   simulation, and a bar eases past 100%.
 - `hide_render` -> CONSTANT, so a spawned tracer is either there or not.
 """
-from __future__ import annotations
 
 import json
 import os

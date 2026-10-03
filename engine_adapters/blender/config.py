@@ -1,7 +1,5 @@
 """Configuration for the stable BlenderClient API."""
 
-from __future__ import annotations
-
 import os
 import shutil
 from dataclasses import dataclass

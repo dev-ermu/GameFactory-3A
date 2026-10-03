@@ -9,7 +9,6 @@ exactly that or `<prefix>_<part>`, so cleanup needs no bookkeeping about how
 many objects an effect turned out to be. Smoke is a domain *and* a flow emitter,
 and leaking one leaves an invisible simulation running in every later render.
 """
-from __future__ import annotations
 
 from typing import List, Optional, Tuple
 

@@ -1,7 +1,5 @@
 """Local UE Content directory scan fallback for imported assets."""
 
-from __future__ import annotations
-
 import os
 import re
 from pathlib import Path

@@ -1,7 +1,5 @@
 """Contracts for the Editor asset import pipeline."""
 
-from __future__ import annotations
-
 from dataclasses import dataclass, field
 from time import time
 from typing import Any, Protocol

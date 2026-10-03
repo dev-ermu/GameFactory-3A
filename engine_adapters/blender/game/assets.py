@@ -17,7 +17,6 @@ Three forms are accepted, in the order a spec is likely to use them:
 runtime; the same reference resolves the same way here, so an asset fetched once
 is addressable from both.
 """
-from __future__ import annotations
 
 import os
 import re

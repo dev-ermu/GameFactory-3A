@@ -8,7 +8,6 @@ that the pose actually changes across the clip.
         --python engine_adapters/blender/import_generated/import_motion.py -- \\
         --src retargeted.fbx --dest out/ --report report.json
 """
-from __future__ import annotations
 
 import json
 import os

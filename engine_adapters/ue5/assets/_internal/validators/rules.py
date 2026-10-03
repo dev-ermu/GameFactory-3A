@@ -1,7 +1,5 @@
 """Small validation rules used by the M1 import pipeline."""
 
-from __future__ import annotations
-
 from typing import Protocol
 
 from engine_adapters.ue5.assets._internal.pipeline.contracts import ImportResult

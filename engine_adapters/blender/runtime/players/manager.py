@@ -7,7 +7,6 @@ Spawn, look up, and remove the characters in the world.
 gives no delivery guarantee in either direction — a sender that retries a spawn
 because it saw no effect must not end up with two characters.
 """
-from __future__ import annotations
 
 from math import radians
 from typing import Dict, Optional, Tuple

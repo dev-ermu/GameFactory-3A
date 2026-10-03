@@ -14,7 +14,6 @@ readable in a dark headless render — HUD bars, tracers, checkpoint gates, hit
 sparks — is emissive, and routing it through the Principled node keeps one
 material type in the file.
 """
-from __future__ import annotations
 
 from typing import Optional, Sequence
 

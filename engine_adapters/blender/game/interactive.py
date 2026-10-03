@@ -27,7 +27,6 @@ Requires a real Blender window — `blender --python play.py`, *not*
 `--background`. There is no offscreen path here on purpose: an interactive mode
 that cannot be seen has nothing to offer over the batch mode that already works.
 """
-from __future__ import annotations
 
 import time
 from typing import Optional

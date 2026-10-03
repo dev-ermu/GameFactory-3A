@@ -1,7 +1,5 @@
 """Import generated scene sources into an A3Game world package."""
 
-from __future__ import annotations
-
 import shutil
 from pathlib import Path
 from typing import Any

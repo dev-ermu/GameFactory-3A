@@ -21,8 +21,6 @@ shaded, textured image; supersampling then downsampling removes the
 speckle that point splatting would otherwise leave behind.
 """
 
-from __future__ import annotations
-
 from dataclasses import dataclass
 from typing import Any, Iterable, Sequence
 

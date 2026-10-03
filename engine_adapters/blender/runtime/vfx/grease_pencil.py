@@ -13,7 +13,6 @@ still supports 4.2.
 `../../render_preview.py`. `../snapshot.py` hides them before rendering; they
 draw normally in the `.blend` that `save_blend` writes.
 """
-from __future__ import annotations
 
 import math
 from typing import Tuple

@@ -1,7 +1,5 @@
 """UE asset type mappings and validation helpers for the asset pipeline."""
 
-from __future__ import annotations
-
 from .config import (
     DEFAULT_AVATAR_DEST,
     DEFAULT_EFFECT_DEST,

@@ -1,7 +1,5 @@
 """Command-line launcher for the 7870 Gateway and 7860 Admin UI."""
 
-from __future__ import annotations
-
 import argparse
 import threading
 import time

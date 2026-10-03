@@ -11,7 +11,6 @@ With no tree named, a pass-through group is built. A Nodes modifier with an
 *empty* group logs "must have a group output" and silently does nothing, so the
 minimum valid tree is what turns that into a visible object showing nothing.
 """
-from __future__ import annotations
 
 from typing import Optional, Tuple
 

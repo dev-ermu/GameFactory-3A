@@ -1,7 +1,5 @@
 """Scene import script builder."""
 
-from __future__ import annotations
-
 from pathlib import Path
 
 from engine_adapters.ue5.assets._internal.types import ImportRequest

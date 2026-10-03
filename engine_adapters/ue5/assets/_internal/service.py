@@ -1,7 +1,5 @@
 """UI/API-friendly asset operations."""
 
-from __future__ import annotations
-
 from dataclasses import replace
 from typing import Any, Optional
 

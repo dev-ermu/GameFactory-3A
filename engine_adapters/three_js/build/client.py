@@ -1,7 +1,5 @@
 """Stable web bundle build operations for ThreeClient v1."""
 
-from __future__ import annotations
-
 import re
 from pathlib import Path
 from typing import Any

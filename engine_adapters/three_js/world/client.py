@@ -1,7 +1,5 @@
 """Stable world composition operations for ThreeClient v1."""
 
-from __future__ import annotations
-
 import json
 from pathlib import Path
 from typing import Any, Mapping

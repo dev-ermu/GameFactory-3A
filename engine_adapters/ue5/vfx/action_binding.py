@@ -1,5 +1,4 @@
 """Build WorldFlexVFXBinder requests for action-attached Niagara effects."""
-from __future__ import annotations
 
 import json
 from pathlib import Path

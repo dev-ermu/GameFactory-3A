@@ -1,7 +1,5 @@
 """Validate mesh-backed PLY files and convert them to temporary OBJ files."""
 
-from __future__ import annotations
-
 import json
 import math
 import struct

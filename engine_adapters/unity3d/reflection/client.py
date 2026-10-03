@@ -1,7 +1,5 @@
 """Stable Unity asset reflection operations for UnityClient v1."""
 
-from __future__ import annotations
-
 from typing import Any
 
 from .._internal.transport.unity_editor import UnityEditorTransport

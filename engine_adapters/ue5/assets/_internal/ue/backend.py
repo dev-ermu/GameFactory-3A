@@ -1,7 +1,5 @@
 """Unreal Engine asset backend."""
 
-from __future__ import annotations
-
 from engine_adapters.ue5.assets._internal.types import ASSET_GROUP_TYPE_NAMES, AssetQuery, ImportRequest, ValidationResult
 from engine_adapters.ue5.assets._internal.project_content import (
     configured_project_content_dir,

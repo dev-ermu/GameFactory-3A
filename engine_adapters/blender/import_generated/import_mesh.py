@@ -33,7 +33,6 @@ CLI (what the host-side launcher calls):
 Batch mode reads a `<kind>_results_summary.json` written by a pipeline runner:
     ... -- --summary <path to 3d_object_results_summary.json>
 """
-from __future__ import annotations
 
 import json
 import os

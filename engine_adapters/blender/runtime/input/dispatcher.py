@@ -11,7 +11,6 @@ answer to "what can I send the runtime?".
 Payload keys are optional wherever a sensible default exists, because commands
 are hand-written as often as they are generated.
 """
-from __future__ import annotations
 
 from typing import Callable, Dict, Optional, Tuple
 

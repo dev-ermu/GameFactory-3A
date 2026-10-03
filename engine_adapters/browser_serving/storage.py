@@ -1,7 +1,5 @@
 """Stage browser uploads as standard 3AGameFactory task artifacts."""
 
-from __future__ import annotations
-
 import re
 import shutil
 from pathlib import Path

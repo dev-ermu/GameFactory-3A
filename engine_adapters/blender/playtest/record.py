@@ -6,8 +6,6 @@ Fixed-timestep capture via ``Game.run(source=...)``. Input goes through
 result — ``blender --python`` always exits 0.
 """
 
-from __future__ import annotations
-
 import argparse
 import importlib.util
 import json

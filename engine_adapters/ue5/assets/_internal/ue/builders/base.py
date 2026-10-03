@@ -1,7 +1,5 @@
 """Base class for UE import script builders."""
 
-from __future__ import annotations
-
 from abc import ABC, abstractmethod
 
 from engine_adapters.ue5.assets._internal.types import ImportRequest

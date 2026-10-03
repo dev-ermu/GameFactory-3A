@@ -1,7 +1,5 @@
 """UE scene importer."""
 
-from __future__ import annotations
-
 from dataclasses import replace
 from pathlib import Path
 

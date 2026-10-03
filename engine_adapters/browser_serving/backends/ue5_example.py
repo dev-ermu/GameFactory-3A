@@ -1,7 +1,5 @@
 """Unreal Engine example backend implemented only through public UEClient."""
 
-from __future__ import annotations
-
 import socket
 import subprocess
 import urllib.error

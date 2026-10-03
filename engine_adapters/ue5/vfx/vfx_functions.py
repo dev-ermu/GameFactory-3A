@@ -4,7 +4,6 @@ Run this module inside Unreal Editor, where the ``unreal`` module is available.
 The named defaults come from the VFX-edit project's reviewed Niagara inventory.
 Projects that do not contain NiagaraExamples must pass ``system_path``.
 """
-from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 from typing import Any

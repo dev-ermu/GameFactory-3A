@@ -1,7 +1,5 @@
 """Blender toolchain transport for the blender adapter."""
 
-from __future__ import annotations
-
 import os
 import subprocess
 from dataclasses import dataclass, field

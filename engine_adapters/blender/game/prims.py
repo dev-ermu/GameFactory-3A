@@ -25,7 +25,6 @@ are deliberately off-centre:
     PLANE      2 x 2 in XY, centred
     BAR        1 x 1 in XY, origin at its LEFT edge — scale.x is a fill fraction
 """
-from __future__ import annotations
 
 from typing import Optional, Sequence
 

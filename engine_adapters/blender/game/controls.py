@@ -25,7 +25,6 @@ needs "is the trigger down", and a menu needs "was this just pressed" — the la
 one is `Controls.pressed()`, computed against the previous tick rather than
 tracked by the source, so a dropped tick cannot lose an edge forever.
 """
-from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path

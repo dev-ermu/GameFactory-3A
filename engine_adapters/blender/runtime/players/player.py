@@ -11,7 +11,6 @@ The object is held by *name*, not by reference: Blender invalidates Python
 object pointers whenever the underlying data is reallocated (undo, file load, a
 `remove` elsewhere), and a stale pointer is a hard crash, not an exception.
 """
-from __future__ import annotations
 
 import time
 from dataclasses import dataclass

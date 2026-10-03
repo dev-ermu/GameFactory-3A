@@ -8,7 +8,6 @@ the ground is the Z = 0 plane. The question a preview runtime answers is "does
 this character read correctly moving through this space" — anything needing real
 collision belongs in the game engine `../../import_generated/` feeds.
 """
-from __future__ import annotations
 
 from enum import Enum
 from math import radians

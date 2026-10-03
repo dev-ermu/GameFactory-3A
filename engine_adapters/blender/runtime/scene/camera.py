@@ -11,7 +11,6 @@ coordinates are the source of truth.
 The camera is a child of `stage.PIVOT`, so all of this is local to the rig and
 `PreviewStage.reframe` can re-aim the orbit without disturbing it.
 """
-from __future__ import annotations
 
 from math import cos, radians, sin
 
