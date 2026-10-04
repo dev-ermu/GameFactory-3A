@@ -310,9 +310,8 @@ def _candidate_executables(explicit: str) -> Iterable[Path]:
     seen = set()
     raw_candidates = [
         explicit,
+        # 只有一个变量名，没有 `A3GAME_GODOT` / `AAAGF_GODOT` 旧名回退。
         os.environ.get("A3GAME_GODOT_EXECUTABLE", ""),
-        os.environ.get("A3GAME_GODOT", ""),
-        os.environ.get("AAAGF_GODOT", ""),
         shutil.which("godot4") or "",
         shutil.which("godot") or "",
         shutil.which("godot-mono") or "",

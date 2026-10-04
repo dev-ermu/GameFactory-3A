@@ -40,7 +40,7 @@ Configuration belongs at the very start of a game request, before any asset work
 
 **Configuration is one file.** Every credential, API base URL, backend choice and
 cache location comes from `<REPO_PATH>/.env` (template: `.env.example`), loaded by
-`<REPO_PATH>/global_config.py`. Each cloud provider needs both `*_API_BASE` and
+`<REPO_PATH>/config.py`. Each cloud provider needs both `*_API_BASE` and
 `*_API_KEY`; the Pipeline runners call `require_cloud_or_exit()` before loading
 anything, so a missing one is reported in the first second together with the exact
 `.env` lines to add.

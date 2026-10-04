@@ -35,7 +35,7 @@ by side. Generated artifacts get large — point ``$AAAGF_OUTPUT_ROOT`` at a scr
 disk to relocate the whole tree without touching code.
 
 本模块**不依赖任何第三方库**，也不 import 任何 model，因此可以在任何地方安全 import
-（包括纯 CPU 的工具与测试）。它唯一的项目内依赖是 `global_config`——那个只依赖标准库的
+（包括纯 CPU 的工具与测试）。它唯一的项目内依赖是 `config`——那个只依赖标准库的
 配置模块；导入它即完成 `<repo>/.env` 的解析，之后所有配置一律从 `settings` 对象读取。
 """
 
@@ -46,18 +46,18 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Optional
 
-# `global_config` 位于顶层且只依赖标准库，因此 `models/` 可以 import 它而不必
+# `config` 位于顶层且只依赖标准库，因此 `models/` 可以 import 它而不必
 # import `pipeline/`（model_require.md R1.1）。
 _CONFIG_ROOT = Path(__file__).resolve().parents[2]
 if str(_CONFIG_ROOT) not in sys.path:
     sys.path.insert(0, str(_CONFIG_ROOT))
-import global_config as _global_config  # noqa: E402
+import config as _config  # noqa: E402
 
 # 过渡桥：把 `.env` 发布进 `os.environ`，供**尚未迁移**的读取方使用——目前是 6 个
 # `engine_adapters/*/config.py`（它们在 `resolve()` 里读 `os.environ`）以及若干
-# `models/` / `scripts/`。等这些全部改读 `settings` 之后，本行与 `global_config.load()`
+# `models/` / `scripts/`。等这些全部改读 `settings` 之后，本行与 `config.load()`
 # 一并删除。本模块自身的 `OUTPUT_ROOT` 已改读 `settings`，不再依赖这个副作用。
-_global_config.load()
+_config.load()
 
 # ── Roots ─────────────────────────────────────────────────────────────────────
 
@@ -68,7 +68,7 @@ TEST_SAMPLES_ROOT = TEST_DATA_ROOT / "test_samples"
 
 #: Output root — 即 `Settings.output_root`（`.env` 里的 `AAAGF_OUTPUT_ROOT`），
 #: 默认 `<repo>/test_data/outputs`。
-OUTPUT_ROOT = Path(_global_config.settings.output_root).expanduser()
+OUTPUT_ROOT = Path(_config.settings.output_root).expanduser()
 
 #: Used when a task carries no game association (ad-hoc single-image demos).
 UNASSIGNED_GAME = "_scratch"

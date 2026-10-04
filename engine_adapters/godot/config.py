@@ -2,8 +2,17 @@
 
 import os
 import re
+import sys
 from dataclasses import dataclass
 from pathlib import Path
+
+# 仓库根入 sys.path：`config` 是顶层模块，因此适配器不必 import `pipeline/`
+# 也能读到项目唯一的配置源（`model_require.md` R1.1）。
+_REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
+
+from config import settings
 
 SUPPORTED_API_VERSIONS = ("v1",)
 DEFAULT_API_VERSION = "v1"
@@ -13,6 +22,10 @@ DEFAULT_WORLD_ID = "world_001"
 DEFAULT_EDITOR_TIMEOUT = 300
 DEFAULT_IMPORT_TIMEOUT = 300
 DEFAULT_IMPORT_ROOT = "assets/imported"
+
+#: 本适配器支持的最低 Godot 版本。`4.4` 是 `res://` 资源 UID 与
+#: `--import` 行为稳定的起点；更低版本的导入产物布局不同，测试与运行都不可靠。
+MINIMUM_GODOT_VERSION: tuple[int, int] = (4, 4)
 DEFAULT_AVATAR_DEST = "assets/imported/avatars"
 DEFAULT_MOTION_DEST = "assets/imported/motions"
 DEFAULT_SCENE_DEST = "assets/imported/scenes"
@@ -39,12 +52,53 @@ GODOT_ASSET_TYPE_DEFAULT_DESTS = {
 }
 
 
-def _first_environment_value(*names: str) -> str:
-    for name in names:
-        value = os.environ.get(name, "").strip()
-        if value:
-            return value
-    return ""
+def _text(value: object) -> str:
+    """把 `settings` 字段值转成去空白字符串；`None` 与空值一律返回 `""`。
+
+    取值一律走 `settings`（项目唯一配置源），**不再读 `os.environ`**：旧名回退链由
+    `Settings.godot_*` 的 `validation_alias` 承担，测试改用
+    `mock.patch.multiple(settings, godot_executable=...)` 注入。
+    """
+    return "" if value is None else str(value).strip()
+
+
+def probe_godot_version(executable: str | Path) -> tuple[int, ...]:
+    """运行 `<godot> --version` 并返回版本号元组，例如 ``(4, 7, 1)``。
+
+    真实引擎那一层测试用它做闸门：拿不到版本号就抛错——那意味着
+    `A3GAME_TEST_GODOT_EXECUTABLE` 指向的不是可用的 Godot，静默跳过等于没测。
+
+    Args:
+        executable: Godot 可执行文件路径。
+
+    Returns:
+        版本号的数字元组；只含前导数字段（`4.7.1.stable` -> ``(4, 7, 1)``）。
+
+    Raises:
+        RuntimeError: 探测失败或输出里没有版本号。
+    """
+    import re as _re
+    import subprocess
+
+    try:
+        completed = subprocess.run(
+            [str(executable), "--version"],
+            capture_output=True,
+            text=True,
+            timeout=30,
+            check=False,
+        )
+    except OSError as exc:
+        raise RuntimeError(
+            f"could not run {executable} --version: {exc}"
+        ) from exc
+    output = f"{completed.stdout}\n{completed.stderr}"
+    match = _re.search(r"(\d+(?:\.\d+)*)", output)
+    if not match:
+        raise RuntimeError(
+            f"{executable} --version produced no version number: {output!r}"
+        )
+    return tuple(int(part) for part in match.group(1).split("."))
 
 
 def _optional_path(value: str | Path | None) -> Path | None:
@@ -111,40 +165,41 @@ class GodotClientConfig:
                 f"supported versions: {supported}"
             )
 
-        configured_project = project_path or _first_environment_value(
-            "A3GAME_GODOT_PROJECT",
-            "AAAGF_GODOT_PROJECT",
-        )
+        configured_project = project_path or _text(settings.godot_project)
         unresolved_project = _unresolved_absolute_path(configured_project)
         resolved_project = _optional_path(configured_project)
         resolved_executable = _unresolved_absolute_path(
-            godot_executable
-            or _first_environment_value(
-                "A3GAME_GODOT_EXECUTABLE",
-                "A3GAME_GODOT",
-                "AAAGF_GODOT",
-            )
+            godot_executable or _text(settings.godot_executable)
         )
         resolved_host = (
-            runtime_host
-            or _first_environment_value("A3GAME_GODOT_RUNTIME_HOST")
-            or DEFAULT_RUNTIME_HOST
+            runtime_host or _text(settings.godot_runtime_host) or DEFAULT_RUNTIME_HOST
         )
+        # 端口与超时在 `Settings` 里已有默认值（镜像本模块的 DEFAULT_* 常量）。
+        # 注意用 `is None` 判定而不是 `or`：显式配的 `0` 是**合法输入**（随后由下面的
+        # 范围检查报错），`or` 会把它当成「未配置」而悄悄换成默认值。
         resolved_port = runtime_port
         if resolved_port is None:
-            value = _first_environment_value("A3GAME_GODOT_RUNTIME_PORT")
-            resolved_port = int(value) if value else DEFAULT_RUNTIME_PORT
+            configured_port = settings.godot_runtime_port
+            resolved_port = (
+                DEFAULT_RUNTIME_PORT if configured_port is None else int(configured_port)
+            )
         if not 1 <= int(resolved_port) <= 65535:
             raise ValueError("Godot runtime UDP port must be between 1 and 65535")
 
         resolved_editor_timeout = editor_timeout
         if resolved_editor_timeout is None:
-            value = _first_environment_value("A3GAME_GODOT_EDITOR_TIMEOUT")
-            resolved_editor_timeout = int(value) if value else DEFAULT_EDITOR_TIMEOUT
+            configured_timeout = settings.godot_editor_timeout
+            resolved_editor_timeout = (
+                DEFAULT_EDITOR_TIMEOUT if configured_timeout is None
+                else int(configured_timeout)
+            )
         resolved_import_timeout = import_timeout
         if resolved_import_timeout is None:
-            value = _first_environment_value("A3GAME_GODOT_IMPORT_TIMEOUT")
-            resolved_import_timeout = int(value) if value else DEFAULT_IMPORT_TIMEOUT
+            configured_timeout = settings.godot_import_timeout
+            resolved_import_timeout = (
+                DEFAULT_IMPORT_TIMEOUT if configured_timeout is None
+                else int(configured_timeout)
+            )
         if int(resolved_editor_timeout) <= 0:
             raise ValueError("editor_timeout must be greater than zero")
         if int(resolved_import_timeout) <= 0:
@@ -198,10 +253,7 @@ class GodotClientConfig:
 
     @property
     def data_root(self) -> Path:
-        configured = _first_environment_value(
-            "A3GAME_GODOT_DATA_ROOT",
-            "A3GAME_DATA_ROOT",
-        )
+        configured = _text(settings.godot_data_root)
         if configured:
             unresolved = _unresolved_absolute_path(configured)
             if unresolved is not None:
@@ -213,10 +265,7 @@ class GodotClientConfig:
 
     @property
     def artifact_registry_path(self) -> Path:
-        configured = _first_environment_value(
-            "A3GAME_GODOT_ARTIFACT_REGISTRY",
-            "A3GAME_ARTIFACT_REGISTRY",
-        )
+        configured = _text(settings.godot_artifact_registry)
         if configured:
             unresolved = _unresolved_absolute_path(configured)
             if unresolved is not None:
@@ -225,10 +274,7 @@ class GodotClientConfig:
 
     @property
     def world_registry_root(self) -> Path:
-        configured = _first_environment_value(
-            "A3GAME_GODOT_WORLD_REGISTRY_ROOT",
-            "A3GAME_WORLD_REGISTRY_ROOT",
-        )
+        configured = _text(settings.godot_world_registry_root)
         if configured:
             unresolved = _unresolved_absolute_path(configured)
             if unresolved is not None:

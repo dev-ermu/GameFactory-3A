@@ -40,9 +40,8 @@ scripts\engine_install\godot\install.cmd --version 4.5.1 --json
 Require exit code zero, `ok=true`, and an exact `verified_version`. The default
 is pinned to `4.5.1-stable`; `latest` is deliberately rejected. The installer:
 
-- probes `--executable`, `A3GAME_GODOT_EXECUTABLE`, `A3GAME_GODOT`, legacy
-  `AAAGF_GODOT`, then `godot4`/`godot`/`godot-mono` on PATH and reuses only the
-  requested version;
+- probes `--executable`, `A3GAME_GODOT_EXECUTABLE`, then `godot4`/`godot`/`godot-mono`
+  on PATH and reuses only the requested version;
 - selects Linux x86-64/x86-32/arm64/arm32, universal macOS, or Windows
   x64/x86/arm64 official assets;
 - downloads only the official GitHub Godot release over HTTPS, requires one
@@ -99,8 +98,8 @@ Constructor precedence and state:
 
 | Setting | Resolution |
 | --- | --- |
-| Project | argument → `A3GAME_GODOT_PROJECT` → legacy `AAAGF_GODOT_PROJECT` |
-| Executable | argument → `A3GAME_GODOT_EXECUTABLE` → `A3GAME_GODOT` → legacy `AAAGF_GODOT` → PATH discovery |
+| Project | argument → `settings.godot_project` (`A3GAME_GODOT_PROJECT`) |
+| Executable | argument → `settings.godot_executable` (`A3GAME_GODOT_EXECUTABLE`) → PATH discovery |
 | Runtime | arguments → `A3GAME_GODOT_RUNTIME_HOST` / `A3GAME_GODOT_RUNTIME_PORT` → `127.0.0.1:30050` |
 | Timeouts | arguments → `A3GAME_GODOT_EDITOR_TIMEOUT` / `A3GAME_GODOT_IMPORT_TIMEOUT` → 300 seconds |
 | Private state | `A3GAME_GODOT_DATA_ROOT` → `<project>/.a3game` |

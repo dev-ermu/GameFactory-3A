@@ -30,11 +30,13 @@ See `scripts/engine_install/godot/README.md`.
 
 ## Configuration
 
-- `A3GAME_GODOT_PROJECT`: project directory or `project.godot`; the legacy
-  `AAAGF_GODOT_PROJECT` is used only when this variable is unset.
-- `A3GAME_GODOT_EXECUTABLE`: preferred Godot 4 editor executable;
-  `A3GAME_GODOT`, then legacy `AAAGF_GODOT`, are fallbacks. With none set,
-  `godot4`, `godot`, and `godot-mono` are discovered on `PATH`.
+- `A3GAME_GODOT_PROJECT`: project directory or `project.godot`.
+- `A3GAME_GODOT_EXECUTABLE`: the Godot 4 editor executable. When unset, `godot4`,
+  `godot`, and `godot-mono` are discovered on `PATH`.
+
+  Every Godot variable has exactly one name — there is no legacy `AAAGF_*` /
+  `A3GAME_GODOT` fallback chain, because configuration has a single source: the
+  `settings` instance built from `.env`.
 - `A3GAME_GODOT_RUNTIME_HOST` / `A3GAME_GODOT_RUNTIME_PORT`: native runtime UDP
   bridge; defaults to `127.0.0.1:30050`.
 - `A3GAME_GODOT_EDITOR_TIMEOUT` / `A3GAME_GODOT_IMPORT_TIMEOUT`: bounded editor

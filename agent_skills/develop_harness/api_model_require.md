@@ -46,11 +46,11 @@ Provider-specific request bodies stay in the wrapper.
 ### R9.12 — one configuration source
 
 Every credential, base URL, backend switch and cache location is read from
-**one place**: `<REPO_PATH>/global_config.py`, which loads `<REPO_PATH>/.env`
+**one place**: `<REPO_PATH>/config.py`, which loads `<REPO_PATH>/.env`
 (template: `.env.example`). A wrapper must not invent its own env-var name, read
 a `.env` of its own, or fall back to a literal endpoint.
 
-`global_config` is a **top-level, stdlib-only** module on purpose: `models/` must
+`config` is a **top-level, stdlib-only** module on purpose: `models/` must
 not import `pipeline/` (R1.1), and both layers need the same configuration, so it
 belongs to neither. `models/common/cloud_api.py` imports it at module load, so a
 wrapper used outside a Pipeline runner still sees the file.
@@ -141,7 +141,7 @@ Use these ids so every cloud wrapper reads the same way.
 - Free tiers are small. Bring a chain up on the **stub** first; spend real credits
   only on the final verification.
 - API keys and base URLs live in `<REPO_PATH>/.env` (template: `.env.example`),
-  read through `<REPO_PATH>/global_config.py` (R9.12). A key must never reach the
+  read through `<REPO_PATH>/config.py` (R9.12). A key must never reach the
   repository, a log line, a `meta.json` or a cache filename.
 - Commercial-use rights differ between free and paid tiers on every provider.
   Confirm the tier before any generated asset is published.

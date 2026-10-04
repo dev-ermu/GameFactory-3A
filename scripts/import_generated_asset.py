@@ -48,11 +48,8 @@ Environment (so the flags can be omitted):
     AAAGF_UPROJECT        path to the .uproject
     AAAGF_UNITY           path to Unity.exe
     AAAGF_UNITY_PROJECT   path to the Unity project root
-    A3GAME_GODOT_EXECUTABLE preferred path to the Godot 4 editor executable
-    A3GAME_GODOT          fallback path to the Godot 4 editor executable
-    AAAGF_GODOT           legacy fallback path to the Godot 4 editor executable
+    A3GAME_GODOT_EXECUTABLE path to the Godot 4 editor executable
     A3GAME_GODOT_PROJECT  path to the Godot project root or project.godot
-    AAAGF_GODOT_PROJECT   legacy fallback for A3GAME_GODOT_PROJECT
     AAAGF_BLENDER         path to blender(.exe), or a python that can import bpy
 """
 
@@ -244,18 +241,9 @@ def find_godot(explicit: str | None = None) -> Path | None:
     """Locate a Godot 4 editor binary."""
     configured = str(explicit or "").strip()
     if not configured:
-        configured = next(
-            (
-                value
-                for name in (
-                    "A3GAME_GODOT_EXECUTABLE",
-                    "A3GAME_GODOT",
-                    "AAAGF_GODOT",
-                )
-                if (value := os.environ.get(name, "").strip())
-            ),
-            "",
-        )
+        # 只有一个变量名 `A3GAME_GODOT_EXECUTABLE`，没有 `A3GAME_GODOT` / `AAAGF_GODOT`
+        # 旧名回退——配置只有一个来源，回退链会让来源重新变成多个。
+        configured = os.environ.get("A3GAME_GODOT_EXECUTABLE", "").strip()
     if configured:
         return Path(configured).expanduser().resolve(strict=False)
     for name in ("godot4", "godot", "godot-mono"):
@@ -1458,11 +1446,7 @@ def main() -> int:
     ap.add_argument("--godot", default=None, help="Godot 4 editor binary path")
     ap.add_argument(
         "--godot-project",
-        default=(
-            os.environ.get("A3GAME_GODOT_PROJECT", "").strip()
-            or os.environ.get("AAAGF_GODOT_PROJECT", "").strip()
-            or None
-        ),
+        default=(os.environ.get("A3GAME_GODOT_PROJECT", "").strip() or None),
         help="Godot project directory or its project.godot file",
     )
     ap.add_argument(
@@ -1592,14 +1576,14 @@ def main() -> int:
                 if not godot or not godot.is_file():
                     print(
                         "[godot] no Godot editor found — pass --godot or set "
-                        "A3GAME_GODOT_EXECUTABLE/A3GAME_GODOT/AAAGF_GODOT"
+                        "A3GAME_GODOT_EXECUTABLE"
                     )
                     failures += 1
                     continue
                 if not args.godot_project:
                     print(
                         "[godot] no project — pass --godot-project or set "
-                        "A3GAME_GODOT_PROJECT/AAAGF_GODOT_PROJECT"
+                        "A3GAME_GODOT_PROJECT"
                     )
                     failures += 1
                     continue

@@ -81,8 +81,7 @@ pinned Godot 4 editor with `scripts/engine_install/godot/install.sh --json` or
 `install.cmd --json`; it verifies the official SHA-512 and exact engine version.
 Godot host code requires Python 3.14+.
 Set `A3GAME_GODOT_EXECUTABLE` and `A3GAME_GODOT_PROJECT`, or pass the corresponding
-CLI options. The executable fallback order is `A3GAME_GODOT`, legacy
-`AAAGF_GODOT`, then `PATH`.
+CLI options. When the executable variable is unset, `PATH` discovery applies.
 Godot material binding also runs an adapter-owned SceneTree script and succeeds
 only after bound `PackedScene` files with changed `MeshInstance3D` nodes are
 reported and persisted.

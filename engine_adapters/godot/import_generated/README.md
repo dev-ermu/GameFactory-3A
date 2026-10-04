@@ -34,12 +34,11 @@ python scripts/import_generated_asset.py --engine godot --src model.glb \
   --godot-project /projects/MyGame
 ```
 
-`--godot-project`, `A3GAME_GODOT_PROJECT`, and the legacy
-`AAAGF_GODOT_PROJECT` fallback accept either the project directory or its
-`/projects/MyGame/project.godot` marker. The explicit flag wins; when both
-environment variables are set, `A3GAME_GODOT_PROJECT` wins.
-Godot executable resolution is `--godot`, `A3GAME_GODOT_EXECUTABLE`,
-`A3GAME_GODOT`, legacy `AAAGF_GODOT`, then `PATH`, in that order.
+`--godot-project` and `A3GAME_GODOT_PROJECT` accept either the project directory or
+its `/projects/MyGame/project.godot` marker. The explicit flag wins.
+Godot executable resolution is `--godot`, then `A3GAME_GODOT_EXECUTABLE`, then
+`PATH`, in that order. Each variable has a single name; there is no legacy
+`AAAGF_*` fallback.
 
 Local buffer/image files referenced by a `.gltf` are preflighted, copied, and
 rolled back with the main document. Meshes default to

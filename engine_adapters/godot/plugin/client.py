@@ -30,6 +30,21 @@ PLUGIN_VALIDATION_SCHEMA = "gamefactory3a.godot.plugin_validation.v1"
 
 
 def _safe_name(value: str) -> str:
+    """把外部传入的加载项名清洗成可安全使用的单层目录名。
+
+    只保留字母、数字、下划线、点和连字符，其余替换成下划线，并去掉首尾的点。
+    清洗后为空、或恰好是 ``.`` / ``..`` 时拒绝——那意味着调用方没给出可用名字，
+    继续下去会把内容写到项目之外。
+
+    Args:
+        value: 候选名字，通常是用户传入的 ``install_dir`` 或源目录名。
+
+    Returns:
+        可安全用作单层目录名的字符串。
+
+    Raises:
+        ValueError: 清洗后没有剩余有效字符，或结果是一个路径导航片段。
+    """
     cleaned = re.sub(r"[^0-9A-Za-z_.-]+", "_", str(value or "")).strip("._")
     if not cleaned or cleaned in {".", ".."}:
         raise ValueError("Godot add-on name is invalid")
@@ -37,10 +52,37 @@ def _safe_name(value: str) -> str:
 
 
 def _validate_tree(source: Path) -> None:
+    """校验目录树里没有符号链接、特殊文件等不安全节点。
+
+    只是 `validate_regular_directory_tree` 的薄封装，用来固定 label 文案，
+    让所有报错都以 "Godot add-on source" 开头，便于调用方识别来源。
+
+    Args:
+        source: 待校验的加载项目录。
+
+    Raises:
+        ValueError: 树里存在符号链接、FIFO、设备文件或逃出根目录的子项。
+    """
     validate_regular_directory_tree(source, label="Godot add-on source")
 
 
 def _addons_directory(project_dir: Path) -> Path:
+    """解析 ``<project_dir>/addons``，并确认它确实落在项目根内。
+
+    依次拒绝：项目根不是目录、``addons`` 本身是符号链接、``addons`` 存在但不是目录、
+    以及**解析后逃出项目根**的情况。最后一项是路径穿越防护——`Path.resolve()` 会跟随
+    符号链接，不校验就可能把内容写到项目之外。
+
+    Args:
+        project_dir: Godot 项目根目录。
+
+    Returns:
+        ``<project_dir>/addons``（未跟随符号链接的原始路径）。
+
+    Raises:
+        NotADirectoryError: 项目根或 addons 路径不是目录。
+        ValueError: ``addons`` 是符号链接，或其解析结果逃出项目根。
+    """
     root = project_dir.resolve(strict=True)
     if not root.is_dir():
         raise NotADirectoryError(f"Godot project root is not a directory: {root}")
@@ -60,6 +102,21 @@ def _addons_directory(project_dir: Path) -> Path:
 
 
 def _install_target(project_dir: Path, install_dir: str) -> Path:
+    """解析加载项的安装目标目录，并做与 `_addons_directory` 同级的越界防护。
+
+    目标为 ``<project>/addons/<install_dir>``。拒绝目标本身是符号链接，并确认解析后
+    仍在项目根内——``install_dir`` 来自外部，可能含 ``..`` 这类导航片段。
+
+    Args:
+        project_dir: Godot 项目根目录。
+        install_dir: 安装目录名（单层，不含路径分隔符）。
+
+    Returns:
+        未跟随符号链接的安装目标路径。
+
+    Raises:
+        ValueError: 目标是符号链接，或其解析结果逃出项目根。
+    """
     root = project_dir.resolve(strict=True)
     addons = _addons_directory(root)
     target = addons / install_dir
@@ -76,6 +133,16 @@ def _install_target(project_dir: Path, install_dir: str) -> Path:
 
 
 def _copied_files(target: Path) -> list[str]:
+    """列出目录下所有文件的相对路径（POSIX 分隔符，已排序）。
+
+    用于 ``payload["copied_files"]``，让调用方能核对究竟装进去了哪些文件。
+
+    Args:
+        target: 安装完成后的目录。
+
+    Returns:
+        形如 ``["runtime.gd", "sub/helper.gd"]`` 的字符串列表。
+    """
     return [
         item.relative_to(target).as_posix()
         for item in sorted(target.rglob("*"))
@@ -95,7 +162,18 @@ _PLUGIN_REQUIRED_KEYS = ("name", "author", "version", "description", "script")
 
 
 def _split_assignment_comment(value: str) -> tuple[str, str]:
-    """Split a Godot setting value from an unquoted trailing comment."""
+    """把 Godot 配置项的值与**未加引号的**行尾注释分开。
+
+    Godot 的 ``.cfg`` / ``project.godot`` 里，``;`` 和 ``#`` 只有在双引号之外才是注释。
+    因此需要逐字符扫描并跟踪引号与转义状态，否则值里含 ``#`` 的合法字符串
+    （如 ``"res://a#b.gd"``）会被误截断。
+
+    Args:
+        value: ``key=...`` 中等号右侧的原始文本（不含换行）。
+
+    Returns:
+        ``(值, 注释)``；没有注释时第二项为空串，值已去掉尾部空白。
+    """
 
     in_string = False
     escaped = False
@@ -118,7 +196,22 @@ def _split_assignment_comment(value: str) -> tuple[str, str]:
 
 
 def _plugin_entry_script(source: Path) -> tuple[str, Path, dict[str, str]]:
-    """Validate ``plugin.cfg`` metadata and resolve its safe entry script."""
+    """校验 ``plugin.cfg`` 元数据，并解析出安全的入口脚本路径。
+
+    要求恰好一个 ``[plugin]`` 段，且 ``name`` / ``author`` / ``version`` /
+    ``description`` / ``script`` 五项各出现一次、值都是单个带引号字符串。
+    ``script`` 还必须是**不逃逸**的相对路径：拒绝反斜杠、NUL、绝对路径、盘符、
+    ``://`` 以及 ``.`` / ``..`` / 空片段，最后再解析一次确认落在加载项源目录内。
+
+    Args:
+        source: 加载项源目录（应含 ``plugin.cfg``）。
+
+    Returns:
+        ``(入口脚本的相对 POSIX 路径, 入口脚本绝对路径, 元数据字典)``。
+
+    Raises:
+        ValueError: 段落或必需项缺失、重复，取值格式不合法，或脚本路径不安全。
+    """
 
     descriptor = source / "plugin.cfg"
     text = descriptor.read_text(encoding="utf-8-sig")
@@ -213,7 +306,27 @@ def _validate_plugin_with_godot(
     entry_script: str,
     config: GodotClientConfig,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
-    """Load an add-on entry script with Godot in an isolated project."""
+    """在隔离的临时工程里，用真实 Godot 加载加载项入口脚本。
+
+    把源目录拷进临时工程、生成最小 ``project.godot``，再以
+    ``--editor --script validate_plugin.gd`` 让 Godot 自己实例化入口脚本，并读回它
+    写出的 JSON 报告。这是**唯一**能确认「脚本真的是可实例化的 EditorPlugin」的手段
+    ——纯文本校验做不到这件事。
+
+    Args:
+        source: 已暂存的加载项目录。
+        install_dir: 加载项在 ``addons/`` 下的目录名。
+        entry_script: 期望的入口脚本相对路径。
+        config: 客户端配置，用于取 ``editor_timeout``。
+
+    Returns:
+        ``(进程摘要, Godot 报告)``；进程摘要含 returncode 与输出尾部各 4000 字符。
+
+    Raises:
+        FileNotFoundError: 校验脚本 ``validate_plugin.gd`` 不存在。
+        RuntimeError: Godot 没有产出报告，或报告声称成功但退出码非零。
+        ValueError: 报告不是合法 JSON、schema 不符，或脚本不是可实例化的 EditorPlugin。
+    """
 
     if not PLUGIN_VALIDATOR_SCRIPT.is_file():
         raise FileNotFoundError(
@@ -319,6 +432,21 @@ def _editor_plugin_entries(
     list[tuple[int, int]],
     list[tuple[int, int, str, str, str, list[str]]],
 ]:
+    """扫描 ``[editor_plugins]`` 段，解析其中的 ``enabled=`` 条目。
+
+    值必须是**单行** ``PackedStringArray("a", "b")``。解析成字符串列表返回，同时保留
+    位置、行首缩进、行尾注释与换行风格，供后续原地改写使用（不能重排用户的格式）。
+
+    Args:
+        text: ``project.godot`` 的全文。
+
+    Returns:
+        ``(段落范围列表, 条目列表)``；条目为
+        ``(起始偏移, 结束偏移, 行首前缀, 注释, 换行符, 值列表)``。
+
+    Raises:
+        ValueError: 值不是单行 PackedStringArray，或其中元素不是字符串。
+    """
     headers = list(_SECTION_HEADER_PATTERN.finditer(text))
     sections: list[tuple[int, int]] = []
     entries: list[tuple[int, int, str, str, str, list[str]]] = []
@@ -371,6 +499,20 @@ def _validate_plugin_update(
     list[tuple[int, int]],
     list[tuple[int, int, str, str, str, list[str]]],
 ]:
+    """改写 ``project.godot`` 之前，拒绝有歧义的 ``[editor_plugins]`` 声明。
+
+    段落重复、或 ``enabled=`` 重复时直接失败，而不是猜哪个是「对的那个」——
+    猜错会静默改坏用户的工程配置。
+
+    Args:
+        text: ``project.godot`` 的全文。
+
+    Returns:
+        ``(段落范围列表, 条目列表)``，可直接交给 `_enable_plugin` 使用。
+
+    Raises:
+        ValueError: ``[editor_plugins]`` 或其中的 ``enabled=`` 出现多次。
+    """
     sections, entries = _editor_plugin_entries(text)
     if len(sections) > 1:
         raise ValueError(
@@ -386,6 +528,19 @@ def _validate_plugin_update(
 
 
 def _enable_plugin(project_file: Path, install_dir: str) -> None:
+    """把加载项的 ``plugin.cfg`` 资源追加进 ``[editor_plugins] enabled``。
+
+    三种落点分别处理：已有 ``enabled=`` 就原地替换（保留缩进、注释、换行风格）；
+    有 ``[editor_plugins]`` 段但没有该键就在段尾补一行；两者都没有就新建整个段落。
+    写入后**重新解析一次**，确认值真的被保留。
+
+    Args:
+        project_file: ``project.godot`` 路径。
+        install_dir: 加载项在 ``addons/`` 下的目录名。
+
+    Raises:
+        RuntimeError: 写回后重新解析，发现资源没被保留。
+    """
     resource = f"res://addons/{install_dir}/plugin.cfg"
     text = project_file.read_text(encoding="utf-8")
     sections, entries = _validate_plugin_update(text)
@@ -444,6 +599,19 @@ def _autoload_entries(
     list[tuple[int, int]],
     list[tuple[int, int, str, str, str, Any]],
 ]:
+    """扫描 ``[autoload]`` 段，解析出指定名字的条目。
+
+    与 `_editor_plugin_entries` 同一套路，但值是单个字符串。解析失败时退回原始文本，
+    因为 autoload 的值可能是 Godot 表达式而非 JSON 字符串。
+
+    Args:
+        text: ``project.godot`` 的全文。
+        name: autoload 名字，例如 ``A3GameRuntime``。
+
+    Returns:
+        ``(段落范围列表, 条目列表)``；条目为
+        ``(起始偏移, 结束偏移, 行首前缀, 注释, 换行符, 值)``。
+    """
     headers = list(_SECTION_HEADER_PATTERN.finditer(text))
     sections: list[tuple[int, int]] = []
     entry_pattern = re.compile(
@@ -483,6 +651,21 @@ def _validate_autoload_update(
     *,
     replace_existing: bool,
 ) -> None:
+    """确认 autoload 可被安全写入，否则报错让调用方决定。
+
+    这是「宁可不装，也不静默覆盖」策略的落点：同名 autoload 已存在时，只有内容正好是
+    期望值才放行；名字被声明多次、或指向别的资源，都抛 `FileExistsError` 并提示用
+    ``replace_existing=True`` 显式覆盖。
+
+    Args:
+        text: ``project.godot`` 的全文。
+        name: 要写入的 autoload 名字。
+        resource: 期望的脚本资源路径（不含单例前缀 ``*``）。
+        replace_existing: ``True`` 时跳过全部检查，允许覆盖。
+
+    Raises:
+        FileExistsError: 同名 autoload 已存在且与期望值不符，或声明次数不为 1。
+    """
     _sections, entries = _autoload_entries(text, name)
     expected = "*" + resource
     if not entries or replace_existing:
@@ -507,6 +690,18 @@ def _enable_autoload(
     *,
     replace_existing: bool,
 ) -> None:
+    """把 autoload 设置写入 ``project.godot`` 的 ``[autoload]`` 段。
+
+    Godot 的 autoload 值用 ``*`` 前缀表示「单例」，写入时用 `json.dumps` 补引号。
+    三种落点：没有 ``[autoload]`` 段就新建；已有同名条目且允许替换时原地改写
+    （多余的同名条目一并删除，**从后往前**改以免偏移失效）；有段无条目则追加到段尾。
+
+    Args:
+        project_file: ``project.godot`` 路径。
+        name: autoload 名字。
+        resource: 脚本资源路径（不含单例前缀 ``*``）。
+        replace_existing: ``True`` 时允许覆盖已有条目。
+    """
     text = project_file.read_text(encoding="utf-8")
     sections, entries = _autoload_entries(text, name)
     _validate_autoload_update(
@@ -553,6 +748,11 @@ def _enable_autoload(
 
 class GodotPluginClient:
     def __init__(self, config: GodotClientConfig) -> None:
+        """保存已解析的配置，并建立源解析器。
+
+        Args:
+            config: 由 `GodotClientConfig.resolve()` 产出的配置对象。
+        """
         self._config = config
         self._sources = GeneratedAssetSourceResolver()
 
@@ -565,6 +765,22 @@ class GodotPluginClient:
         enable: bool = True,
         dry_run: bool = False,
     ) -> dict[str, Any]:
+        """安装一个外部加载项：校验 → 暂存 → 原生验证 → 落盘 → 启用。
+
+        分两阶段：先在 ``try`` 里完成**所有**不写盘的准备工作（解析源、确认
+        ``plugin.cfg`` 存在、校验安装目标安全），任何一步失败就返回结构化失败结果；
+        真正写盘的部分交给 `_install_tree`，由它统一负责回滚。
+
+        Args:
+            source: 源描述符（路径或生成物引用）。
+            install_dir: 目标目录名；留空时取源目录名。
+            replace_existing: 目标已存在时是否允许替换。
+            enable: 是否同时写入 ``project.godot`` 的启用设置。
+            dry_run: 只做校验与原生验证，不落盘。
+
+        Returns:
+            ``GodotOperationResult`` 字典；失败时 ``ok=False``，errors 里带异常类型名。
+        """
         operation = "plugin.install"
         try:
             resolved = self._sources.resolve(source, allow_directory=True)
@@ -605,6 +821,19 @@ class GodotPluginClient:
         enable: bool = True,
         dry_run: bool = False,
     ) -> dict[str, Any]:
+        """安装适配器自带的 A3GamePlayable 运行时框架。
+
+        与 `install()` 的区别：源固定为包内目录，且会额外注册 ``A3GameRuntime`` autoload
+        ——框架需要在游戏启动时自动挂载。
+
+        Args:
+            replace_existing: 目标已存在时是否允许替换。
+            enable: 是否写入启用设置与 autoload。
+            dry_run: 只做校验与原生验证，不落盘。
+
+        Returns:
+            ``GodotOperationResult`` 字典。
+        """
         operation = "plugin.install_framework"
         try:
             project_dir, project_file = self._project()
@@ -633,6 +862,16 @@ class GodotPluginClient:
         )
 
     def list(self) -> dict[str, Any]:
+        """列出项目 ``addons/`` 下所有可用的加载项。
+
+        逐个条目判定，任何不安全或不完整的情况都**跳过并记一条 warning**，而不是中断整个
+        列举：符号链接、非目录、非普通文件、``plugin.cfg`` 缺失、以及解析后逃出
+        ``addons/`` 的描述符。这样一次调用就能看清哪些加载项可用、哪些被拒绝及原因。
+
+        Returns:
+            ``GodotOperationResult`` 字典；artifacts 每项含 artifact_id、backend_path 与
+            类型（godot_runtime_framework 或 godot_gameplay_addon），payload.count 为总数。
+        """
         try:
             project_dir, _project_file = self._project()
             addons = _addons_directory(project_dir)
@@ -718,6 +957,18 @@ class GodotPluginClient:
         ).to_dict()
 
     def _project(self) -> tuple[Path, Path]:
+        """取项目根与 ``project.godot``，并确认两者的关系是安全的。
+
+        要求 ``project.godot`` 真实存在、本身不是符号链接，且解析后**直接**位于项目根下
+        （``parent == root``，而不是更深或更浅的位置）。
+
+        Returns:
+            ``(项目根绝对路径, project.godot 绝对路径)``。
+
+        Raises:
+            FileNotFoundError: ``project_path`` 未解析出存在的 ``project.godot``。
+            ValueError: 项目文件是符号链接，或不在项目根下。
+        """
         project_dir = self._config.project_dir
         project_file = self._config.project_file
         if project_dir is None or project_file is None or not project_file.is_file():
@@ -752,6 +1003,34 @@ class GodotPluginClient:
         autoload_name: str = "",
         autoload_path: str = "",
     ) -> dict[str, Any]:
+        """把加载项目录装进项目并可选地启用，全程保证原子性。
+
+        顺序：校验源树 → 解析 ``plugin.cfg`` → 确认目标安全 → 预检 ``project.godot``
+        冲突 → 拷入 staging 并**用真实 Godot 验证** → ``dry_run`` 提前返回 →
+        备份既有目标 → 落盘 → 改写 ``project.godot``。
+
+        任一环节抛异常都会回滚：删掉已落盘的目标、把备份移回原位、将 ``project.godot``
+        还原成原始文本。临时 staging 与备份目录在 ``finally`` 里清理。
+
+        Args:
+            operation: 操作名，写入返回结果。
+            source: 加载项源目录。
+            target: 安装目标目录。
+            project_file: ``project.godot`` 路径。
+            install_dir: 目标目录名。
+            source_descriptor: 写入 payload 的源描述。
+            replace_existing: 目标已存在时是否允许替换。
+            enable: 是否写入启用设置。
+            dry_run: 只做校验与原生验证，不落盘。
+            artifact_type: 产物类型（框架或普通加载项）。
+            autoload_name: 需注册的 autoload 名字；空则跳过。
+            autoload_path: autoload 指向的脚本资源路径。
+
+        Returns:
+            成功时为 ``GodotOperationResult.success``（artifacts 含目标路径与 ``res://``
+            资源路径，payload 含 entry_script、native_validation、copied_files）；
+            失败时为结构化 failure，且磁盘状态已还原。
+        """
         resource = f"res://addons/{install_dir}/plugin.cfg"
         payload = {
             "source": dict(source_descriptor),

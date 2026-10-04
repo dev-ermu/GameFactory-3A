@@ -12,7 +12,7 @@ R9.9（带退避的重试，区分可重试／终态失败）。
 
 It knows nothing about 3D, audio or video — only HTTP, money and failure modes.
 
-配置只有一个来源：`<repo>/.env`。import 本模块即会加载它（经 `global_config`），
+配置只有一个来源：`<repo>/.env`。import 本模块即会加载它（经 `config`），
 因此脱离 Pipeline runner 单独使用的 wrapper 也能读到该文件。Key 与 API 根地址都是
 必填项：硬编码端点不可取，因为公开端点并非在所有网络下都可达，而静默回退只会在
 第一次计费调用时失败。
@@ -46,22 +46,22 @@ logger.addHandler(logging.NullHandler())
 def _load_project_env() -> None:
     """在**不** import `pipeline/` 的前提下让 `<repo>/.env` 生效（R1.1）。
 
-    `global_config` 是顶层、纯标准库模块，因此 model 可以 import 它而不依赖编排层。
+    `config` 是顶层、纯标准库模块，因此 model 可以 import 它而不依赖编排层。
     找不到该模块也不致命：wrapper 会退回原来的行为，只读进程环境变量。
     """
     try:
-        import global_config  # noqa: PLC0415
+        import config  # noqa: PLC0415
     except ModuleNotFoundError:
         root = Path(__file__).resolve().parents[2]
         if str(root) not in sys.path:
             sys.path.insert(0, str(root))
         try:
-            import global_config  # noqa: PLC0415
+            import config  # noqa: PLC0415
         except ModuleNotFoundError:  # pragma: no cover - vendored use
             return
 
     try:
-        global_config.load()
+        config.load()
     except Exception:  # pragma: no cover - configuration must never crash import
         logger.debug("[cloud_api] could not load .env", exc_info=True)
 

@@ -49,7 +49,7 @@ URP and HDRP material conversion is untested.
 |---|---|
 | Engine install | Run `scripts/engine_install/godot/install.sh --json` or `install.cmd --json`; the pinned official archive is SHA-512 verified, atomically installed/reused, version-probed, and emitted as PATH/config output |
 | Project | Use a directory containing `project.godot`; after engine validation, create a minimal project with `python3 -m engine_adapters.godot --project <dir> create-project` |
-| Editor binary | Set `A3GAME_GODOT_EXECUTABLE`; `A3GAME_GODOT` and legacy `AAAGF_GODOT` are fallbacks, followed by `godot4`, `godot`, or `godot-mono` on `PATH` |
+| Editor binary | Set `A3GAME_GODOT_EXECUTABLE`; when unset, `godot4`, `godot`, or `godot-mono` are discovered on `PATH` |
 | Import | Godot's built-in glTF/GLB importer needs no addon; the adapter stages the file under `res://` and runs `godot --headless --path <project> --import` |
 | Python | Python 3.14+ standard library; the adapter does not require an engine SDK package |
 
