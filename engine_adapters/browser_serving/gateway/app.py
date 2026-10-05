@@ -1,4 +1,6 @@
-"""FastAPI Gateway for engine-agnostic browser serving."""
+"""FastAPI Gateway for engine-agnostic browser serving.
+面向引擎无关型浏览器渲染的FastAPI网关。
+"""
 
 import json
 import logging

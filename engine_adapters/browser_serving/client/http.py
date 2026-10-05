@@ -1,4 +1,7 @@
-"""Small standard-library transport for the Browser Serving Gateway."""
+"""Small standard-library transport for the Browser Serving Gateway.
+
+用于浏览器服务网关的小型标准库传输工具。
+"""
 
 import json
 import mimetypes

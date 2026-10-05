@@ -28,7 +28,7 @@ from .._internal import (
 )
 from ..config import (
     DEFAULT_IMPORT_ROOT,
-    GODOT_ASSET_TYPE_DEFAULT_DESTS,
+    GODOT_ASSET_TYPE_DEFAULT_DEST,
     GodotClientConfig,
 )
 from ..contracts import GodotOperationResult
@@ -129,7 +129,7 @@ class GodotAssetsClient:
                 raise ValueError(validation)
             target_root, resource_root = self._destination(
                 destination
-                or GODOT_ASSET_TYPE_DEFAULT_DESTS.get(
+                or GODOT_ASSET_TYPE_DEFAULT_DEST.get(
                     normalized_type, DEFAULT_IMPORT_ROOT
                 )
             )
@@ -855,7 +855,7 @@ class GodotAssetsClient:
                 raise ValueError(error)
             target_root, resource_root = self._destination(
                 destination
-                or GODOT_ASSET_TYPE_DEFAULT_DESTS.get(
+                or GODOT_ASSET_TYPE_DEFAULT_DEST.get(
                     normalized_type, DEFAULT_IMPORT_ROOT
                 )
             )

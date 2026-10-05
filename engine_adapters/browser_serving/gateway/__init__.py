@@ -1,4 +1,6 @@
-"""Browser Serving FastAPI Gateway."""
+"""Browser Serving FastAPI Gateway.
+浏览器服务FastAPI网关。
+"""
 
 from .app import create_app
 

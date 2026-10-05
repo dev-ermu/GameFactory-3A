@@ -16,6 +16,18 @@ them apart is what lets an agent and a human share one character (`ASSISTED`) or
 a spectator join with no entity at all.
 
 No `bpy` here — pure bookkeeping, exercisable without Blender installed.
+
+参与者、控制器，以及控制器与它所操控的实体之间的绑定关系。
+
+我们特意将以下三个概念区分开来：
+
+- **参与者**是指连接到世界中的人或智能体；
+- **控制器**是他们所拥有的输入源——无论是使用键盘的人还是无头策略，都属于控制器，一个参与者可以拥有多个控制器；
+- **绑定关系**则定义了某个控制器在何种`ControlMode`下操控哪个实体。
+
+如果将它们混为一谈，后续修改多人会话就会变得十分困难；而将它们分开，就能让智能体和人类共享同一个角色（`ASSISTED`），或者让旁观者无需关联任何实体就能加入会话。
+
+此处没有用到`bpy`模块——纯属数据记录功能，即便没有安装Blender也能运行。
 """
 
 from dataclasses import dataclass

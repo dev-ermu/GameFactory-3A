@@ -21,6 +21,19 @@ Both are what a chase camera actually films.
 
 Progress, laps and overtakes all come off one number — arc length along the
 centreline — which is what makes "who is ahead" answerable at all on a loop.
+
+
+第三人称赛道赛车游戏——生成的机械系统，基于Blender运行时开发。
+
+已实现的规则
+-----------
+赛道由周期性半径函数生成，车辆运动由运动学自行车模型控制，涉及油门、刹车、转向和抓地力等因素；赛道上设有必须按顺序通过的连续检查点，因此抄近道无法计入有效圈数；记录每圈的用时；车辆脱离赛道时会损失抓地力并被记录下来；会有其他赛车以各自的速度在同一赛道上竞速；通过有符号的比赛进度值来检测超车情况。
+
+为何选择自行车模型
+----------------
+如果通过旋转车辆并沿其朝向平移来控制车辆转向，那么车辆静止时看起来没错，但一旦移动就会显得不自然：车辆只会原地打转而无法滑动。自行车模型能让偏航角速度随速度和转向角度成比例变化，因此慢速弯道需要更大的转向幅度，而快速弯道则无需如此；将速度方向与车辆朝向分离后，就能自然实现推头现象和漂移效果。这些正是追踪摄像机所拍摄到的真实画面。
+
+车辆的进度、圈数以及超车情况都可以通过一个数值——即沿赛道中心线的弧长——来计算，这正是能够在环形赛道上判断“谁领先”的依据。
 """
 
 import os
@@ -51,11 +64,13 @@ from engine_adapters.blender.game import (  # noqa: E402
 #: Full steering lock, in radians of front-wheel angle. Also the clamp inside
 #: `Car.drive`, so a human holding a direction cannot ask for more lock than the
 #: rivals' pursuit controller can.
+# 最大转向角度，以前轮旋转的弧度表示。该数值也是`Car.drive`函数中的限制值，因此人类驾驶员无法要求超过对手追逐控制器所能达到的转向幅度。
 MAX_STEER_LOCK = 0.62
 
 #: Bumper to bumper, in metres — the size of the car built from primitives. A
 #: model named by the task is normalised to this, so an asset authored at any
 #: scale sits on the same grid slots and reads the same against the track width.
+# 车辆从车头到车尾的长度，单位为米——也就是由基础几何体构成的车辆尺寸。任务中命名的模型会以此为标准进行归一化，这样无论以何种比例制作的资产都能在同一网格位置上摆放，且与赛道宽度的对应关系也保持一致。
 CAR_LENGTH = 4.3
 
 
@@ -68,6 +83,9 @@ def _rolling_radius(wheel, scale: float) -> float:
     like it is sliding on ice. The mesh is measured in its local frame and scaled
     by what the model was normalised by, since the wheel's own transform is the
     steering and spin this then feeds.
+
+    根据车轮自身的网格数据，计算出其在世界坐标系中的半径，单位为米。
+    数据取自模型资源而非凭空假设，因为它决定了车轮的转动速度：若数值较小，车轮就会模糊不清；若数值较大，汽车看起来就像是在冰面上打滑。网格尺寸是以其自身局部坐标系为基准测量的，再根据模型的归一化比例进行缩放，因为车轮自身的变换参数会直接影响转向和旋转行为。
     """
     heights = [corner[2] for corner in wheel.bound_box]
     return max(1e-3, (max(heights) - min(heights)) * scale * 0.5)

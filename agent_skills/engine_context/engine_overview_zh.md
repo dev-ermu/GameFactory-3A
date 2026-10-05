@@ -1,0 +1,103 @@
+# 引擎上下文路由
+
+在`<REPO_PATH>/agent_skills/setting_overview.md`将任务路由至引擎游戏生成模块后，请阅读本文档。整体游戏工作流仍以设定概览文档为准。本文档仅定义CodeGen到引擎的读取顺序与跨层边界；具体工作流程详见所选的CodeGen技能说明，具体API则参见对应的引擎API文档。
+
+路径均以仓库根目录为起点表示为`<REPO_PATH>/...`；相关路径规范可参考`<REPO_PATH>/agent_skills/setting_overview.md`中的“路径约定”章节。请注意，`<REPO_PATH>/engine_adapters/`与`<REPO_PATH>/agent_skills/`为同级目录，并非其子目录。
+
+## 按此顺序阅读
+
+1. 先阅读`<REPO_PATH>/agent_skills/setting_overview.md`，了解任务包、需求及验收标准。任务包中明确了官方的引擎与文件系统边界。
+2. 阅读本文档以选定CodeGen路由，无需逐一查阅所有引擎API。
+3. 阅读针对该任务的特定机制或UI技能说明，明确工作流程、权责划分、所需产物及验证规则。
+4. 仅阅读官方指定引擎的API文档，以此确定公共宿主接口与引擎运行时实现之间的边界。
+5. 仅当任务有需要时，才阅读可选的上下文资料。
+6. 阅读最终确定的上游协议，以及该任务对应技能所允许的最小相关示例文件。
+
+切勿预加载或合并无关的技能说明、引擎API、示例文件或生成产物。
+
+## 任务路由
+
+| 任务类型 | 所需上下文 |
+|---|---|
+| 机制生成 | `<REPO_PATH>/agent_skills/code_gen/mechanic/game_generation.md` → 选定的引擎API |
+| UI生成 | `<REPO_PATH>/agent_skills/code_gen/ui/game_ui_generation.md` → 选定的引擎API → `<REPO_PATH>/agent_skills/engine_context/browser_serving_api.md` |
+| 引擎组装、构建、测试或运行时操作 | 选定的引擎API |
+| 试玩录制或游戏过程记录采集 | 选定的引擎API（试玩相关章节） |
+| 由游戏玩法触发的音频、视频CG、动画CG或视觉特效 | 选定的引擎API（媒体调度相关章节） |
+| 浏览器端交付 | `<REPO_PATH>/agent_skills/engine_context/browser_serving_api.md` + 选定的引擎API |
+| 视觉特效制作 | `<REPO_PATH>/agent_skills/engine_context/create-vfx-effects/SKILL.md` + 选定的引擎API |
+| 模型重定向、骨骼绑定、网格修复或中性资产准备 | `<REPO_PATH>/agent_skills/engine_context/blender_api.md` |
+
+## 引擎选择
+
+任务包中明确了官方的引擎标识符。请准确选择一种主要引擎上下文：| 标识符 | API文档 | 公共主机入口点 |
+|---|---|---|
+| `ue5` | `<REPO_PATH>/agent_skills/engine_context/ue5_api.md` | `from engine_adapters.ue5 import UEClient` |
+| `unity3d` | `<REPO_PATH>/agent_skills/engine_context/unity3d_api.md` | `from engine_adapters.unity3d import UnityClient` |
+| `godot` | `<REPO_PATH>/agent_skills/engine_context/godot_api.md` | `from engine_adapters.godot import GodotClient` |
+| `three_js` | `<REPO_PATH>/agent_skills/engine_context/three_js_api.md` | `from engine_adapters.three_js import ThreeClient` |
+| `blender` | `<REPO_PATH>/agent_skills/engine_context/blender_api.md` | 文档中提及的 `bpy` 解释器边界 |
+
+当选中 `blender` 时，它属于中立的资产处理上下文，而非已发布的游戏运行时环境。请勿将其与核心引擎API或示例混用。浏览器渲染和VFX属于补充性上下文，仅在任务有相关需求时才会被选用。
+
+在准备机械逻辑与UI数据包时，`<REPO_PATH>/pipeline/common/code_mapping.py` 是注册入口：`ue5`、`unity3d` 和 `godot` 会被启用，而 `blender` 和 `three_js` 虽已注册但处于禁用状态——执行 `run.py prepare` 命令时，若遇到已禁用的引擎，会提示“引擎已注册但处于禁用状态”。
+
+## 引擎版本兼容性
+
+每份引擎API文档都会标明“已验证的引擎基准版本”——即所有文档中描述的接口和行为均经过测试的具体引擎版本。不同版本的引擎API可能存在差异；此处描述的接口和语义仅在该基准版本下保证有效。
+
+当新增对其他引擎版本的支持时，相应引擎API文档中会直接添加针对各函数的版本注解（`@since`、`@changed`）。在此之前，任何偏离基准版本的情况均被视为未经验证。
+
+## 依赖关系流向
+
+```text
+任务数据包
+  -> 机械逻辑生成及公开的机械逻辑契约
+  -> UI生成及契约绑定
+  -> 通过选定的公共引擎客户端执行/组装
+  -> 如需浏览器交付，则进行浏览器渲染
+```
+
+UI的生成需在机械逻辑确定之后进行。在浏览器渲染发布可播放URL之前，原生引擎产品需先准备就绪并运行。
+
+## 层级归属| 层级 | 负责内容 | 禁止拥有内容 |
+|---|---|---|
+| Mechanic | 游戏玩法规则、模拟逻辑、状态管理、事件处理、命令执行、原生游戏玩法插件、公共Mechanic合约 | UI、浏览器发布相关功能、资源导入、构建、测试、运行时启动 |
+| UI | 原生引擎UI、Mechanic合约绑定、浏览器游玩模式的发布源 | 游戏玩法规则、重复的玩法状态、引擎后端、资源导入、构建 |
+| 执行/组装 | 项目准备、描述符解析、插件安装、资源导入、构建、测试、运行时证据生成、产品组装 | 生成的玩法规则、私有引擎内部逻辑、替换后的导入/构建路径 |
+| 浏览器服务 | 浏览器会话、流传输、通用输入处理、已注册的后端生命周期管理 | 游戏玩法规则、原生UI的重复实现、游戏专属的浏览器命令 |
+
+## 公共API边界
+
+- 对于由客户端支持的目标引擎，所有主机端的项目操作、资源导入、绑定、构建、测试、试玩、编辑器操作、运行时管理、世界加载及会话操作，均需通过所选引擎API对应的公共客户端来完成。
+- 生成的原生引擎代码仅使用所选引擎API文档中规定的公共接口，不会调用主机端的Python客户端。
+- 具体的功能能力和调用签名均以所选API文档为准，切勿自行创造方法或推测私有行为。
+- 不要导入适配器的内部模块、调用私有传输接口、直接启动引擎二进制文件，或创建并行的导入/构建/运行时实现。
+- 只有当Shell脚本委托给同一公共客户端路径时，才能将其用作人工操作或CI流程的入口。
+- 若所选API支持，可针对一批任务复用同一个配置好的客户端和引擎会话。
+- Blender代码仅在`blender_api.md`文档规定的解释器边界内才能导入`bpy`模块；普通主机代码需通过文档规定的适配器路径来调用。
+- 如果缺少某项必需的功能，应停止操作并上报公共API缺口。在生成的游戏代码依赖该功能之前，需先扩展对应的适配器合约。
+
+## 浏览器边界
+
+Browser Play仅使用公共的浏览器服务API，它不得导入引擎客户端、构造具体的后端实例、根据引擎名称进行分支判断、复制原生引擎UI或玩法状态，也不得根据私有规则推导流传输URL。
+
+已注册的浏览器后端可以调用所选的公共引擎客户端。在引擎运行时准备就绪前，切勿发布浏览器URL。
+
+## 产物与示例规则
+
+- 示例仅为只读参考，并非基础项目、模板、运行时依赖项，也不会限制生成的功能范围。
+- 仅读取任务包中声明的最终上游产物。
+- 仓库输出路径请使用`<REPO_PATH>/pipeline/common/paths.py`。
+- 当所选Skill有要求时，需在`context_used.json`中记录实际使用的上下文信息。
+- 代码生成、组装、执行和评估各环节的权责划分明确，仅完成源代码生成并不等同于游戏具备可玩性。
+
+## 终止条件
+
+当实现过程中出现以下情况时，应停止操作并上报违规行为或功能缺口：- 混用不同目标引擎的API或示例；
+- 将UI相关功能或执行逻辑嵌入到Mechanic代码中；
+- 把游戏规则或重复的状态数据存放在UI代码或浏览器播放代码中；
+- 绕过选定的公共客户端或Blender规定的边界限制；
+- 将某个引擎示例直接复制到生成的项目中作为运行时依赖项；
+- 在运行时尚未准备就绪时就暴露浏览器URL；或者
+- 在没有相应执行或评估阶段所出具的证据支持的情况下，宣称项目构建、测试、运行时表现或可玩性达标。

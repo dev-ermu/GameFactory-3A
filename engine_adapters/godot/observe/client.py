@@ -1,4 +1,7 @@
-"""Stable environment readiness probes for GodotClient v1."""
+"""Stable environment readiness probes for GodotClient v1.
+
+GodotClient v1的稳定环境就绪探测功能。
+"""
 
 import math
 from typing import Any

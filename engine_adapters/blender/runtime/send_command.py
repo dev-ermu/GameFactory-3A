@@ -16,6 +16,19 @@ Usage:
     python -m engine_adapters.blender.runtime.send_command --port 30021 cmds.json
     python -m engine_adapters.blender.runtime.send_command \\
         --type render_snapshot --payload '{"samples": 16}'
+
+向正在运行的运行时发送JSON命令。
+
+该脚本使用纯Python编写，不依赖`bpy`模块，因此即便在没有安装Blender的Shell环境中也能操控Blender会话。
+
+该文件可以包含一个命令对象或命令对象数组，每个命令会作为单独的数据报发送。命令之间的间隔并非出于礼貌考虑：数据报本身没有顺序保证，如果某个进程在对应的命令执行完毕后才启动，那么该命令就会失效。
+
+使用方法：
+    python -m engine_adapters.blender.runtime.send_command \\
+        engine_adapters/blender/runtime/examples/visualize_only.json
+    python -m engine_adapters.blender.runtime.send_command --port 30021 cmds.json
+    python -m engine_adapters.blender.runtime.send_command \\
+        --type render_snapshot --payload '{"samples": 16}'
 """
 
 import argparse

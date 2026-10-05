@@ -1,4 +1,6 @@
-"""Configuration for the stable BlenderClient API."""
+"""Configuration for the stable BlenderClient API.
+稳定的BlenderClient API配置。
+"""
 
 import os
 import shutil

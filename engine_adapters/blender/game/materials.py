@@ -13,6 +13,13 @@ Emission is a first-class argument rather than a separate shader: everything
 readable in a dark headless render — HUD bars, tracers, checkpoint gates, hit
 sparks — is emissive, and routing it through the Principled node keeps one
 material type in the file.
+
+
+命名并缓存后的Principled材质。
+
+之所以按名称缓存，是因为由基础几何体构成的关卡会多次请求相同的六种材质；若每次请求都新建一个数据块，不仅会占用更多内存，还会延长渲染准备时间。名称作为缓存键，因此当请求已存在的名称时，会直接返回现有材质，而忽略新参数——这正是关卡构建器所期望的行为；若在资产管线中使用这种机制则会引发问题。
+
+发光属性被当作一等参数处理，而非单独的着色器：在无头黑暗渲染场景下可见的所有元素——HUD进度条、轨迹线、检查点门、击中火花等——都属于发光物体；将其通过Principled节点处理，就能在文件中仅保留一种材质类型。
 """
 
 from typing import Optional, Sequence

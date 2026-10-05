@@ -21,6 +21,21 @@ are in `spec.json` so the balance can be regenerated without touching code.
 Both fighters are AI. They differ only in the aggression / block / heavy
 weights the spec gives them, which is enough to make the two read as different
 characters on screen.
+
+对战格斗游戏——基于生成的机制，Blender运行时。
+
+已实现的规则
+----------
+两名格斗者位于一维战斗线上，采用真实的状态机和帧数据机制：每次攻击都有以tick为单位的启动、生效及恢复阶段，且仅生效阶段才会产生碰撞箱。
+防御、硬直伤害、击飞效果、连招计数、回合胜利判定以及回合计时等功能都是这一机制的自然结果，而非独立的系统。
+
+为何采用帧数据而非距离检测？
+------------------------
+若采用“距离足够近时按下攻击键即可触发攻击”的机制，游戏将毫无深度可言：既无法惩罚未命中攻击，也无法实现攻防互换，更没有防御的理由。
+攻击的启动阶段意味着发动攻击是一种承诺；恢复阶段则意味着未命中的重击可成为免费的反击机会；生效帧则允许两次攻击相互抵消。
+报告中所有有趣的现象——反击、攻防互换、被防御的连招——都由这三个数值决定，它们被记录在`spec.json`文件中，因此无需修改代码就能重新调整游戏平衡。
+
+两名格斗者均为人工智能。它们仅通过配置文件指定的攻击/防御/重击权重来区分，这些差异足以让它们在屏幕上呈现出截然不同的角色特征。
 """
 
 import os
@@ -53,6 +68,9 @@ IDLE, WALK, ATTACK, BLOCK, HITSTUN, KO = "idle", "walk", "attack", "block", "hit
 #: How long a human's attack press is remembered while the fighter is busy.
 #: Six frames at 30 Hz is 200 ms — long enough to press just before recovery
 #: ends, short enough that a press cannot come out a second later as a surprise.
+# 格斗者处于忙碌状态时，人类输入的攻击指令会被保留多久。
+# 在30Hz的帧率下，6个tick对应200毫秒——这个时间足够让玩家在攻击恢复结束前按下按键，
+# 又短到不会让玩家在几秒后突然按下按键制造意外效果。
 INPUT_BUFFER_TICKS = 6
 
 #: Skeleton heights, in metres above the floor. Collected here because the body
@@ -60,6 +78,8 @@ INPUT_BUFFER_TICKS = 6
 #: whose hips are a centimetre above its legs reads as broken from ten metres
 #: away, and the legs-to-total ratio is most of what makes it read as a person
 #: rather than a bollard.
+# 骨骼高度，单位为米，指相对于地面的高度。将这些数值汇总于此是因为角色模型由多个基础几何体堆叠而成，各部位必须衔接紧密：
+# 如果角色的髋部比腿部高出1厘米，从十米外看就会显得畸形；而腿部与整体身高的比例正是判断其是否为人类而非路障的关键。
 LEG_HALF = 0.39      # legs span 0 .. 0.78
 HIP_HEIGHT = 0.86    # waist pivot, and where the lean bends
 TORSO_Z = 1.18
@@ -71,15 +91,18 @@ SHOULDER_X = 0.10    # inside the torso, so the arm is never rooted in mid-air
 #: figure's head sphere. Quoted off the blocks rather than off a person because
 #: the blocks are what the pose — and therefore the hitbox — is measured in, and a
 #: model that does not agree with them punches from the wrong shoulder.
+#: 角色模型的标准化高度，单位为米：即角色头部球体所在位置。此处参考的是方块尺寸而非真人尺寸，因为姿势——进而碰撞箱——都是基于方块尺寸来衡量的；若模型尺寸与方块不符，就会导致出拳动作偏离正确位置。
 FIGURE_HEIGHT = HEAD_Z + 0.20
 
 #: Yaw, in the actor convention `figures.face` speaks (0 is +Y), that turns a
 #: figure to look down +X. Fighters face along the fight line, so a fighter's
 #: `facing` of +-1 is this angle times that sign.
+#: 按照角色设定中`figures.face`的定义，使角色面向+X方向的偏航角（0对应+Y方向）。格斗角色通常沿战斗线朝向对手，因此当角色的`facing`值为±1时，对应的就是该角度乘以相应符号。
 FACING_YAW = -90.0
 
 #: Which arm throws the lead punch. `figures.reach` takes >= 0 as the right one,
 #: and the block body's lead arm is on the same side.
+#: 负责打出先手拳的手臂。`figures.reach`中将≥0的值定义为右手，而方块模型的先手手臂也位于同一侧。
 LEAD_ARM = 1
 
 #: Where the layers of the back of the stage sit, in metres along +Y.
@@ -90,6 +113,11 @@ LEAD_ARM = 1
 #: other and the two z-fight into a smear of stone. The columns stand *proud* of
 #: the wall, which is what an engaged column does anyway, and the clutter stands
 #: clear of both — and of the fight, which is the front two thirds of the stage.
+
+# 舞台背面各层结构在+Y方向上的位置，单位为米。
+# 这些数值被分开设定而非共用，也正是它们让这块区域被命名为独立方块的原因：缩放后道具墙的深度为1.2米，其柱子的截面也为1.2米见方；
+# 若将两者都放置在基础柱子的Y轴位置上，就会导致一个物体嵌入另一个物体内部，且两者的Z轴位置还会重叠形成一团乱石。
+# 柱子会突出于墙面之外，这其实也是承重柱的正常形态；而杂物则会被放置在两者之外——同时也远离战斗区域，战斗区域占舞台前三分之二的位置。
 WALL_Y = 5.0
 COLUMN_Y = 4.2
 CLUTTER_Y = (3.05, 3.65)
@@ -97,6 +125,7 @@ CLUTTER_Y = (3.05, 3.65)
 #: How far the arms come up when a fighter is merely standing. Not zero: a
 #: fighting game's idle is a stance, and arms hanging at the sides read as a
 #: bystander who wandered into the ring.
+# 格斗角色处于站立状态时双臂抬升的高度。该值不为零：格斗游戏中的待机状态其实是一种防御姿态，若双臂垂在身侧，看起来就像误入赛场的外人。
 IDLE_GUARD = 0.34
 
 
@@ -108,6 +137,10 @@ class Fighter:
     in the other genres, because a side-on camera wants the character's profile
     and its reach measured in screen-horizontal metres. `facing` is +1 or -1 and
     is the only orientation this genre needs.
+
+    
+    单个角色：包含状态机、基础几何体构成的身体以及专属人工智能。
+    该角色的身体沿战斗线（X轴）朝向对手，而非其他类型游戏中沿+Y方向，因为侧视镜头需要呈现角色侧面轮廓，且其攻击范围需以屏幕水平方向的米为单位来衡量。`facing`取值为+1或-1，也是此类游戏所需的唯一方向参数。
     """
 
     def __init__(self, game, name: str, color, *, x: float, facing: int,
@@ -137,6 +170,7 @@ class Fighter:
         self.lean = 0.0
         #: Metres of ground covered, for the stride cycle. Distance rather than a
         #: clock, so the legs stop when the fighter does — see `figures.walk`.
+        #: 角色移动时覆盖的地面距离，用于步幅循环计算。此处采用距离而非时间计时，这样当角色停止移动时双腿也会随之停下——详见`figures.walk`。
         self.walked = 0.0
         self._last_x = x
 
@@ -152,6 +186,7 @@ class Fighter:
         # over planted feet instead of tipping the whole fighter like a skittle.
         # Everything above the hips therefore hangs off `waist` in *waist* space,
         # which is why the z offsets below are measured from HIP_HEIGHT.
+        # 采用两级骨骼结构，这种拆分很有必要。`root`位于地面，负责定位以及击倒后的倾倒效果；`waist`则位于髋部高度，负责控制身体倾斜——这样出拳时身体会围绕固定的双脚弯曲，而不会像保龄球一样整个摔倒。因此，髋部以上的所有部位都基于`waist`在*腰部空间*中定位，正因如此，下方的z轴偏移量都是以HIP_HEIGHT为基准计算的。
         self.root = prims.empty(f"fighter_{name}", location=(x, 0.0, 0.0),
                                 into="Actors")
         self.waist = prims.empty(f"fighter_{name}_waist",
@@ -179,6 +214,7 @@ class Fighter:
 
         # A fighting stance, not a standing pose: lead leg forward, back leg
         # braced. Side on, two legs at the same x would read as one post.
+        # 这是战斗姿态而非普通站立姿势：前腿向前伸展，后腿支撑身体。从侧面看，若两条腿处于同一x坐标上，就会显得像一根柱子。
         self.legs = [
             prims.spawn(prims.CYLINDER, f"{name}_leg{side}",
                         location=(along * facing, 0.13 * side, LEG_HALF),
@@ -190,11 +226,13 @@ class Fighter:
         # The lead arm is the one that punches; it is animated by moving this
         # object in the waist's local space, so the hitbox and the picture come
         # from the same number.
+        # 主动臂就是负责出拳的那条手臂；通过在该腰部的局部空间中移动这个物体来实现其动画效果，因此碰撞箱和模型使用的是同一组参数。
         self.arm = prims.spawn(prims.CYLINDER, f"{name}_arm", scale=(0.095, 0.095, 0.30),
                                material=skin, into="Actors", parent=self.waist)
         # Glove, not chrome. On `trim` the fist is a metallic ball reflecting the
         # sky, and against a matte arm the eye reads two objects with a gap
         # between them rather than one limb.
+        # 手套并非金属材质。在`trim`模式下，拳头会呈现为反射天空的金属球；而若与哑光质地的手臂搭配，人眼会将其识别为两个有间隙的物体，而非一个完整的肢体。
         glove = materials.solid(f"fight_{name}_glove",
                                 tuple(min(1.0, c * 1.25 + 0.06) for c in color),
                                 roughness=0.5)
@@ -232,6 +270,9 @@ class Fighter:
         # keep being computed whether or not anyone can see it. `self.guard` is
         # left alone: it is a readability affordance rather than anatomy, and a
         # glowing plate in front of a blocking character is wanted either way.
+
+        # 角色模型位于方块之上，若该任务名为“one”。该模型被挂载在`root`节点而非`waist`节点上，因为该模型自带髋部关节：`figures.lean`会在该处使模型弯曲，若将其挂载在已然倾斜的腰部节点上，会导致弯曲程度加倍，进而使角色身体对折。
+        # 这些方块只是被隐藏而非删除，射击类游戏遵循同样的规则，不过原因有所不同。此处并无射线检测操作——格斗游戏中的碰撞箱是通过数学计算得出的——但计算过程会读取`self.fist.location`数据，因此方块的姿态就是碰撞箱，无论是否有人能看到它，都需持续计算其姿态。`self.guard`则保持原样：它只是为了提升代码可读性而设置的标识，并非实际的解剖结构；无论如何，我们都希望看到阻挡角色前方有发光的护盾板。
         self.figure = None
         self.clip = None
         if model:
@@ -260,6 +301,10 @@ class Fighter:
         Reach is deliberately read back off this pose by `fist_x()` rather than
         stored separately: a hitbox that does not track the visible fist is how
         a fighting game ends up with hits that visibly miss.
+
+        
+        设定主臂的姿态。`extend`值为0时代表处于防御状态，为1时则完全伸出。
+        我们特意通过`fist_x()`函数从该姿态中读取伸展距离，而非单独存储该数值：如果碰撞箱无法跟随可见的拳头移动，格斗游戏就会出现攻击明显未命中却判定为命中的情况。
         """
         reach = max(0.26, 0.30 + extend * float(self.stats["reach"]))
         z = ARM_Z - HIP_HEIGHT - crouch * 0.16 - extend * 0.02
@@ -268,6 +313,7 @@ class Fighter:
         # shoulder inside the torso to wherever the fist is, so the two are
         # joined at every value of `extend` — including the wind-up, where the
         # fist comes back past a fixed-length arm and used to float free of it.
+        # 填补间隙而非凭猜测行事。上臂从躯干内固定的肩部延伸到拳头所在位置，因此在`extend`的所有取值下两者都是相连的——包括蓄力阶段，此时拳头会回缩到固定长度的手臂后方，甚至会脱离手臂独立移动。
         shoulder = SHOULDER_X * self.facing
         fist = reach * self.facing
         self.arm.location = ((shoulder + fist) * 0.5, -0.02, z)
@@ -283,16 +329,22 @@ class Fighter:
         a depsgraph update and would be one tick stale here. Leaning into a
         punch rotates the fist about the waist, worth a few centimetres of reach
         at full commit; the trig is cheap and keeps hitbox and picture identical.
+
+        
+        拳头的世界坐标x值——即碰撞箱位置。
+        该数值是计算得出的，而非直接读取`matrix_local`，因为后者仅在依赖图更新时才会刷新，在此处会存在一帧的延迟。出拳时的身体倾斜会使拳头绕腰部旋转，全力出拳时这种偏移可达几厘米；而三角函数运算成本极低，能确保碰撞箱与视觉表现完全一致。
         """
         fx, _, fz = self.fist.location
         return self.x + fx * cos(self.lean) + fz * sin(self.lean)
 
     def pose(self) -> None:
-        """Push simulation state onto the body once per tick."""
+        """Push simulation state onto the body once per tick. 每个tick将模拟状态同步到角色身上。"""
         # Only stepping counts toward the stride. Pushback and the separation
         # shove move `x` too, and folding those in makes a fighter's legs shuffle
         # every time it gets hit — a walk cycle advancing without a walk, which is
         # the tell distance-driven animation exists to avoid.
+
+        # 只有迈步动作才会计入步态统计。后冲和分离推挤也会改变`x`值，如果把它们也算进去，角色每次被击中时腿部都会出现拖步现象——也就是没有实际行走却出现步行循环，这正是基于距离驱动的动画机制所要避免的情况。
         travelled = abs(self.x - self._last_x)
         self._last_x = self.x
         if self.state == WALK:
@@ -331,6 +383,8 @@ class Fighter:
             # the whole fighter goes over rather than folding at the waist.
             # A death clip already contains that fall — stacking a root tumble
             # on top of it puts the mesh through the floor.
+            # 平摔：这种情况涉及的是位于地面上的根部，因此整个角色会向前倾倒而非在腰部弯曲。
+            # 死亡动画中已经包含了这种摔倒效果——若再叠加根部的翻滚动画，会导致模型穿透地面。
             fall = min(1.0, self.state_ticks / 12.0)
             if self.clip is None or not self.clip.has("death"):
                 self.root.rotation_euler = (0.0, radians(-84.0 * fall * self.facing), 0.0)
@@ -360,6 +414,9 @@ class Fighter:
         Fed the *outputs* of `pose` rather than reading the state machine again:
         two readings of one state drift apart on the next edit and the picture
         stops agreeing with the hitbox.
+
+        根据方块系统使用的同一组三个数值来驱动角色模型。直接传入`pose`的*输出结果*，而非重新读取状态机：
+        因为对同一状态的两次读取在下次编辑时会产生偏差，导致画面与碰撞框不再匹配。
         """
         clip = self.clip
         if clip is not None:
@@ -376,6 +433,7 @@ class Fighter:
                     clip.play("idle", self.game.time)
                     # Mixamo humans often have no punch clip. A short lunge still
                     # reads as the hit the blocks already registered.
+                    # Mixamo制作的人形模型通常没有拳击动画。不过短促的前冲动作仍能被判定为已触发的攻击。
                     pitch = -24.0 * extend if role == "punch" else -10.0
                     clip.root.rotation_euler = (
                         radians(pitch), 0.0,
@@ -488,6 +546,7 @@ class ArenaFighter(kernel.Game):
         "combo_window_ticks": 22,
         #: Index into `fighters` that a human takes when playing. 0 is the one
         #: on the left, which is the side the camera favours.
+        # 玩家操控的角色在fighters列表中的索引。0代表左侧角色，也是摄像机偏好的一侧。
         "human_fighter": 0,
     }
 
@@ -503,6 +562,7 @@ class ArenaFighter(kernel.Game):
         # would change who wins — and then the two runs cannot be compared, which
         # is the only reason to generate them. Seeded off the spec seed, so the
         # dressing is as reproducible as the fight.
+        # 装饰效果源自其独立的数据流。被标记为“有裂纹”的那一列，绝不能占用AI原本要生成的绘制结果；否则一旦开启该装饰效果，就会改变战斗胜负——如此一来，两次运行结果便无法对比，而这正是生成这些结果的唯一目的。装饰效果的种子基于规格参数中的种子生成，因此装饰效果与战斗过程一样具备可复现性。
         self.look = Random(self.seed ^ 0x5A17)
 
         # A sun points along its own -Z, so `rotation_euler.x = θ` sends the
@@ -514,6 +574,10 @@ class ArenaFighter(kernel.Game):
         # its own key light baked in, and two suns tuned against a flat gradient
         # then blow the stone out to white. A task that supplies an environment
         # turns these down; one that does not gets the numbers the flat sky wants.
+        # 太阳的光线沿自身的-Z轴发射，因此设置`rotation_euler.x = θ`会使光线朝向`(0, sin θ, -cos θ)`方向——也就是说光线从-Y轴方向射来，也就是摄像机所在的一侧。
+        # 来自摄像机侧的-key光与背后的rim光：若从侧面观察战斗场景，只会看到轮廓而已，这正是该阶段初次渲染时的样子。
+        # 这两种光源均由规格参数驱动，因为天空本身也是如此：HDRI贴图自带内置的key光，而两束经过调校、匹配平面渐变背景的太阳光会将石头表面渲染成白色。
+        # 提供环境设定的任务会下调这些光源的强度；未提供环境设定的任务则会采用平面天空所需的参数值。
         kernel.add_sun("key", energy=float(self.spec.get("sun_energy", 4.2)),
                        rotation=(radians(54), radians(-10), radians(12)),
                        angle=0.25,
@@ -536,6 +600,7 @@ class ArenaFighter(kernel.Game):
 
         # Which corner a player takes. Only consulted when someone is playing;
         # unattended, both fighters run their own style and nothing changes.
+        # 玩家选择的起始角落。仅在有玩家操控时才会参考该设定；若无玩家操控，两名格斗者会各自按原有风格行动，不会有任何变化。
         self.human_fighter = self.fighters[int(self.spec.get("human_fighter", 0))]
         self._buffered: list = [None, 0]
 
@@ -552,6 +617,8 @@ class ArenaFighter(kernel.Game):
         # sees rounds 2 and 3. Without this the log carries one `round_start`
         # for two `round_end`s, and anyone counting events to reconstruct the
         # match finds the numbers do not add up.
+        # 第一轮从此处开始，而非在`_finish_round`中启动——后者只会处理第二轮和第三轮。
+        # 若非如此，日志中会出现一次`round_start`对应两次`round_end`的情况，而任何试图通过统计事件来还原比赛过程的人都会发现数据对不上。
         self.log("round_start", round_no=self.round_no)
 
     def _resolve_fighters(self) -> list:
@@ -564,6 +631,12 @@ class ArenaFighter(kernel.Game):
         that wants a fighter with more health should be able to say exactly that
         without also restating both attacks' frame data. Merging per index gives
         it that, and a task supplying a whole fighter still overrides everything.
+
+        将配置文件中定义的格斗者信息覆盖到默认设置上，逐条处理。
+        `Game.__init__`会合并嵌套字典，但会直接替换列表——因为不完整的列表没有通用意义。
+        不过角色列表是个例外：其中两项元素的位置是固定的，且每次含义都相同。
+        因此，需要更高生命值的格斗者的任务就能直接指定这一需求，无需重复声明两种攻击的帧数据。
+        按索引合并的方式正好能满足这一需求；而如果任务提供了完整的格斗者配置，则会覆盖所有现有设置。
         """
         defaults = self.default_spec["fighters"]
         given = self.spec.get("fighters") or defaults
@@ -598,6 +671,8 @@ class ArenaFighter(kernel.Game):
                 # Veiled rather than left showing through the stack: unlike a
                 # shooter's cover these blocks are pure scenery — nothing in this
                 # genre casts a ray — so there is no shape to keep agreeing with.
+                # 这些柱子纯粹属于装饰性元素，不会像射击游戏中的掩体那样被玩家穿透；
+                # 此类游戏中并不会进行光线投射计算，因此无需让模型形状与碰撞体保持一致。
                 prims.veil(column)
                 self._stack_column(i, i * 3.1, COLUMN_Y)
             prims.spawn(prims.BOX, f"back_lamp{i}", location=(i * 3.1, 4.1, 5.4),
@@ -614,6 +689,11 @@ class ArenaFighter(kernel.Game):
     # has to match. The one rule left is the one that matters everywhere — the
     # dressing may not touch `self.rng`, `x`, `facing` or `hp` — and it is kept by
     # drawing from `self.look` and writing only to objects it created.
+    # 下文中的所有内容均为装饰性元素，而此类游戏中的装饰自由度极高：
+    # 格斗游戏中的碰撞箱计算方式为 `abs(fist_x - opponent.x)`，因此道具不会阻碍光线投射，
+    # 也无需匹配特定碰撞体的比例要求。唯一需要遵守的规则就是通用规则——
+    # 装饰内容不得触碰 `self.rng`、`x`、`facing` 或 `hp` 这些变量；
+    # 该规则通过仅从 `self.look` 中读取数据、且仅对自行创建的对象进行修改来得以遵守。
 
     def _models(self, key: str) -> list:
         """
@@ -622,6 +702,9 @@ class ArenaFighter(kernel.Game):
         A list rather than one reference because a wall repeated fourteen times
         reads as a loop; drawing from a handful is what makes it read as a place.
         A bare string is accepted and wrapped.
+        
+        之所以采用列表形式而非单个引用，是因为重复十四次的墙壁会被视作循环语句；
+        只有从少量模型中选取元素绘制，才能营造出真实场景的效果。纯字符串也会被自动包装为列表。
         """
         entry = (self.spec.get("models") or {}).get(key)
         if not entry:
@@ -648,6 +731,20 @@ class ArenaFighter(kernel.Game):
         so making it two metres tall makes it 1.4 times too wide as well, and the
         stack ends in a stone mushroom. One factor keeps the kit's own proportions,
         which is the only reason to pick a modular kit.
+
+        通过堆叠组件片段来构建一根背景柱。
+
+        采用堆叠方式而非拉伸方式，这是竞技场柱子与普通柱状物的区别：
+        该套组件的柱子标准高度为1米，底座为0.6米见方的正方形；
+        若直接用单个副本构建6米高的柱子，会导致柱头装饰被拉伸成细条状，比例严重失调。
+        重复使用组件片段能保持装饰元素的原始比例，这正是模块化组件的设计初衷。
+
+        顶部的组件可能是损坏变体——断裂的柱子能体现出竞技场的陈旧感；
+        而提供多个模型选项的目的，就是让任务策划能够自行决定最终选用哪种样式。
+
+        每个段落采用**相同的**缩放系数，该系数从整个柱体尺寸中一次性提取，而非针对每个段落按柱高进行归一化处理。
+        其中有个特殊的断裂部分：它设计上仅为四分之三柱长，因此将其设为两米高时，其宽度也会相应超出1.4倍，最终这个断裂的柱体末端会形成一个石蘑菇状结构。
+        有一个缩放因子能保持套件自身的比例，这也是选择模块化套件的唯一理由。
         """
         options = self._models("column")
         broken = self._models("column_broken") or options
@@ -667,7 +764,9 @@ class ArenaFighter(kernel.Game):
                 scale=factor, into="Level")
 
     def _dress_stage(self) -> None:
-        """Tile the floor, wall in the back, and put clutter along its foot."""
+        """Tile the floor, wall in the back, and put clutter along its foot.
+        铺设舞台地面、搭建后方墙壁，并在舞台边缘放置杂物。
+        """
         self._tile_floor()
         self._build_back_wall()
         self._scatter_clutter()
@@ -681,6 +780,10 @@ class ArenaFighter(kernel.Game):
         from the slab rather than the pitch from the spec, for the reason the
         shooter's walls did — a leftover remainder is a stripe of flat colour along
         one edge, and here that edge is the one the camera looks across.
+
+        在整块瓷砖网格上用套件中的地板砖覆盖舞台基底。
+        尺寸是根据`length`而非`height`来确定的：地砖是一种厚度为零的平面，若按高度来归一化，就会除以零。
+        数量的计算依据是板块大小而非规格说明中的间距，原因与射击游戏中的墙面处理一致——剩余的零散部分会形成沿某一边缘分布的扁平色带，而此处该边缘正是摄像机所朝向的边缘。
         """
         tiles = self._models("floor")
         if not tiles:
@@ -709,6 +812,10 @@ class ArenaFighter(kernel.Game):
         Set in front of the slab rather than replacing it, so a gap between two
         segments shows dark stone instead of the sky — the same reason the
         shooter's panels sit proud of a wall that stays.
+
+        背景板前方的一排装饰墙，包括大门在内。
+
+        将其设置在板块前方而非替换原有板块，这样两段墙体之间的缝隙会露出深色石材而非天空——这与射击游戏中装饰面板凸出于原有墙面的原因相同。
         """
         walls = self._models("wall")
         if not walls:
@@ -723,6 +830,7 @@ class ArenaFighter(kernel.Game):
                 # Gates belong at ground level and nowhere else. Upstairs they are
                 # doorways onto a six-metre drop, which is the mistake the shooter
                 # made with its windows.
+                # 大门只能位于地面层，别处不可。在楼上，它们会变成通往六米深落差的门口，这正是射击游戏里窗户设计所犯的错误。
                 pool = gates if (course == 0 and k % 5 == 2) else walls
                 assets.instance(
                     self.look.choice(pool), f"backwall{course}_{k}",
@@ -740,6 +848,10 @@ class ArenaFighter(kernel.Game):
         directly behind the action, and the first pass of this had a trophy growing
         out of a fighter's head. Anything within `keep_clear` of the centre line is
         pushed outward, which leaves the middle of the frame to the fight.
+
+        背景墙底部、战斗线之外的杂物摆放。物体被限制在背景区域且不能出现在画面中央——第二条限制规则需要特别注意：
+        摄像机采用侧视角，会聚焦在两名格斗者身上，因此舞台中央后方的雕像最终会恰好位于战斗场景的正后方。
+        最初的设计中，有奖杯从一名格斗者的头顶生长出来。任何处于中心线“禁止区域”内的物体都会被向外推挤，从而把画面中央留给战斗场景。
         """
         props = self._models("clutter")
         if not props:
@@ -763,6 +875,9 @@ class ArenaFighter(kernel.Game):
         # Under the Standard view transform an emitter is as coloured as its
         # dimmest channel survives, so the strengths stay near 1 and the size
         # carries the impact instead of the brightness.
+        
+        # 击中和格挡效果必须能一眼区分，因此两种标记物的颜色不同——这一设计的前提是它们都不会呈现白色。
+        # 在标准视图变换下，发射器的颜色由其最暗通道的数值决定，因此强度值会保持在1附近，而尺寸而非亮度则用来体现冲击力度。
         hit_mat = materials.glow("fight_hit", (1.0, 0.80, 0.28), strength=1.15)
         block_mat = materials.glow("fight_block", (0.40, 0.80, 1.0), strength=1.0)
         self.impacts = []
@@ -833,12 +948,17 @@ class ArenaFighter(kernel.Game):
         """
         Choose an action. Only fighters that can act get a choice — everything
         else is already committed, which is the whole point of frame data.
+        
+        选择行动。只有能够行动的格斗角色才会做出选择——其余角色的行动早已确定，
+        这正是帧数据存在的意义。
         """
         if f.state == KO:
             return
         if self.human and f is self.human_fighter:
             # Ahead of the `can_act` gate: a human's input has to be *seen* on
             # frames they cannot act on, so it can be buffered. See below.
+            # 在`can_act`判断之前：人类的输入必须在其无法行动的帧中被“读取”，
+            # 这样才能被缓存起来。详见下文说明。
             self._fight_input(f)
             return
         if not f.can_act():
@@ -854,6 +974,9 @@ class ArenaFighter(kernel.Game):
         # stepping back makes the attacker whiff and hands over their whole
         # recovery window. Without the second one nothing ever misses, and an
         # attack that cannot miss is not a commitment.
+        # 应对已经发动的攻击：要么格挡，要么撤出攻击范围。
+        # 两种防御方式都很重要——格挡能以减少受击伤害为代价换取安全，而后撤则会让攻击者扑空，从而让其整个恢复窗口白白浪费。
+        # 如果没有后撤机制，就不存在“扑空”的情况，而无法扑空的攻击也就称不上是真正的进攻承诺。
         threatened = (opponent.state == ATTACK
                       and opponent.attack_tick <= opponent.attack["startup"] + 1
                       and distance < reach + 0.5)
@@ -881,12 +1004,14 @@ class ArenaFighter(kernel.Game):
 
         # A poke thrown at the edge of range: sometimes it catches an advance,
         # sometimes it is the mistake the opponent punishes.
+        # 在攻击范围边缘发出的试探性攻击：有时能命中前冲的对手，有时则会成为被对手反击的破绽。
         if (distance <= reach * 1.4
                 and self.rng.random() < float(style["aggression"]) * 0.20):
             f.start_attack("jab")
             return
 
         # Out of range: close, unless deliberately spacing.
+        # 超出攻击范围：除非刻意保持距离，否则应靠近对手。
         if f.state == BLOCK:
             f.enter(IDLE)
         step = float(f.stats["walk_speed"]) * self.dt
@@ -895,6 +1020,7 @@ class ArenaFighter(kernel.Game):
         f.x += step * towards * (-0.55 if backing and distance < reach * 2.2 else 1.0)
         # A little depth so the two don't occupy the same silhouette — a small
         # offset, not a walk to opposite walls, or they leave the camera's plane.
+        # 为了不让两个角色占据同一画面空间，需要留一点纵深——只需微小偏移即可，无需走到屏幕两端，以免超出摄像机的拍摄范围。
         target_y = 0.35 if f is self.a else -0.35
         f.y += (target_y - f.y) * min(1.0, 3.0 * self.dt)
         depth = float(self.spec.get("stage_depth", 1.8))
@@ -915,6 +1041,10 @@ class ArenaFighter(kernel.Game):
         edge-triggered without a buffer would drop every press that lands during
         startup, recovery or hitstun, and a game that ignores a third of your
         inputs feels broken rather than strict.
+
+        玩家操控的角色每一帧的逻辑：包括攻击指令缓存、防御状态维持以及移动处理。
+        攻击采用边沿触发机制并会被缓存，而非持续按住触发。若采用持续按住的方式，玩家只需按住按键就能在每一帧触发攻击，这会抹去让帧数据变得有趣的时间差要素；
+        若仅采用无缓存的边沿触发机制，那么在技能启动、恢复或硬直期间按下的指令都会被忽略；而一款会忽略三分之一输入的操作的游戏，给人的感觉会是漏洞百出，而非严谨克制。
         """
         c = self.controls
         if c.pressed("heavy_attack"):
@@ -938,6 +1068,8 @@ class ArenaFighter(kernel.Game):
             else:
                 # Guard held: keep it fresh, or `_advance` times the block out
                 # after a few frames and opens a gap the player never asked for.
+                # 防御持续按住：需保持该状态，否则经过几帧后`_advance`函数会让角色解除防御状态，
+                # 从而留下玩家并未期望出现的防御空档。
                 f.state_ticks = 0
             return
         if f.state == BLOCK:
@@ -945,6 +1077,7 @@ class ArenaFighter(kernel.Game):
 
         if c.move_x or c.move_y:
             # +X is screen-right; +Y is into the stage, Street-Fighter 2.5D.
+            # +X代表屏幕向右方向；+Y代表朝向舞台内部，《街头霸王》2.5D玩法中的设定。
             speed = float(f.stats["walk_speed"]) * self.dt
             f.x += float(c.move_x) * speed
             f.y += float(c.move_y) * speed * 0.65
@@ -956,7 +1089,9 @@ class ArenaFighter(kernel.Game):
             f.enter(IDLE)
 
     def _advance(self, f: Fighter) -> None:
-        """Run one tick of whatever the fighter is committed to."""
+        """Run one tick of whatever the fighter is committed to.
+        执行 fighter 当前所处状态的下一个时间步操作。
+        """
         f.state_ticks += 1
 
         if f.state == KO:
@@ -992,6 +1127,7 @@ class ArenaFighter(kernel.Game):
         The hitbox is the fist; the hurtbox is the opponent's torso column.
 
         Both come from the posed body, so what connects is what the camera sees.
+        攻击判定框是拳头；受击判定框是对手的躯干区域。两者都源自设定的身体姿态，因此连接点就是摄像机所捕捉到的画面。
         """
         defender = attacker.opponent
         if defender.state == KO:
@@ -1018,6 +1154,7 @@ class ArenaFighter(kernel.Game):
 
         # Catching a fighter inside their own startup is a counter hit — worth
         # recording separately, because it is the payoff for the whiff-bait.
+        # 如果击中了正处于出招前摇阶段的对手，这属于反击命中——需要单独记录，因为这是诱骗对手落空后的回报。
         if defender.state == ATTACK:
             self.log("counter_hit", attacker=attacker.name, defender=defender.name,
                      interrupted=defender.attack["name"] if defender.attack else None)
@@ -1029,6 +1166,7 @@ class ArenaFighter(kernel.Game):
         attacker.landed += 1
 
         # A combo is a hit that lands before the previous one's stun expired.
+        # 连击指的是在前一次攻击的硬直时间结束前发生的命中。
         if self.frame - self._last_hit_tick[attacker.name] <= int(
                 self.spec["combo_window_ticks"]):
             attacker.combo += 1
@@ -1053,7 +1191,8 @@ class ArenaFighter(kernel.Game):
             defender.attack = None
 
     def _separate(self) -> None:
-        """Keep the fighters out of each other and on the stage."""
+        """Keep the fighters out of each other and on the stage.
+        让对战双方彼此分开并保持在擂台上"""
         gap = self.b.x - self.a.x
         minimum = 0.72
         if abs(gap) < minimum:
@@ -1074,6 +1213,7 @@ class ArenaFighter(kernel.Game):
         if loser is None and not timeout:
             return
         # Let the knockdown play before resetting.
+        # 在重置前先播放击倒动画。
         if loser is not None and loser.state_ticks < 18:
             return
 

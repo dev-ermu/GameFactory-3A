@@ -1,4 +1,6 @@
-"""Run the public Godot adapter CLI."""
+"""Run the public Godot adapter CLI.
+运行公共的Godot适配器CLI。
+"""
 
 from .cli import main
 

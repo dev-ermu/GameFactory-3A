@@ -1,4 +1,6 @@
-"""Stable Agent-facing facade for blender environment operations."""
+"""Stable Agent-facing facade for blender environment operations.
+面向Agent的稳定Blender环境操作接口。
+"""
 
 from pathlib import Path
 from typing import Any

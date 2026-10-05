@@ -1,4 +1,6 @@
-"""Stable animation operations for GodotClient v1."""
+"""Stable animation operations for GodotClient v1.
+GodotClient v1版本的稳定动画操作功能。
+"""
 
 from collections.abc import Mapping
 from typing import Any

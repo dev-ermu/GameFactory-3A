@@ -4,6 +4,10 @@ The gateway accepts a repository task identity and delegates model execution to
 the CG-video operator.  It deliberately does not author prompts or
 encode provider requests; those responsibilities remain with the task and the
 injected model factory.
+
+面向浏览器的CG视频生成任务调度器。
+
+该网关接收仓库任务标识，并将模型执行任务委托给CG视频运算符。它刻意不负责编写提示词或编码供应商请求；这些职责仍由任务和注入的模型工厂承担。
 """
 
 import hashlib

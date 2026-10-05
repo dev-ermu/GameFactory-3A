@@ -11,6 +11,16 @@ artifact as a small package and materializes a product project explicitly:
 The mechanic package remains runnable without the UI package.  The UI package
 is copied only at assembly time and can depend on the mechanic's public
 autoload/runtime contract, never on private gameplay nodes.
+
+独立的Godot机制与UI模块构件组装而成。
+
+Godot没有类似于Unity的`.asmdef`或Unreal的模块规则那样的组装定义格式。因此，适配器将每个构件视为一个小包，并显式生成一个产品项目：
+
+    机制构件 -> 产品项目
+    UI构件   -> 产品项目/ui/<模块>
+    生成的Main脚本 -> 用于实例化这两者的组合根节点
+
+该机制包即便没有UI包也能正常运行。UI包仅在组装阶段被引入，它只能依赖机制部分的公共自动加载/运行时契约，绝不能依赖私有的游戏逻辑节点。”
 """
 
 import json

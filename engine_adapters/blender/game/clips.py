@@ -10,6 +10,12 @@ recorder bake the pose bones the same way it bakes any other transform.
 Clip names differ across packs, so roles map onto a list of aliases. A missing
 clip is a no-op — the figure holds its rest pose rather than throwing, which is
 the same degrade-don't-crash rule `figures.attach` uses for a missing mesh.
+
+在解压后的角色上播放由Play创作的glTF动画片段。
+
+在`figures.Figure`中的程序化姿态调整功能适用于那些部件被命名为“boxes”的套装。生成或下载的角色通常以带骨骼蒙皮的网格形式呈现，同时包含一套动作（如行走、出拳、死亡）。本模块正是用于适配这种角色的：根据角色名称选取对应的动画片段，在本地时间点上评估其姿态，再让记录器以与处理其他变换数据相同的方式记录下这些骨骼的姿态。
+
+不同资源包中的动画片段名称各不相同，因此角色名称会对应一组别名。如果缺少某个动画片段，则不会执行任何操作——角色会保持休息姿态而非报错，这一机制与`figures.attach`函数在缺少网格数据时的处理方式一致，遵循“降级而不崩溃”的原则。
 """
 
 import re
@@ -75,6 +81,9 @@ def _index_actions(armature) -> dict[str, object]:
     bone names, and evaluating A's walk on B's bind pose is another way to get
     stretched triangles. The importer parks each file's clips on that
     armature's NLA tracks; we only read those.
+
+    属于该骨骼的动作，以动画片段名称为键存储。
+    扫描.blend文件中的所有动作时，可能会混合两个骨骼名称相同的Mixamo人体模型；而在B的绑定姿势上播放A的行走动画，也会导致三角形拉伸问题。导入器会将每个文件的动画片段挂载到对应骨骼动画器的NLA轨道上，我们仅读取这些轨道上的数据。
     """
     found = {}
 
@@ -95,7 +104,7 @@ def _index_actions(armature) -> dict[str, object]:
 
 
 def _rest_pose(armature) -> None:
-    """Clear leftover pose so a punch does not inherit a walk's unkeyed bones."""
+    """清除残留的姿势数据，避免拳击动作继承行走动画中未设置关键帧的骨骼状态。"""
     for bone in armature.pose.bones:
         bone.matrix_basis.identity()
 
@@ -128,6 +137,9 @@ class Animated:
     `play(role, time)` is the whole public surface. Time is seconds of *that
     clip*, not of the match, so a punch that starts at t=4.2 is `play("punch",
     0.0)` on the first tick of the attack.
+
+    一种已解包的血缘蒙皮角色，其姿势由命名后的动画片段驱动。
+    `play(role, time)`是全部的公开接口。这里的time指的是*该动画片段*内的时间，而非整个匹配过程的时间——因此，起始时间为t=4.2的拳击动作，在攻击开始的第一帧只需调用`play("punch", 0.0)`即可。
     """
 
     def __init__(self, unpacked: assets.Unpacked, yaw_offset: float = 180.0):
@@ -214,6 +226,9 @@ class Animated:
         `distance` is metres travelled (drives the stride). `speed` is m/s so a
         sprint can use the run clip. Idle is on the clock so a standing figure
         does not freeze on frame one of the walk.
+
+        从动作序列中选择闲置/行走/奔跑动作并进行播放。
+        `distance`表示移动的距离（用于驱动步幅）；`speed`为每秒移动米数，因此冲刺时可播放奔跑动作。闲置动作会基于时钟播放，这样站立的角色不会在行走动作的第一帧就静止不动。
         """
         if speed < 0.28:
             return self.play("idle", clock)
@@ -234,6 +249,9 @@ class Animated:
 
         Soldier / Xbot have no slash action. Without this the attack is a still
         frame of idle while the VFX arc swings, which reads as a freeze.
+
+        在刚刚播放的动画基础上，对Mixamo手臂/脊椎骨骼添加额外的切割动作。
+        Soldier和Xbot角色没有挥砍动作。如果没有这个处理，攻击时会停留在待机状态的静止帧，而特效弧线仍在摆动，看起来就像画面卡住了一样。
         """
         from math import radians  # noqa: PLC0415
         import mathutils  # noqa: PLC0415
@@ -280,7 +298,9 @@ class Animated:
             self._mul_local(spine, extra)
 
     def overlay_aim(self, amount: float = 1.0) -> None:
-        """Raise both Mixamo arms to a gun-ready pose on top of idle/walk."""
+        """Raise both Mixamo arms to a gun-ready pose on top of idle/walk.
+        在待机/行走动画基础上，将Mixamo的双臂抬至准备持枪的姿态。
+        """
         from math import radians  # noqa: PLC0415
         import mathutils  # noqa: PLC0415
 
@@ -294,7 +314,9 @@ class Animated:
             self._mul_local(bone, extra)
 
     def overlay_draw(self, amount: float = 1.0) -> None:
-        """Bow draw: left arm straight out, right arm pulled back to the cheek."""
+        """Bow draw: left arm straight out, right arm pulled back to the cheek.
+        拉弓动作：左臂伸直，右臂向后拉至脸颊处。
+        """
         from math import radians  # noqa: PLC0415
         import mathutils  # noqa: PLC0415
 
@@ -324,7 +346,9 @@ class Animated:
                 (0.0, 0.0, radians(-8.0 * a)), "XYZ").to_quaternion())
 
     def overlay_switch(self, phase: float) -> None:
-        """A short across-the-body reach while swapping weapons."""
+        """A short across-the-body reach while swapping weapons.
+        切换武器时的横向伸手动作。
+        """
         from math import radians  # noqa: PLC0415
         import mathutils  # noqa: PLC0415
 
@@ -346,6 +370,9 @@ class Animated:
         Soldier / Michelle / Xbot ship without a Death clip. Playing a missing
         role left them frozen upright; this folds hips, spine and knees on top
         of idle so a kill reads as a fall, not a pause.
+
+        将Mixamo（或命名类似的模型）的站立姿态转变为倒地姿态。
+        士兵/米歇尔/Xbot飞船角色缺少死亡动画片段。由于缺失对应的动画角色，这些角色会保持直立冻结状态；这种状态下，髋部、脊椎和膝盖会在闲置动作的基础上进一步弯曲，导致死亡动作被识别为摔倒而非暂停。
         """
         from math import radians  # noqa: PLC0415
         import mathutils  # noqa: PLC0415
@@ -386,7 +413,9 @@ class Animated:
 
 def attach(reference: str, name: str, *, host, height: float,
            into: str = "Actors", veil=(), yaw_offset: float = 180.0) -> Optional[Animated]:
-    """Unpack a skinned character onto `host`. None if the file is missing."""
+    """Unpack a skinned character onto `host`. None if the file is missing.
+    将蒙皮角色模型加载到`host`上。若对应文件不存在则返回None。
+    """
     model = assets.unpack(reference, name, parent=host, height=height, into=into)
     if model is None:
         return None

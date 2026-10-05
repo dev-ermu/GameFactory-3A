@@ -15,6 +15,15 @@ Mantaflow is a usable runtime for everything else, and a diagnostic that reports
 
     python -m engine_adapters.blender.runtime.selftest
     OUT_DIR=D:/scratch/runtime python -m engine_adapters.blender.runtime.selftest
+
+    以无头模式运行整个运行时环境，并输出哪些功能正常运行。
+
+这属于针对Blender安装的诊断工具，而非代码库测试套件的一部分：它用于判断当前设备上的Blender是否能够在不依赖显示设备的情况下完成导入、模拟和渲染操作，这是设备的特性而非代码本身的特性。命令会通过真实的调度器执行，因此所经过的路径与UDP数据包传输路径一致；仅会跳过套接字相关步骤。
+
+关键步骤若失败则会导致运行终止，而VFX相关步骤故意不会触发终止——没有Mantaflow的构建版本仍能支持其他所有功能的运行，如果诊断工具因缺少可选后端而报告“故障”，该结果会被忽略。
+
+    运行方式：python -m engine_adapters.blender.runtime.selftest
+    指定输出目录：OUT_DIR=D:/scratch/runtime python -m engine_adapters.blender.runtime.selftest
 """
 
 import os

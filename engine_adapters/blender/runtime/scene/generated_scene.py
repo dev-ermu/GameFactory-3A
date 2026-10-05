@@ -11,6 +11,12 @@ is answered before an engine is involved.
 Everything lands under one collection below a single root empty, giving the
 environment one transform to scale or offset and one thing to delete when the
 next world replaces it — a generated scene is routinely hundreds of objects.
+
+将模型生成的环境导入到正在运行的会话中。
+
+运行时的世界加载流程如下：`scripts/prepare_world_asset.py`会将导出的世界数据修复为单个完整的`world.glb`文件，随后该文件会被导入到角色所处的场景中，这样在引擎介入之前就能确定“该场景是否可行走”。
+
+所有生成的物体都会被归入一个根空集合下的同一个集合中，这样一来，只需调整该集合的变换参数就能实现环境的缩放或偏移；当下个世界替换当前环境时，直接删除这个集合即可——毕竟生成场景通常会包含数百个物体。
 """
 
 from pathlib import Path

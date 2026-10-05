@@ -4,6 +4,10 @@
 Fixed-timestep capture via ``Game.run(source=...)``. Input goes through
 ``ScriptedSource``; do not move actors directly. The report on disk is the
 result — ``blender --python`` always exits 0.
+
+Blender端试玩记录器（对应three_js/playtest/record.mjs）。
+
+通过``Game.run(source=...)``实现固定时间步长的画面捕捉。输入信号需经过``ScriptedSource``处理；切勿直接移动游戏角色。最终生成的报告会写入磁盘——无论结果如何，``blender --python``都会返回退出码0。
 """
 
 import argparse

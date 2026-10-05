@@ -22,6 +22,19 @@ CLI:
     blender --background --factory-startup \\
         --python engine_adapters/blender/render_preview.py -- \\
         --src model.glb --out previews/ --mode orbit --format mp4
+
+无头环境下的模型旋转预览/静态渲染。
+
+**该模块在 `bpy` 解释器中运行。** 之所以需要它，是因为“导入的模型”和“模型显示正常”并非同一回事：导入报告仅统计三角形数量，而只有图片才能反映出模型是否内外翻转、纹理是否缺失，或是场景图层是否匹配等问题。
+
+无头渲染能正常运行得益于两点：
+- **默认使用 CPU 版的 Cycles 渲染器。** pip 安装的 `bpy` 轮子会通过服务器没有的显示设备所依赖的 GL/EGL 上下文来驱动 EEVEE 和 Workbench 渲染器，这种失败会表现为 `libEGL` 崩溃而非异常。而 Cycles 渲染器无需 GL 上下文，因此它既是默认选项，也是自动回退方案。
+- **排除铅笔画对象。** 即便在 Cycles 渲染器下，铅笔画对象仍会走 GL 渲染管线，导致渲染过程无法捕获地中断。这些对象会被从渲染中隐藏，渲染完成后再恢复显示，且在图形界面中仍能正常渲染。
+
+命令行用法：
+    blender --background --factory-startup \\
+        --python engine_adapters/blender/render_preview.py -- \\
+        --src model.glb --out previews/ --mode orbit --format mp4
 """
 
 import json

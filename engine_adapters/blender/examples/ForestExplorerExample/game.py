@@ -5,6 +5,10 @@ Chests open on interact; monsters can be killed; melee slash and a real
 light-arrow projectile share a cooldown. The hero starts armed — opening the
 chest is a recon beat, not a weapon pickup. Unattended, an AI drives the same
 Controls surface a human would.
+
+第三人称森林探险游戏——采用程序生成的机制，基于Blender运行时开发。
+
+互动时宝箱会打开；怪物可被击杀；近战劈砍与真正的光箭投射物共享冷却时间。主角初始即携带武器——打开宝箱只是侦察行为，并非拾取武器。若无人操控，AI会接管角色，其控制逻辑与人类玩家一致。
 """
 
 import os
@@ -51,12 +55,15 @@ TURN_RATE = 5.5
 YAW_MOVE_LIMIT = 50.0
 # Supply chest sits to the player's right so a chase camera looking +Y sees
 # the lid open without the body covering it.
+# 补给宝箱位于玩家右侧，这样朝向+Y方向的追踪摄像机就能看到开箱过程，且不会被身体遮挡。
 SWORD_CHEST = (2.70, 1.80)
 # Mixamo faces +Y after the glTF Y-up conversion. KayKit's bind faces −Y,
 # so offset 0 moonwalks them (the "walking backwards / upside down" look).
+# Mixamo格式模型在glTF Y轴转换后朝向+Y；KayKit绑定的模型朝向−Y，因此偏移量为0时会出现倒着行走的效果（“向后走/上下颠倒”的视觉表现）。
 MIXAMO_YAW = 0.0
 KAYKIT_YAW = 180.0
 # Kenney blocky dolls: glTF faces −Y, so the figure adapter's +180 is required.
+# Kenney系列方块人模型：glTF格式下朝向−Y，因此需要通过角色适配器将其旋转+180度来调整。
 DOLL_YAW = 180.0
 MONSTER_HEIGHT = 1.92
 DOLL_HEAD_SCALE = 1.62
@@ -65,6 +72,8 @@ MONSTER_RADIUS = 0.48
 # Death_A crumples ~1 m off the root. Melee keep-out is only ~1.1 m, so the
 # falling mesh lands inside the hero unless the corpse is drawn further out.
 # Sim x/y stay at the kill spot (gameplay radii unchanged); this is visual.
+# Death_A模型会在离地面约1米处蜷缩；近战攻击的避让范围仅约1.1米，因此若尸体不向外移动，掉落的模型就会嵌入主角体内。
+# 模拟的世界坐标x/y仍保持在击杀点（游戏玩法中的碰撞范围不变），这只是视觉上的处理。
 CORPSE_SLIDE = 1.75
 TRAIL_BEADS = 5
 WALL_HALF = 15.0
@@ -116,6 +125,7 @@ class ForestExplorer(kernel.Game):
         self.slash_hits: list = []
         self.pickup_left = 0
         # Knights arrive armed. The chest is an interact beat, not a saber drop.
+        # 骑士们全副武装前来。宝箱属于可交互元素，并非剑类武器的掉落物。
         self.has_sword = True
         self.held_sword = None
         self.held_bow = None
@@ -148,7 +158,9 @@ class ForestExplorer(kernel.Game):
         return src is not None and any(o.type == "ARMATURE" for o in src.objects)
 
     def _setup_day_night_world(self) -> None:
-        """Two HDRIs mixed by Fac: 0 is a soft day, 1 is night."""
+        """Two HDRIs mixed by Fac: 0 is a soft day, 1 is night.
+        通过Fac参数混合两种HDRI贴图：0代表白天场景，1代表夜晚场景。
+        """
         import bpy  # noqa: PLC0415
 
         world = bpy.context.scene.world
@@ -208,7 +220,9 @@ class ForestExplorer(kernel.Game):
         self.log("day_night", mode="night" if self._daynight_target > 0.5 else "day")
 
     def _apply_day_night(self, night: float) -> None:
-        """`night` 0 = soft day, 1 = campfire night. Keyframed for the bake."""
+        """`night` 0 = soft day, 1 = campfire night. Keyframed for the bake.
+        `night`值为0表示柔和白昼，为1表示篝火之夜。该参数用于烘焙时的关键帧设置。
+        """
         n = max(0.0, min(1.0, night))
         d = 1.0 - n
         watts = float(self.spec.get("fire_energy", 520.0))
@@ -239,7 +253,9 @@ class ForestExplorer(kernel.Game):
             self._sky_mix.inputs["Factor"].keyframe_insert("default_value", frame=frame)
 
     def _in_lane(self, x: float, y: float) -> bool:
-        """Keep scenery out of the spawn, the chest, the fight, and the camera."""
+        """Keep scenery out of the spawn, the chest, the fight, and the camera.
+        确保场景元素不会出现在出生点、宝箱处、战斗区域以及摄像机视野内。
+        """
         if hypot(x, y) < 6.2:
             return True
         if abs(x) < 6.2 and -4.2 < y < 14.5:
@@ -249,7 +265,9 @@ class ForestExplorer(kernel.Game):
         return False
 
     def _obstruct_segment(self, x0, y0, x1, y1, radius: float = 0.50) -> None:
-        """Approximate a long wall with overlapping keep-out circles."""
+        """Approximate a long wall with overlapping keep-out circles.
+        通过重叠的禁入圆形来模拟长墙效果。
+        """
         length = hypot(x1 - x0, y1 - y0)
         steps = max(1, int(length / max(radius * 1.35, 0.4)))
         for i in range(steps + 1):
@@ -257,7 +275,9 @@ class ForestExplorer(kernel.Game):
             self.obstacles.append((x0 + (x1 - x0) * t, y0 + (y1 - y0) * t, radius))
 
     def _in_clearing(self, x: float, y: float) -> bool:
-        """The fight glade, the chest, and the campfire stay open."""
+        """The fight glade, the chest, and the campfire stay open.
+        战斗空地、宝箱处以及篝火周围区域保持开放。
+        """
         if hypot(x, y) < 6.5:
             return True
         if hypot(x - SWORD_CHEST[0], y - SWORD_CHEST[1]) < 3.4:

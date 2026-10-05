@@ -33,6 +33,11 @@ def spawn(name: str, location: Tuple[float, float, float],
 
     `radius` is metres from the centre to the end of a spoke or to the ring;
     `line_width` is the stroke's own radius, also in metres.
+
+    绘制符合`TEMPLATES`中模板要求的笔触。返回生成对象的名称。
+
+    `radius`表示从中心到辐条末端或环形边缘的距离，单位为米；
+    `line_width`表示笔触自身的半径，单位同样为米。
     """
     import bpy  # noqa: PLC0415
 

@@ -1,4 +1,6 @@
-"""Public Browser Serving Python SDK."""
+"""Public Browser Serving Python SDK.
+面向公共浏览器的Python SDK。
+"""
 
 from .client import BrowserServingClient, CgVideoClient
 from .exceptions import (

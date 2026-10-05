@@ -1,4 +1,7 @@
-"""Python SDK for the public Browser Serving HTTP API."""
+"""Python SDK for the public Browser Serving HTTP API.
+
+用于公共浏览器服务HTTP API的Python SDK。
+"""
 
 import json
 import os

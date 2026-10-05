@@ -7,6 +7,11 @@ Kinematic, not physics: positions are set directly, there is no collision, and
 the ground is the Z = 0 plane. The question a preview runtime answers is "does
 this character read correctly moving through this space" — anything needing real
 collision belongs in the game engine `../../import_generated/` feeds.
+
+
+将玩家的待处理输入转换为一个时间步长内的位姿变化。
+
+这属于运动学模拟而非物理模拟：位置是直接设定的，不存在碰撞检测，地面被定义为Z=0平面。预览运行时所要回答的问题是：“这个角色在该空间中移动时的表现是否正常？”——任何需要真实碰撞检测的场景都应交由游戏引擎处理，相关数据会通过`../../import_generated/`路径导入。
 """
 
 from enum import Enum

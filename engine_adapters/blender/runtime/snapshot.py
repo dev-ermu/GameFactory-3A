@@ -10,6 +10,13 @@ is imported from there rather than copied.
 
 `save_blend` is the escape hatch: everything the headless renderer had to skip,
 grease pencil and unbaked smoke, is in the file and draws in the Blender GUI.
+
+
+查看正在运行的会话：渲染它、保存它或描述它。
+
+`../render_preview.py`会将文件加载到空场景中并进行渲染；而本模块则是渲染已经存在于场景中的内容——即上一条命令执行后留下的角色、正在运动中的特效等。无头模式的规则与此相同，相关执行代码也是从那里导入而非复制而来。
+
+`save_blend`相当于一个应急通道：无头渲染器无法处理的那些内容，比如蜡笔绘图和未烘焙的烟雾效果，都会保存在该文件中，并能在Blender图形界面中正常显示。
 """
 
 import time

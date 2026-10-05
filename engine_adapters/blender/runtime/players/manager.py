@@ -6,6 +6,10 @@ Spawn, look up, and remove the characters in the world.
 `ensure_player` is idempotent by entity id. Commands arrive over UDP, which
 gives no delivery guarantee in either direction — a sender that retries a spawn
 because it saw no effect must not end up with two characters.
+
+负责在场景中生成、查找和移除角色。
+
+`ensure_player` 方法基于实体ID具有幂等性。命令通过UDP传输，该协议不保证双向数据传输的可靠性——如果发送方因未看到生成效果而重试生成操作，绝不能导致同一角色被创建两次。
 """
 
 from math import radians
@@ -14,16 +18,18 @@ from typing import Dict, Optional, Tuple
 from ..assets.loaders import import_as_root
 from .player import Player
 
-#: Prefix on every object this runtime spawns, so `clear_runtime_objects` can
-#: tell a character apart from the scene it is standing in.
+# Prefix on every object this runtime spawns, so `clear_runtime_objects` can
+# tell a character apart from the scene it is standing in.
+# 该运行时生成的所有对象都会加上此前缀，以便 `clear_runtime_objects` 能区分角色与角色所处的场景。
 PLAYER_PREFIX = "player_"
 
 
 class PlayerManager:
     def __init__(self, spawn_spacing: float = 2.2) -> None:
         self._players: Dict[str, Player] = {}
-        #: Metres between characters spawned without an explicit location, so a
-        #: multi-character session does not stack everyone at the origin.
+        # Metres between characters spawned without an explicit location, so a
+        # multi-character session does not stack everyone at the origin.
+        # 没有指定生成位置时，角色之间保持的间距（单位：米），避免多角色会话中所有角色都堆叠在原点。
         self.spawn_spacing = spawn_spacing
         self._spawn_index = 0
 
@@ -44,6 +50,10 @@ class PlayerManager:
         table handles. `spawn_location` defaults to the next free slot, and
         `spawn_rotation` is Euler **degrees** — commands are written by hand,
         and radians in JSON are unreadable.
+
+        生成一个角色，或返回已使用该实体ID的角色。
+
+        `asset_path` 可以是真实路径或 `/Library/...` 形式的路径，支持共享导入器表所支持的任何格式。`spawn_location` 默认为下一个空闲位置，`spawn_rotation` 采用欧拉角形式表示，单位为**度**——因为命令是人工编写的，JSON中的弧度值可读性较差。
         """
         existing = self._players.get(entity_id)
         if existing is not None:

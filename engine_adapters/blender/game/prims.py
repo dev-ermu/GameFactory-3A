@@ -1,29 +1,21 @@
 """
 engine_adapters/blender/game/prims.py
 
-Primitive meshes, shared between every object that uses them.
+基础网格，供所有使用它们的物体共享。
 
-A level here is a few hundred boxes. Built with `bpy.ops.mesh.primitive_*` that
-is a few hundred mesh datablocks, a few hundred operator calls and a context
-dependency; built this way it is **one** datablock per shape, linked by however
-many objects need it. Cycles instances the shared mesh, so an arena of 200
-crates costs one crate's worth of geometry.
+一个关卡中会有几百个立方体。这些网格是通过 `bpy.ops.mesh.primitive_*` 生成的，涉及几百个网格数据块、几百次操作符调用以及上下文依赖；采用这种方式生成时，**每种形状对应一个数据块**，再由需要该形状的物体进行引用。Cycles 会对共享的网格进行实例化，因此一个由200个箱子组成的场景只需占用相当于一个箱子的几何数据量。
 
-The consequence to remember: the meshes are shared, so deforming one deforms
-every object that uses it. Everything in this package animates the *object*
-(location / rotation / scale), never the mesh — which is also what makes the
-simulation bakeable to keyframes.
+需要记住的关键点：这些网格是共享的，因此修改其中一个网格会导致所有引用它的物体随之变形。本模块中的所有动画都是针对*物体*本身（位置/旋转/缩放）进行的，而非网格——这也使得模拟结果能够被烘焙为关键帧。
 
-Shapes are unit-sized and centred, except `BOX_GROUND` and `BAR`, whose origins
-are deliberately off-centre:
+除 `BOX_GROUND` 和 `BAR` 外，其他形状的尺寸均为单位大小且中心对齐，而这两个形状的原点特意设置在偏离中心的位置：
 
-    BOX        2 m cube, centred                 scale = half-extents
-    BOX_GROUND 2 m cube, origin on its base      scale.z = height, sits on floor
-    CYLINDER   r = 1, h = 2, along +Z, centred
-    SPHERE     r = 1, centred
-    CONE       r = 1 at base, h = 2, along +Z
-    PLANE      2 x 2 in XY, centred
-    BAR        1 x 1 in XY, origin at its LEFT edge — scale.x is a fill fraction
+    BOX        2米见方的立方体，中心对齐                缩放值 = 半边长
+    BOX_GROUND 2米见方的立方体，原点位于其底部           scale.z = 高度，可放置在地面上
+    CYLINDER   半径 = 1，高度 = 2，沿+Z轴方向，中心对齐
+    SPHERE     半径 = 1，中心对齐
+    CONE       底面半径为1，高度 = 2，沿+Z轴方向
+    PLANE      在XY平面上尺寸为2×2，中心对齐
+    BAR        在XY平面上尺寸为1×1，原点位于其左侧边缘 —— scale.x 表示填充比例
 """
 
 from typing import Optional, Sequence

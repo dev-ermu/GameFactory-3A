@@ -1,4 +1,6 @@
-"""Stable Agent-facing facade for Godot Engine environment operations."""
+"""Stable Agent-facing facade for Godot Engine environment operations.
+面向智能体的稳定接口，用于操作Godot引擎环境。
+"""
 
 from pathlib import Path
 from typing import Any

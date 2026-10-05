@@ -1,4 +1,6 @@
-"""Epic Pixel Streaming signalling lifecycle used by the UE example backend."""
+"""Epic Pixel Streaming signalling lifecycle used by the UE example backend.
+Epic Pixel Streaming信令生命周期，由UE示例后端使用。
+"""
 
 import os
 import re

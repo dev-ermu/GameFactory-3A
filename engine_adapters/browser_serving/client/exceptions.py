@@ -1,4 +1,6 @@
-"""Exceptions raised by the Browser Serving HTTP client."""
+"""Exceptions raised by the Browser Serving HTTP client.
+浏览器HTTP服务客户端抛出的异常。
+"""
 
 from typing import Any
 

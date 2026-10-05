@@ -24,6 +24,17 @@ the rules decide what a press means. Fighting games need "is block held", a rifl
 needs "is the trigger down", and a menu needs "was this just pressed" — the last
 one is `Controls.pressed()`, computed against the previous tick rather than
 tracked by the source, so a dropped tick cannot lose an edge forever.
+
+人类操作的输入界面，以及能够生成该界面的两种途径。
+
+所有生成的机制都会将“玩家在当前帧的意图”与“规则对此的处理方式”分开——`engine_adapters/blender/examples/`目录下的脚本化策略正是为了填补这一空白。本模块将该空白转化为一个显式的对象，以便以下来源能共用同一套规则：
+
+- `KeyboardSource`：实时运行的Blender窗口，包含键盘和鼠标输入（详见`interactive.py`）
+- `ScriptedSource`：记录按键状态的JSON时间线，可无头运行并像其他批量任务一样渲染为视频
+- 什么都不提供：直接使用游戏自身的人工智能策略，无需改动
+
+为何采用包含所有类型字段的单一结构体，而非按类型拆分：因为调用方是已经知晓游戏类型的`tick()`函数，使用共享结构体意味着键盘处理逻辑、回放格式和调试覆盖层只需编写一次。赛车游戏读取`controls.throttle`而忽略`controls.light_attack`不会产生任何额外开销；若采用三个独立的输入类，则所有相关组件都需重复编写三份。
+**采用持续按住检测模式，而非边沿触发模式。** 输入源仅报告当前帧中处于按下状态的键，具体按压行为由规则判定。格斗游戏需要判断“是否按住格挡键”，步枪需要判断“扳机是否按下”，菜单则需要判断“是否刚刚被按下”——最后一种情况通过`Controls.pressed()`函数实现，该函数基于上一帧状态计算，而非由输入源跟踪，因此即使某帧数据丢失，也不会永久丢失该操作信号。
 """
 
 from dataclasses import dataclass, field
@@ -32,11 +43,13 @@ from typing import Iterable, Optional
 
 #: Degrees of view rotation per pixel of mouse movement. Roughly a 400 dpi
 #: mouse at a normal sensitivity; `interactive.py` scales it by a CLI factor.
+# 每像素鼠标移动对应的视角旋转角度。该数值对应常规灵敏度下400 DPI的鼠标；`interactive.py`会根据命令行参数对其缩放。
 MOUSE_DEGREES_PER_PIXEL = 0.12
 
 #: How fast the arrow-key fallback turns, in degrees a second. Present because
 #: mouse capture is the first thing to break over a remote display, and a game
 #: you cannot aim in is not testable.
+# 方向键替代控制的旋转速度，单位为每秒度数。设置该参数的原因是远程显示环境下鼠标捕获功能最容易失效，而无法瞄准的游戏是无法进行测试的。
 KEY_TURN_DEGREES_PER_SECOND = 130.0
 
 
@@ -48,6 +61,10 @@ class Controls:
     Nothing here is in world units: `move_y = 1.0` is "forward as fast as this
     character goes", not a velocity. The rules own the speeds, which is what
     lets a spec change a car's top speed without touching the input path.
+
+    一帧内的玩家操作意图。轴向数值范围为−1到1，按钮对应按住状态标志。
+    这里的所有数值并非以世界单位表示：`move_y = 1.0` 的含义是“以该角色的最大速度向前移动”，而非指速度值。
+    速度规则由系统本身定义，正因如此，即便不修改输入逻辑，也能通过规则调整车辆的最高时速。
     """
     # Movement, camera-relative for walkers and track-relative for drivers.
     move_x: float = 0.0          # + strafes right
@@ -225,6 +242,17 @@ class ScriptedSource:
          {"at": 2.0, "mouse": [40, 0]}]
 
     Overlapping spans union, which is what holding two keys means.
+
+    一种记录好的输入时间线，可用于在无界面环境下复现人类操作的过程。
+    设计该类的目的并非模拟玩家行为。关键在于交互路径与批量渲染路径必须完全一致：如果按住W键两秒后在窗口中运行的结果与渲染出的结果不同，那么生成的视频就无法作为有效依据。ScriptedSource无需窗口、计时器或系统时钟，就能驱动完全一致的`Controls`数据。
+
+    时间线格式（`spans`），包含秒数与按键名称：
+
+        [{"from": 0.0, "to": 1.5, "keys": ["W"]},
+         {"from": 1.2, "to": 1.3, "keys": ["LEFTMOUSE"]},
+         {"at": 2.0, "mouse": [40, 0]}]
+
+    重叠的时间段会合并，这对应了同时按下多个按键的情况。
     """
 
     def __init__(self, spans: list, genre: str, *, fps: int = 30,
@@ -253,6 +281,8 @@ class ScriptedSource:
         early, and one frame of a held trigger is one shot. Rounding to the
         nearest tick makes the boundaries exact, and ticks are what the
         simulation is counting in anyway.
+
+        此处所有的比较操作都会经过这一步骤，而非直接对比浮点数。时间轴存储的是四舍五入后的秒数，而刻度时间则是百分之一秒的三分之一——因此 `0.0333… < 0.033` 这一判断会判定某个按键在一帧前就被释放了，而持续触发的按键在一帧内的输入仅会被算作一次触发。将时间四舍五入为最近的刻度后，时间边界就变得精确了，况且模拟程序本身也正是以刻度作为计数单位的。
         """
         return int(round(float(seconds) * self.fps))
 
@@ -302,6 +332,10 @@ class KeyboardSource:
     It holds no Blender types: the operator pushes key-down and key-up names in
     and this keeps the held set. That keeps every rule about what a key *means*
     in one file, and makes the whole thing testable without a window.
+
+    来自Blender窗口的实时输入，由模态操作符填充数据。
+
+    该类不依赖任何Blender类型：操作符会将按键按下和松开的名称传入，此类则负责维护当前按下的按键集合。这样一来，所有关于按键功能的规则都集中在同一个文件中，无需依赖窗口就能对整个功能进行测试。
     """
 
     def __init__(self, genre: str, *, fps: int = 30,
@@ -346,6 +380,9 @@ class KeyboardSource:
         rather than the outcome. Runs of identical keys collapse into one span;
         mouse movement is kept per tick, because a look is a shape over time and
         merging two sweeps into one average is a different look.
+
+        将当前帧的输入数据追加到可回放的时间线中。
+        值得回放的关卡必然也值得以全画质重新渲染，而要确保两次运行结果完全一致，唯一可靠的方式就是记录输入而非最终输出。相同的按键组合会被合并为一个时间段；而鼠标移动数据则按帧单独记录，因为视角变化是随时间连续变化的过程，将两个连续的鼠标移动轨迹合并成平均值会导致视角表现不一致。
         """
         end = round(t + 1.0 / self.fps, 4)
         keys = sorted(self.held - set(SESSION_BINDINGS["quit"]))

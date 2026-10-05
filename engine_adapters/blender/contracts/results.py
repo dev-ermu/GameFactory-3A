@@ -1,4 +1,4 @@
-"""Stable result structures returned by BlenderClient v1 operations."""
+"""BlenderClient v1 操作返回的稳定结果结构。"""
 
 from dataclasses import dataclass, field
 from typing import Any

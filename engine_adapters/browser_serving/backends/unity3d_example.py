@@ -1,4 +1,6 @@
-"""Unity3D example backend implemented only through public UnityClient."""
+"""Unity3D example backend implemented only through public UnityClient.
+此Unity3D示例后端仅通过公开的UnityClient实现。
+"""
 
 import socket
 import subprocess

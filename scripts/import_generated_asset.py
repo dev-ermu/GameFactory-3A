@@ -88,7 +88,7 @@ from engine_adapters.godot._internal import (  # noqa: E402
     validate_resource_inspection,
 )
 from engine_adapters.godot.config import (  # noqa: E402
-    GODOT_ASSET_TYPE_DEFAULT_DESTS,
+    GODOT_ASSET_TYPE_DEFAULT_DEST,
     GodotClientConfig,
     normalize_godot_project_directory,
 )
@@ -898,7 +898,7 @@ def prepare_godot_asset(
     raw_destination = (
         str(
             getattr(args, "godot_dest", "")
-            or GODOT_ASSET_TYPE_DEFAULT_DESTS[asset_type]
+            or GODOT_ASSET_TYPE_DEFAULT_DEST[asset_type]
         )
         .strip()
         .replace("\\", "/")

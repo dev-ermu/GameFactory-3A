@@ -17,6 +17,14 @@ teleport everything. The wall clock only ever measures.
 and every random draw comes from `self.rng`, so a generated mechanic that
 scored badly can be re-run and watched. A benchmark that cannot reproduce its
 own failure cannot diagnose it.
+
+这是所有生成的游戏所共享的循环、世界以及报告模块。
+
+游戏子类需要提供三个函数：`build()`、`tick()` 和 `summary()`，最终会生成固定时间步长的模拟结果、预烘焙动画、视频、`.blend` 文件以及 JSON 格式的报告。该模块本身并不关心所运行的游戏类型。
+
+**始终采用固定时间步长。**  tick速率即帧率，因此第N个tick对应第N帧；在第N个tick记录的事件，可在视频中于N/fps秒处找到。该模块中的任何部分都不会通过读取系统时钟来推进模拟：若在两个tick之间执行Cycles渲染，会被整合为1秒的时间步长，进而导致物体位置瞬间跳跃。系统时钟仅用于计时。
+
+**确定性是一项硬性要求，而非可有可无的特性。** 随机种子是规格说明的一部分，所有随机操作均通过`self.rng`生成，因此表现不佳的生成机制可以被重新运行并观察其过程。无法复现自身故障的基准测试，也无法定位故障原因。
 """
 
 import argparse
@@ -79,6 +87,15 @@ def setup_world(color: Sequence[float] = (0.05, 0.06, 0.09), strength: float = 0
 
     A missing HDRI file falls back rather than raising: a sky is a backdrop, and
     losing it is not worth failing a run that is otherwise fine.
+
+    
+    天空效果有三种表现形式：纯色、渐变或HDRI。
+
+    它同时充当补光光源与背景：由于Cycles渲染器最多仅支持两次光线反弹，间接光照效果较弱；若没有环境光参数，背对太阳的物体会呈现黑色。
+
+    选择哪种表现形式属于美术设计决策，而非画质等级的差异。HDRI能真实还原环境中的光照效果，可为摄影级表面提供逼真的照明，仅需一次纹理采样开销；但将低多边形模型置于HDRI环境中时，两者呈现的画面会显得格格不入。渐变则是风格化的替代方案——无需加载额外资源，能让平面着色几何物体融入与其风格协调的场景中。
+    `backdrop`功能会对相机拍摄到的画面进行叠加处理，但不会影响天空光照效果；当该参数值大于1.0时，这是生成日光天空的唯一途径。否则的话，亮度与补光效果会合二为一：如果天空亮度不足，无法从各个方向均匀照亮场景，那么其亮度就会低于下方的草地，从而呈现出黄昏的效果；而如果天空亮度过高、类似日光，又会导致所有物体的色彩被冲淡。该功能仅适用于渐变天空——HDRI是一种经过测量的环境数据，对其参数进行重新缩放会导致其与真实环境不再匹配。
+    如果缺少HDRI文件，程序会采用备用方案而非报错：毕竟天空只是背景而已，为了它而导致原本正常的渲染流程失败实在不值得。
     """
     bpy = _bpy()
     world = bpy.data.worlds.get("World") or bpy.data.worlds.new("World")

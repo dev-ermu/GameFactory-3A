@@ -7,6 +7,10 @@ The classic particle system rather than geometry nodes: it needs no node tree
 and renders in Cycles without a bake. Emission is a short window from the
 current frame so the burst reads as an event; a continuous emitter is better
 authored as part of the set.
+
+一小块发射源产生的粒子爆发——比如火花、灰尘、碎屑。
+
+这里选用的是传统的粒子系统而非几何节点：它无需节点树，且能在Cycles渲染器中直接渲染，无需预先烘焙。由于粒子发射仅发生在当前帧的短暂窗口期内，因此这种爆发效果会被表现为一次性事件；若是需要持续发射的效果，则更适合作为场景集合的一部分来创建。
 """
 
 from typing import Tuple

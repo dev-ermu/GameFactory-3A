@@ -12,6 +12,13 @@ ground whenever the pivot rose to a character's chest.
 
 The lighting is deliberately dull, a key and a fill: flattering light hides
 exactly the seams and inverted normals this stage exists to catch.
+
+
+这是一个用于查看单个角色的最小场景集合：包含地面、两盏灯光以及轨道摄像机。
+
+`stage_pivot`是一个摄像机支架，并非场景根节点：摄像机是其唯一子物体。因此控制器会在该支架的局部空间内进行轨道运动，而`reframe`功能则是通过将支架移动到角色中心来调整整个支架的方向。角色和地面始终位于最顶层——如果将角色设为测量对象的子物体，`reframe`就会陷入无限循环；而如果把地面设为子物体，那么每当支架上升到角色胸部高度时，地面也会被一同抬高。
+
+这里的灯光设置刻意调得较暗，采用主光与补光组合：这种柔和的光线恰好能掩盖该场景旨在捕捉的模型接缝和法线翻转问题。
 """
 
 from math import radians

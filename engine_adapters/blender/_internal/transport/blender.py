@@ -1,4 +1,4 @@
-"""Blender toolchain transport for the blender adapter."""
+"""用于Blender适配器的Blender工具链传输模块。"""
 
 import os
 import subprocess

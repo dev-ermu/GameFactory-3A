@@ -22,6 +22,18 @@ Interpolation is set once at the end:
   keyframe on a hairpin leaves the road it demonstrably stayed on in the
   simulation, and a bar eases past 100%.
 - `hide_render` -> CONSTANT, so a spawned tracer is either there or not.
+
+
+将模拟结果烘焙为关键帧，然后进行渲染。
+
+模拟过程是权威性的，会优先执行；记录只是其附带效果。记录器会在每个时间步将每个已注册物体的当前变换信息写入第N帧，因此最终的`.blend`文件本身就是模拟运行的结果——可以随意拖动播放、能以不同分辨率重新渲染，甚至那些想查明赛车为何在第二圈冲出赛道的人也能打开该文件查看。若从实时循环直接渲染，得到的只会是一段视频，没有其他用处。
+
+选择按时间步逐帧设置关键帧而非先存储数据再批量写入，是经过深思熟虑的决定：`keyframe_insert`的插入速度约为每秒10万次，这一数值远超30帧/秒、时长30秒的游戏需求；同时这样做也无需使用4.4版本及以后批量创建f曲线所需的、因版本而异的channelbag API（详见`agent_skills/engine_context/blender_api.md`第3a节）。
+
+插值设置在最后统一完成：
+
+- 变换相关参数 -> LINEAR模式，因为贝塞尔插值会出现超调现象。比如赛车在急转弯处经过其自身关键帧时，可能会偏离模拟中实际行驶的道路；而条形图在超过100%时也会出现类似超调问题。
+- `hide_render`参数 -> CONSTANT模式，这样生成的轨迹线要么存在，要么不存在。
 """
 
 import json

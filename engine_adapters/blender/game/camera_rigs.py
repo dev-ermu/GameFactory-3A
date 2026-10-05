@@ -20,6 +20,19 @@ about X swings that onto +Y.
 Actors are modelled **facing +Y**, so an actor's `rotation_euler.z =
 radians(yaw)` points it the same way the same yaw points a camera. Getting this
 consistent once is why the shooting code can aim with the camera's own numbers.
+
+
+生成的游戏类型所需的三种摄像机行为，以及它们共有的偏航角约定。
+
+## 偏航角
+
+偏航角以**度**为单位，其与 `../runtime/scene/camera.py` 中的设定一致——该文件中轨道摄像机的位置为 `(d·sin y, −d·cos y)`，且朝向枢轴点。据此可得出前进方向：
+
+    前进方向(yaw) = (−sin yaw,  cos yaw, 0)，当yaw=0时指向+Y轴
+    右方向(yaw)   = ( cos yaw,  sin yaw, 0)，当yaw=90时指向−X轴
+
+当摄像机的 `rotation_euler = (radians(90 + pitch), 0, radians(yaw))` 时，其观察方向即为 `前进方向(yaw)`：因为Blender摄像机沿其局部−Z轴观察，而绕X轴旋转+90°后，观察方向会转向+Y轴。
+角色模型默认**面向+Y轴**，因此角色的 `rotation_euler.z = radians(yaw)` 会使角色朝向与摄像机在同样偏航角下的朝向一致。正是为了维持这种一致性，射击代码才能直接使用摄像机自身的数值来确定瞄准方向。
 """
 
 from math import cos, radians, sin
@@ -117,6 +130,11 @@ class ChaseRig(_Rig):
     snaps its yaw would otherwise snap the whole frame, and the sense of speed
     in a racing shot comes almost entirely from the camera settling *after* the
     turn. `stiffness` is the fraction of the remaining gap closed per tick.
+
+    
+    平滑处理的第三人称跟随相机。
+
+    该相机会滞后于目标物体，而非直接绑定在目标后方：如果汽车突然改变航向，直接绑定的相机也会瞬间转动，而赛车场景中速度感几乎完全来自于转弯后相机的缓慢调整。`stiffness`参数表示每帧闭合的剩余间距比例。
     """
 
     def __init__(self, camera, distance: float = 7.5, height: float = 2.8,
@@ -157,6 +175,11 @@ class SideViewRig(_Rig):
     knockdown does not push the camera through the stage wall. Yaw is fixed at
     0°, which looks along +Y and puts **+X on screen-right** — so the fight line
     is the X axis and Y is depth into the stage.
+
+    
+    格斗游戏专用相机：固定的侧面视角，可同时框住两名格斗角色。
+
+    它会追踪两人的中点位置，当两人分开时相机便会后退，同时会限制相机位置，防止角色被击倒到角落时相机穿透过舞台墙壁。相机的偏航角固定为0°，此时视角沿+Y轴方向，屏幕右侧对应+X轴——因此战斗路线即为X轴，Y轴代表进入舞台的深度。
     """
 
     def __init__(self, camera, height: float = 2.0, distance: float = 12.0,

@@ -8,6 +8,10 @@ scene, so the UDP receiver never touches Blender — it parses a datagram onto
 `_pending`, and only `drain_pending()`, called from the tick loop on the main
 thread, turns one into a `bpy.ops` call. Every deadlock and silent corruption
 this runtime could have comes from crossing that boundary.
+
+该类负责管理运行时的各个组件，以及网络与Blender之间的命令队列。
+
+由于`bpy`并非线程安全，且操作必须在与场景所属的同一线程中执行，因此UDP接收器绝不会直接操作Blender——它会将接收到的数据报解析后存入`_pending`队列；只有从主线程的tick循环中调用的`drain_pending()`方法，才会将队列中的指令转换为`bpy.ops`调用。该运行时可能出现的所有死锁和隐蔽的数据损坏问题，都源于跨越了这一线程边界。
 """
 
 import queue

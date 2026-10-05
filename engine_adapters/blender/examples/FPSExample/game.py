@@ -23,6 +23,20 @@ accuracy number in the report counts shots that reached a body.
 
 The player is an AI. A generated mechanic has to be judged unattended, so the
 "player" is a scripted policy driving the same input surface a human would.
+
+第一人称竞技场射击游戏——程序生成的机制，基于Blender运行时开发。
+
+已实现的规则
+------------
+具备弹匣、装填机制、每发子弹的散射范围以及射击间隔的射线扫描武器；伤害判定会考虑掩体因素，因此射向箱子的子弹会被判定为脱靶，而非穿透箱子造成伤害；敌人能够自主寻找掩体、进行侧移、利用掩体还击；游戏包含生命值系统、死亡机制，当竞技场内没有敌人或玩家死亡时，当前回合即告结束。
+
+所有参数均由`spec.json`文件驱动——包括竞技场大小、掩体密度、敌人数量与属性，以及整套武器参数——因此无需修改代码，同一模板就能生成近战霰弹枪混战或远程决斗场景。
+
+为何采用射线扫描判定射击结果
+------------------------------
+最简单的实现方式是仅检查距离和角度，但这种方式会导致子弹能穿透墙壁。而掩体正是竞技场射击游戏的核心要素，因此射击判定实际上是对构建好的关卡进行`scene.ray_cast`射线检测，最先被击中的物体即为命中目标。这种方式也能保证演示的真实性：报告中的命中率统计的是真正击中敌人身体的子弹数量。
+
+玩家角色由人工智能控制。由于程序生成的机制需在无人干预的情况下运行，因此“玩家”实际上是由脚本控制的决策逻辑，其输入方式与人类玩家一致。
 """
 
 import os
@@ -56,9 +70,11 @@ from engine_adapters.blender.game import (  # noqa: E402
 #: scene and a ray from inside it hits the shooter; nudging past the collision
 #: radius is cheaper and more predictable than hiding the body and forcing a
 #: depsgraph rebuild on every trigger pull.
+# 子弹发射点相对于眼睛位置的前移距离。玩家的身体本身存在于场景中，从体内发出的射线会命中玩家自身；将发射点设置在碰撞半径之外，比隐藏身体并每次扣动扳机时都触发依赖图重建要更简便且可控。
 MUZZLE_OFFSET = 0.75
 
 #: Ticks a tracer / flash / spark stays visible.
+# 拖尾特效/闪光特效/火花特效的可见时长（单位： tick）。
 VFX_HOLD = 3
 
 #: Visible streak length. Hitscan still goes the full weapon range.
@@ -69,6 +85,7 @@ TRACER_RADIUS_ENEMY = 0.0035
 #: How far a human player may look up or down. Short of 90° on purpose: at
 #: exactly straight up the yaw axis and the view axis coincide and the horizon
 #: spins around the crosshair.
+#  可见的子弹轨迹长度。射线扫描的实际杀伤范围仍可达武器的全射程。
 MAX_PITCH = 85.0
 
 #: Sprint multiplier on `move_speed` while the run key is held.

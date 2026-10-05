@@ -1,4 +1,6 @@
-"""Asset administration UI on port 7860 using only Browser Serving APIs."""
+"""Asset administration UI on port 7860 using only Browser Serving APIs.
+资产管理系统UI运行于7860端口，仅使用浏览器服务端API。
+"""
 
 import json
 from pathlib import Path

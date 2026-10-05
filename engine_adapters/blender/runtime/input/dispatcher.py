@@ -10,6 +10,12 @@ answer to "what can I send the runtime?".
 
 Payload keys are optional wherever a sensible default exists, because commands
 are hand-written as often as they are generated.
+
+将命令名称映射到执行该命令的运行时调用。
+
+这些处理函数刻意设计得较为简单：仅读取参数、设置默认值，然后调用相应模块。任何超过几行的逻辑都应放在被调用的模块中，这样命令表就能保持其作为契约的可读性——该文件正是回答“我能向运行时发送什么命令？”这个问题的答案。
+
+只要存在合理的默认值，参数键就是可选的，因为命令往往是手动编写而非自动生成的。
 """
 
 from typing import Callable, Dict, Optional, Tuple

@@ -1,4 +1,6 @@
-"""Configuration for the stable GodotClient API."""
+"""Configuration for the stable GodotClient API.
+稳定版GodotClient API的配置。
+"""
 
 import os
 import re
@@ -37,7 +39,7 @@ DEFAULT_PROP_DEST = "assets/imported/props"
 DEFAULT_WEAPON_DEST = "assets/imported/weapons"
 DEFAULT_AUDIO_DEST = "assets/imported/audio"
 
-GODOT_ASSET_TYPE_DEFAULT_DESTS = {
+GODOT_ASSET_TYPE_DEFAULT_DEST = {
     "avatar": DEFAULT_AVATAR_DEST,
     "motion": DEFAULT_MOTION_DEST,
     "scene": DEFAULT_SCENE_DEST,

@@ -10,6 +10,12 @@ is authored in Blender, the runtime only places it and drives its inputs.
 With no tree named, a pass-through group is built. A Nodes modifier with an
 *empty* group logs "must have a group output" and silently does nothing, so the
 minimum valid tree is what turns that into a visible object showing nothing.
+
+将一个几何节点树附加到生成的对象上。
+
+在 `.blend` 文件中创建并通过 `blend_scene.load_scene` 导入的节点树，可以通过 `tree_name` 在此处实例化——这就是实际特效的构建方式：美术设计在Blender中完成，运行时只需将其放置并驱动其输入参数即可。
+
+如果没有指定节点树名称，则会生成一个透传组。带有空组的Nodes修改器会提示“必须存在组输出”并静默不执行任何操作，因此能生成可见且不显示任何内容的对象所需的最小有效节点树就是如此。
 """
 
 from typing import Optional, Tuple

@@ -10,6 +10,12 @@ coordinates are the source of truth.
 
 The camera is a child of `stage.PIVOT`, so all of this is local to the rig and
 `PreviewStage.reframe` can re-aim the orbit without disturbing it.
+
+用于操控场景摄像机的旋转、缩放和平移操作。
+
+状态数据以角度和米为单位存储于此，而非从Blender中读取：每帧从旋转矩阵中推导偏航角会导致误差累积，在极点处还会出现计算错误；只有以球面坐标作为真实数据源时，俯仰角限制才会生效。
+
+该摄像机是`stage.PIVOT`的子物体，因此所有操作都局限于这个绑定节点范围内，且`PreviewStage.reframe`可以重新调整摄像机视角而不会干扰它。
 """
 
 from math import cos, radians, sin

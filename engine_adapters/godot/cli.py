@@ -1,4 +1,6 @@
-"""Command-line entry point delegating to the public GodotClient API."""
+"""Command-line entry point delegating to the public GodotClient API.
+命令行入口点，用于调用公开的GodotClient API。
+"""
 
 import argparse
 import json

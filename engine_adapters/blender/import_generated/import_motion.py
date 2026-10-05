@@ -7,6 +7,15 @@ that the pose actually changes across the clip.
     blender --background --factory-startup \\
         --python engine_adapters/blender/import_generated/import_motion.py -- \\
         --src retargeted.fbx --dest out/ --report report.json
+
+将经过重定位的FBX文件（包含网格、骨骼和动作）导入Blender。
+
+与``import_mesh.py``不同，该脚本会保留骨骼和蒙皮信息，并会检查动画片段中姿势是否确实发生了变化。
+
+    命令示例：
+    blender --background --factory-startup \\
+        --python engine_adapters/blender/import_generated/import_motion.py -- \\
+        --src retargeted.fbx --dest out/ --report report.json
 """
 
 import json

@@ -1,4 +1,6 @@
-"""Godot example backend implemented only through public GodotClient."""
+"""Godot example backend implemented only through public GodotClient.
+该Godot示例后端仅通过公开的GodotClient实现。
+"""
 
 import json
 import logging

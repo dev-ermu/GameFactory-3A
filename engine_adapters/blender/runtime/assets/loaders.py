@@ -11,6 +11,12 @@ animation hierarchies the same shape.
 
 The suffix-to-operator table is shared from `import_generated/import_mesh.py`,
 so a build that imports `.usdz` offline imports it into the runtime too.
+
+导入一个文件，并返回一个用于保存的单一对象。
+
+运行时系统通过一个名称来追踪某个角色，但导入操作会产生文件中包含的所有对象，因此需要从这些对象中选出一个根对象，将其余对象设为该根对象的子对象。如果存在骨骼对象，它会优先被选为根对象：因为动画会绑定到骨骼上，且网格也早已与骨骼绑定，这样就能保持变换和动画层级结构的一致性。
+
+后缀到导入操作符的映射表源自 `import_generated/import_mesh.py`，因此离线导入 `.usdz` 文件的构建过程也会将其导入到运行时系统中。
 """
 
 from typing import List, Optional

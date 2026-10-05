@@ -15,6 +15,16 @@ Run (inside an interpreter that has `bpy`):
 Or through Blender itself:
     blender --background --factory-startup \\
         --python engine_adapters/blender/runtime/serve.py -- --port 30021
+启动运行时并持续执行相关逻辑。
+
+整个程序就是一个循环：处理UDP线程中积压的数据、根据经过的时间推进角色状态，然后进入休眠。这里采用实际测量的时间而非预设值——毕竟导入一个百兆字节大小的世界数据可能需要1秒而非1/30秒；如果在程序卡顿后仍使用预设的时间步长，正在跳跃中的角色就会被瞬间传送。
+
+在已安装`bpy`模块的解释器中运行：
+    python -m engine_adapters.blender.runtime.serve --port 30021
+
+也可以通过Blender本身启动：
+    blender --background --factory-startup \\
+        --python engine_adapters/blender/runtime/serve.py -- --port 30021
 """
 
 import argparse

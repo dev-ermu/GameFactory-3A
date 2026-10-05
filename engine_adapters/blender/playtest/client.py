@@ -1,4 +1,6 @@
-"""Host-side blender playtest: launch ``record.py`` and read ``report.json``."""
+"""Host-side blender playtest: launch ``record.py`` and read ``report.json``.
+主机端Blender测试播放：运行``record.py``并读取``report.json``。
+"""
 
 import json
 from pathlib import Path

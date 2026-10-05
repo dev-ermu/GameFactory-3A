@@ -1,4 +1,6 @@
-"""Unreal Engine example backend implemented only through public UEClient."""
+"""Unreal Engine example backend implemented only through public UEClient.
+本Unreal Engine示例后端仅通过公开的UEClient实现。
+"""
 
 import socket
 import subprocess

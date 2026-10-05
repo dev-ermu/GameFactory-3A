@@ -1,5 +1,4 @@
-#!/usr/bin/env python3
-"""Validate a game-cg-director JSON file without calling an LLM."""
+"""验证game-cg-director JSON file（不需要调用LLM）"""
 
 import argparse
 import json
@@ -135,7 +134,7 @@ def schema_errors(
     root: dict[str, Any],
     location: str = "$",
 ) -> list[str]:
-    """Evaluate the JSON Schema keywords used by this skill."""
+    """评估该SKILL所使用的JSON Schema关键字。"""
 
     if "$ref" in schema:
         return schema_errors(value, resolve_pointer(root, schema["$ref"]), root, location)

@@ -1,4 +1,6 @@
-"""Bundled Browser Serving backend examples."""
+"""Bundled Browser Serving backend examples.
+捆绑的浏览器服务端示例。
+"""
 
 from .ue5_example import (
     UE5ExampleBackend,

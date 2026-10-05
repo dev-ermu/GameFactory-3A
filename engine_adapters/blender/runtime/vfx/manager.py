@@ -8,6 +8,10 @@ Owning the naming is the point of this class. Each effect gets one
 exactly that or `<prefix>_<part>`, so cleanup needs no bookkeeping about how
 many objects an effect turned out to be. Smoke is a domain *and* a flow emitter,
 and leaking one leaves an invisible simulation running in every later render.
+
+根据名称生成特效，并能将其移除。
+
+该类的作用就是统一管理特效命名。每种特效都会采用 `vfx_<类型>_<序号>` 这样的前缀，后端创建的所有物体必须严格使用这一命名规则，或是 `<前缀>_<部件名>` 的形式，因此清理时无需额外记录某种特效究竟对应多少个物体。烟雾特效既包含模拟域也包含流发射器，如果其中一个部分未被正确清理，就会导致后续所有渲染中都有无形的模拟过程在后台运行。
 """
 
 from typing import List, Optional, Tuple

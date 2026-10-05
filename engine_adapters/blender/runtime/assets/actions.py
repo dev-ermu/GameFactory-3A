@@ -10,6 +10,12 @@ the objects that came with it.
 Keeping the clip separate from the character is what lets one walk cycle drive
 every character whose skeleton it fits, which is why they were retargeted
 through gen_motion (`operators/.../retarget_utils`) first.
+
+从文件中加载动画并将其应用到角色上。
+
+Blender没有“仅导入动画”的操作选项——导入FBX或BVH文件时会同时引入骨骼数据——因此`load_action`函数会先导入动画，保留Action数据块，再删除随之外来的物体。
+
+将动画片段与角色分离，才能让同一个行走循环驱动所有骨骼匹配的角色，这也是为何这些动画会先通过gen_motion（`operators/.../retarget_utils`）进行重新定位。
 """
 
 from typing import Optional

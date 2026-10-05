@@ -15,6 +15,15 @@ be, so this only builds the setup and leaves the bake to a full Blender install.
 unable to exit.** The bundled Mantaflow scripts are out of step with the
 compiled module (`LevelsetGrid has no attribute setConst`); deleting the objects
 does not undo it, only emptying the file does — see `Subsystem.shutdown`.
+
+
+这是一个Mantaflow气体模拟：一个包含内部流入发射器的域盒。
+
+Blender的流体系统需要同时用到这两个物体，因此它们的名称都会加上管理器的前缀；要清除该效果必须同时处理这两个物体——如果遗留了域盒，它会继续模拟并保留其体素缓存，直到会话结束。
+
+在效果被烘焙之前是看不到任何视觉表现的，而烘焙过程的速度远比预期要慢，因此此处仅负责搭建场景，真正的烘焙工作需交由完整的Blender安装环境来完成。`resolution`参数决定了烘焙耗时是几秒还是几小时。
+
+在Blender 5.0.1的pip安装包中，域盒和流物体会导致进程无法退出。捆绑的Mantaflow脚本与编译后的模块版本不兼容（会出现`LevelsetGrid has no attribute setConst`的错误）；删除这些物体也无法解决问题，只有清空文件才能恢复——详见`Subsystem.shutdown`。
 """
 
 from typing import Tuple

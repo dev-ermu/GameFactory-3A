@@ -26,6 +26,19 @@ Three things make that safe to bolt onto rules written for a batch bake:
 Requires a real Blender window — `blender --python play.py`, *not*
 `--background`. There is no offscreen path here on purpose: an interactive mode
 that cannot be seen has nothing to offer over the batch mode that already works.
+
+
+运行已生成的游戏机制，而非仅观看预渲染结果。
+
+`kernel.Game.run()`会按照CPU允许的速度将规则执行`total_ticks`次，并为每一帧生成关键帧。而本模块则是在Blender实时窗口内的时钟计时器上执行*相同的*`tick()`逻辑，玩家通过`controls.py`定义的输入界面进行操作，且渲染时采用EEVEE引擎在视口中显示，而非使用Cycles渲染到文件。
+
+以下三点确保了该方式能安全地应用于原本为批量渲染编写的规则：
+
+- **时间步长保持不变。**`game.dt`的值始终为`1/fps`；计时器仅决定帧何时更新，而不会改变单次更新的时长。延迟到达的帧会执行与按时到达帧相同的33毫秒游戏逻辑，若帧延迟严重，则会连续执行多帧逻辑（上限由`MAX_CATCHUP_TICKS`设定）。若按实际经过时间缩放步长，一旦拖动窗口，固定步长的模拟就会直接崩溃。
+- **不会进行任何烘焙操作。**此处绝不会调用`Recorder.capture()`，因此哪怕运行十分钟，每个物体也不会累积一万八千个关键帧。记录器虽仍存在，但并未被投入使用，是为了适配物体的需要而已。
+- **游戏规则层面毫无察觉。**游戏会读取`self.controls`；至于这些数据来自键盘输入还是游戏自身策略，游戏并不关心。
+
+运行本程序需要打开真实的Blender窗口——需使用命令`blender --python play.py`，而非`--background`模式。我们特意没有提供离屏渲染路径：无法可视化的交互模式，相比已经能正常工作的批量渲染模式并无优势。
 """
 
 import time
@@ -37,11 +50,15 @@ from . import recorder
 #: How many simulation steps one frame may run to catch up. Beyond this the
 #: session accepts being behind: the alternative is a stall that gets longer
 #: every frame, which is how a slow render turns into a frozen window.
+# 单帧内最多可执行的模拟步数，用于追赶延迟的帧。超过该数值后，
+# 程序允许存在延迟：否则每帧延迟都会不断累积，最终导致画面卡顿，慢速渲染甚至会令窗口完全冻结。
 MAX_CATCHUP_TICKS = 4
 
 #: Viewport shading. `MATERIAL` is EEVEE with the scene's materials and is what
 #: makes the emissive HUD and the glow pools read; `RENDERED` also works but
 #: pays for the world's ambient sampling every frame.
+# 视口着色模式。`MATERIAL`模式采用EEVEE引擎并应用场景材质，
+# 能正确显示发光式HUD和光晕效果；`RENDERED`模式虽也可行，但每帧都要进行全局环境采样，性能开销更大。
 VIEW_SHADING = "MATERIAL"
 
 
@@ -61,6 +78,10 @@ def prepare_window(game, *, fullscreen: bool = True, shading: str = VIEW_SHADING
     a user perspective shows the level with the HUD floating in the middle of it.
     Camera view is not a preference here; it is the only view the game is
     composed for.
+
+    将最大的3D视口对准游戏摄像机，使其可交互。
+    生成的游戏HUD是由依附于摄像机的几何物体构成的，因此从用户视角看到的视口会显示出游戏场景，而HUD则悬浮在场景中央。
+    这里的摄像机视图并非可选项；它正是游戏所采用的唯一视图。
     """
     bpy = _bpy()
     scene = bpy.context.scene
@@ -68,6 +89,8 @@ def prepare_window(game, *, fullscreen: bool = True, shading: str = VIEW_SHADING
     # EEVEE for interactivity. Cycles in a viewport is a slideshow, and the
     # generated materials are flat emissive-and-diffuse, which EEVEE renders
     # near-identically to the Cycles video.
+    # 为了交互性选择EEVEE渲染器。Cycles渲染器在视口中只会以幻灯片形式显示，
+    # 而且生成的材质仅为平面发光+漫反射类型，EEVEE的渲染效果与Cycles视频版几乎一致。
     for engine in ("BLENDER_EEVEE_NEXT", "BLENDER_EEVEE"):
         try:
             scene.render.engine = engine
@@ -80,6 +103,9 @@ def prepare_window(game, *, fullscreen: bool = True, shading: str = VIEW_SHADING
     # set it. A played session was therefore graded by Blender's default AgX
     # while the video of it was graded Standard, and the flat saturated palette
     # these games are built from came out of the window looking fogged.
+    # 色调映射属于场景设置，因此视口会采用与渲染相同的色调映射参数——
+    # 不过只有渲染流程会通过`configure_render`来设置该参数。因此，游戏运行时的色调映射采用Blender默认的AgX模式，
+    # 而生成的视频则采用Standard色调映射，导致这些游戏所用的高饱和度扁平调色板效果大打折扣。
     try:
         scene.view_settings.view_transform = recorder.VIEW_TRANSFORM
         scene.view_settings.look = "None"
@@ -97,15 +123,21 @@ def prepare_window(game, *, fullscreen: bool = True, shading: str = VIEW_SHADING
     # default, a session is lit by Blender rather than by the game: the sky set
     # up in `setup_world` and the key light from `add_sun` are both invisible,
     # and the window stops being evidence of what the render will look like.
+    # 材质预览模式下，视口会使用内置的演播室级HDRI光源进行照明，除非另有指定，否则会忽略场景自身的环境光和灯光。
+    # 若保持默认设置，视口将由Blender而非游戏本身提供照明：`setup_world`中设置的天空以及`add_sun`添加的主光源都会不可见，
+    # 导致视口无法反映真实的渲染效果。
     space.shading.use_scene_world = True
     space.shading.use_scene_lights = True
     # The overlays are Blender's, not the game's: gizmos, grid and the text in
     # the corner all draw over the HUD and none of them are part of the game.
+    # 这些覆盖层属于Blender自带的，并非游戏内容：虚拟控件、网格以及角落的文本都会覆盖在HUD之上，且它们均不属于游戏的一部分。
     space.overlay.show_overlays = False
     space.show_gizmo = False
     # Hiding a region re-inits the area, and that reads the window from the
     # context rather than from the area. A startup script has no context window,
     # so it has to be supplied here or the re-init dereferences null.
+    # 隐藏某个区域会导致该区域重新初始化，此时会读取上下文中的窗口信息而非区域自身的信息。启动脚本没有上下文窗口，
+    # 因此必须在此处指定，否则重新初始化时会引用空值。
     with bpy.context.temp_override(window=window, area=area):
         space.show_region_ui = False
         space.show_region_toolbar = False
@@ -117,7 +149,9 @@ def prepare_window(game, *, fullscreen: bool = True, shading: str = VIEW_SHADING
 
 
 def _largest_view3d(bpy):
-    """The biggest 3D viewport, and the window it lives in."""
+    """The biggest 3D viewport, and the window it lives in.
+    最大的3D视图窗口及其所属的窗口
+    """
     best_window, best_area, best_size = None, None, 0
     for window in bpy.context.window_manager.windows:
         for area in window.screen.areas:
@@ -136,6 +170,12 @@ def _fullscreen(bpy, window, area) -> None:
     `screen.screen_full_area` needs the area in the override and still refuses
     in some window states; a session that is merely not maximised is fine, so
     this never raises.
+
+    
+    将视图窗口最大化，即便Blender的上下文环境不允许这么做。
+
+    `screen.screen_full_area`需要传入对应的区域参数，但在某些窗口状态下仍会报错；
+    只要窗口未被最大化就没问题，因此该操作不会引发异常。
     """
     try:
         with bpy.context.temp_override(window=window, area=area,
@@ -155,6 +195,12 @@ class Session:
     instantiated from Python — Blender constructs it — so anything living on the
     operator can only be tested by a person sitting in front of Blender. This
     class is the part with the rules in it, and it is testable headless.
+    
+    主循环本身：包含固定的执行步骤、暂停逻辑以及结束条件。
+
+    之所以将其独立于运算符之外，是因为无法通过Python实例化`bpy.types.Operator`——
+    Blender会负责创建该类实例——因此依附于运算符的任何逻辑都只能由坐在Blender前的人来测试。
+    而这个类包含了具体的执行规则，可脱离界面进行无头测试。
     """
 
     def __init__(self, game, source) -> None:
@@ -172,13 +218,18 @@ class Session:
     # ── stepping ──────────────────────────────────────────────────────────────
 
     def step(self) -> bool:
-        """One fixed step of the game. False means the session should end."""
+        """One fixed step of the game. False means the session should end.
+        游戏的单次固定执行步骤。返回False意味着会话应结束。
+        """
         game = self.game
         # Sampled at the time of the tick it will drive, which is the same
         # instant `Game.run()` samples a replay at. Polling at the *current*
         # time and then advancing looks equivalent and is not: it shifts every
         # input one tick earlier than the replay of it, and a replay that does
         # not reproduce the session is worse than no replay at all.
+        # 该数值在对应tick触发时采样，与`Game.run()`采样回放数据的时刻一致。
+        # 若直接在*当前*时间采样再推进，效果并不等效：会导致所有输入比回放数据早一个tick，
+        # 而无法复现原会话的回放结果，这种无效的回放还不如没有回放。
         upcoming = (game.frame + 1) * game.dt
         controls = self.source.poll(upcoming)
 
@@ -216,6 +267,12 @@ class Session:
         time only decides *how many* steps happen, because scaling a fixed step
         by measured elapsed time is what makes a simulation explode the first
         time a frame takes 200 ms.
+
+        执行“真实时间”经过`elapsed`秒所对应的完整时间步。
+        
+        返回值形式为`(已执行的步数, 是否仍在运行)`。时间步长固定不变：
+        真实时间仅决定要执行多少步——因为若按测量的流逝时间缩放固定步长，
+        一旦某帧耗时达到200毫秒，模拟就会直接崩溃。
         """
         self._debt += max(0.0, elapsed)
         step = self.game.dt
@@ -243,6 +300,11 @@ def make_operator(game, source, *, on_quit=None, session=None):
     Made per session rather than registered once against globals because the
     operator needs this game and this input source, and Blender instantiates
     operator classes itself — there is nowhere to pass arguments in.
+
+    构建用于从Blender窗口接收`session`数据的模态操作符类。
+    
+    由于每个会话需要对应的游戏实例和输入源，且Blender会自行实例化操作符类，
+    没有地方可以传递参数，因此需为每个会话单独创建该类，而非注册到全局作用域。
     """
     bpy = _bpy()
     session = session if session is not None else Session(game, source)

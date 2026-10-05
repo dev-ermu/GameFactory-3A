@@ -62,8 +62,8 @@ _cache_code/
 
 # tmp
 .tmp/
+tests/data/**
 
 # agent
 .codex/
 .codebuddy/
-tests/data/**

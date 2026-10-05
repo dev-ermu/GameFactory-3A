@@ -12,6 +12,13 @@ Appending copies the data in, linking references the original: link when the set
 is shared and still being edited, append when the session must be
 self-contained, since `save_blend` of a linked scene writes a file full of
 pointers to a machine that may not be there later.
+
+
+将手动编辑的`.blend`文件导入到正在运行的会话中。
+
+`.blend`是唯一能完整保留Blender所有数据的格式——包括节点材质、修改器、灯光设置等，因此创作好的场景都是以这种格式输出的。生成的环境资源则以`.glb`或`.ply`格式呈现，会通过`generated_scene.py`来处理。
+
+追加模式会将数据复制到当前会话中，同时保留对原文件的引用：如果场景集仍在共享编辑中则采用链接模式；若会话需要独立运行则使用追加模式，因为链接场景的`save_blend`操作会生成一个包含指向其他机器路径指针的文件，而这些路径在后续可能无法访问。
 """
 
 from pathlib import Path
