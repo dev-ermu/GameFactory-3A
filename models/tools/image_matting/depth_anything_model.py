@@ -27,9 +27,15 @@ class DepthAnythingModel(BaseToolModel):
     def _load(self) -> None:
         from transformers import AutoImageProcessor, AutoModelForDepthEstimation
 
-        self.processor = AutoImageProcessor.from_pretrained(self.model_path)
+        # `local_files_only=True`：本仓库不下载模型权重。`model_path` 必须是
+        # 一个已存在的本地目录，指向预置的权重。
+        self.processor = AutoImageProcessor.from_pretrained(
+            self.model_path, local_files_only=True
+        )
         self.model = (
-            AutoModelForDepthEstimation.from_pretrained(self.model_path)
+            AutoModelForDepthEstimation.from_pretrained(
+                self.model_path, local_files_only=True
+            )
             .to(self.device)
             .eval()
         )

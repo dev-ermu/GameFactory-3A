@@ -32,25 +32,16 @@ from tests.harness.stubs import (
     stub_retarget_motion,
     # 3D 物体
     StubMeshyModel,
-    StubTrellis2Model,
     StubTripoModel,
     # 图像 / 抠像 / 深度
     StubDepthAnythingModel,
-    StubQwenEditModel,
-    StubRMBGModel,
     StubSeedreamModel,
     # 音频
-    StubQwen3TTSModel,
     StubSeedAudioModel,
-    StubWooshDFlowModel,
     # CG 视频
     StubVideoModel,
     # 3D 场景
-    StubWorldMirrorModel,
-    StubWorldPlayModel,
     # 动作 / 绑骨 / 动画 / 格式转换
-    StubMoMaskModel,
-    StubPuppeteerModel,
     StubTripoAnimationModel,
     StubTripoFormatModel,
     StubTripoRigCheckModel,
@@ -80,25 +71,16 @@ __all__ = [
     "stub_retarget_motion",
     # 3D 物体
     "StubMeshyModel",
-    "StubTrellis2Model",
     "StubTripoModel",
     # 图像 / 抠像 / 深度
     "StubDepthAnythingModel",
-    "StubQwenEditModel",
-    "StubRMBGModel",
     "StubSeedreamModel",
     # 音频
-    "StubQwen3TTSModel",
     "StubSeedAudioModel",
-    "StubWooshDFlowModel",
     # CG 视频
     "StubVideoModel",
     # 3D 场景
-    "StubWorldMirrorModel",
-    "StubWorldPlayModel",
     # 动作 / 绑骨 / 动画 / 格式转换
-    "StubMoMaskModel",
-    "StubPuppeteerModel",
     "StubTripoAnimationModel",
     "StubTripoFormatModel",
     "StubTripoRigCheckModel",

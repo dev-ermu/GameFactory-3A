@@ -45,6 +45,8 @@ BACKEND_ALIASES = {
     "minimax-h3": "minimax-h3",
     "seedance": "seedance",
 }
+#: 走云端 API 的后端。本地权重运行时已移除，因此这就是全部后端。
+CLOUD_BACKENDS = frozenset(set(BACKEND_ALIASES.values()))
 IDENTIFIER_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,127}$")
 ALLOWED_OPTION_KEYS = frozenset(
     {
@@ -58,16 +60,6 @@ ALLOWED_OPTION_KEYS = frozenset(
         "generate_audio",
         "watermark",
         "minimax_runtime",
-        "comfyui_path",
-        "hf_cache_dir",
-        "hf_revision",
-        "local_files_only",
-        "width",
-        "height",
-        "fps",
-        "steps",
-        "scheduler",
-        "sampler_mode",
         "ref_image_size",
         "prompt_optimizer",
         "fast_pretreatment",
@@ -84,6 +76,36 @@ REUSE_REQUIRED_TASK_FIELDS = ("mode", "prompt", "duration_sec", "seed")
 
 class CgVideoError(BrowserServingError):
     """Raised when a CG-video request cannot be accepted or served."""
+
+
+def resolve_minimax_runtime(options: Mapping[str, Any]) -> str:
+    """解析 MiniMax H3 的执行路线。**只允许云端 API**。
+
+    原本支持 ``local``（ComfyUI + 本地 checkpoint），该运行时已随本地模型一并移除，
+    因此这里只接受 ``api``；``auto`` 也不再是合法取值。
+
+    Args:
+        options: 任务选项，可含 `minimax_runtime`。
+
+    Returns:
+        恒为 ``"api"``。
+
+    Raises:
+        CgVideoError: 取值不是 ``api`` 时。
+    """
+    raw = (
+        options.get("minimax_runtime")
+        or os.environ.get("MINIMAX_H3_RUNTIME")
+        or "api"
+    )
+    value = str(raw).strip().lower()
+    if value != "api":
+        raise CgVideoError(
+            f"minimax_runtime must be 'api'; got {value!r}. The local MiniMax H3 "
+            "runtime has been removed — this project generates video through "
+            "cloud APIs only."
+        )
+    return value
 
 
 class CgVideoGatewayProtocol(Protocol):
@@ -196,6 +218,9 @@ class CgVideoGateway:
             strict=False
         )
         self._model_factory = model_factory or self._default_model_factory
+        #: 是否使用真实的云端模型工厂。注入桩工厂的网关只在本地造假数据，
+        #: 因此不要求 `allow_cloud` 许可。
+        self._bills_cloud = model_factory is None
         self._operator_factory = operator_factory or self._default_operator_factory
         self._executor = ThreadPoolExecutor(
             max_workers=workers,
@@ -440,15 +465,8 @@ class CgVideoGateway:
         """
 
         opts = dict(options)
-        runtime = str(
-            opts.get("minimax_runtime")
-            or os.environ.get("MINIMAX_H3_RUNTIME")
-            or "local"
-        ).strip().lower()
-        cloud = backend == "seedance" or (
-            backend == "minimax-h3" and runtime == "api"
-        )
-        fingerprint: dict[str, Any] = {
+        resolve_minimax_runtime(opts)   # 只允许 api，越界即拒
+        return {
             "mode": str(task.get("mode") or "text_to_video"),
             "prompt": str(task.get("prompt") or ""),
             "duration_sec": float(task.get("duration_sec", 5)),
@@ -458,31 +476,14 @@ class CgVideoGateway:
             "reference_image_paths": _comparable_path_list(
                 task.get("reference_image_paths")
             ),
-            "runtime": "api" if cloud else "local",
+            "runtime": "api",
+            "resolution": str(opts.get("resolution") or "720p"),
+            "ratio": str(
+                opts.get("ratio") or task.get("aspect_ratio") or "16:9"
+            ),
+            "generate_audio": bool(opts.get("generate_audio", True)),
+            "watermark": bool(opts.get("watermark", False)),
         }
-        if cloud:
-            fingerprint.update(
-                {
-                    "resolution": str(opts.get("resolution") or "720p"),
-                    "ratio": str(
-                        opts.get("ratio") or task.get("aspect_ratio") or "16:9"
-                    ),
-                    "generate_audio": bool(opts.get("generate_audio", True)),
-                    "watermark": bool(opts.get("watermark", False)),
-                }
-            )
-        else:
-            fingerprint.update(
-                {
-                    "width": int(opts.get("width", task.get("video_width") or 864)),
-                    "height": int(opts.get("height", task.get("video_height") or 480)),
-                    "fps": float(opts.get("fps", 24.0)),
-                    "steps": int(opts.get("steps", 20)),
-                    "scheduler": str(opts.get("scheduler") or "simple"),
-                    "sampler": str(opts.get("sampler_mode") or "res_multistep"),
-                }
-            )
-        return fingerprint
 
     @staticmethod
     def _stored_fingerprint(meta: Mapping[str, Any]) -> dict[str, Any] | None:
@@ -518,12 +519,8 @@ class CgVideoGateway:
         except (TypeError, ValueError):
             return None
         for field_name, coerce in (
-            ("width", int),
-            ("height", int),
-            ("steps", int),
-            ("fps", float),
-            ("scheduler", str),
-            ("sampler", str),
+            ("ratio", str),
+            ("resolution", str),
         ):
             value = model_call.get(field_name)
             if value is None:
@@ -735,24 +732,10 @@ class CgVideoGateway:
                 **kwargs,
             )
 
-        runtime = str(
-            opts.get("minimax_runtime")
-            or os.environ.get("MINIMAX_H3_RUNTIME")
-            or "local"
-        ).strip().lower()
+        runtime = resolve_minimax_runtime(opts)
         ckpt = resolve_ckpt(backend, None)
         kwargs = {
             "runtime": runtime,
-            "comfyui_path": opts.get("comfyui_path"),
-            "hf_cache_dir": opts.get("hf_cache_dir"),
-            "hf_revision": opts.get("hf_revision"),
-            "local_files_only": bool(opts.get("local_files_only", False)),
-            "width": int(opts.get("width", task.get("video_width") or 864)),
-            "height": int(opts.get("height", task.get("video_height") or 480)),
-            "fps": float(opts.get("fps", 24.0)),
-            "steps": int(opts.get("steps", 20)),
-            "scheduler": str(opts.get("scheduler") or "simple"),
-            "sampler_mode": str(opts.get("sampler_mode") or "res_multistep"),
             "ref_image_size": str(opts.get("ref_image_size") or "match"),
             "cache_dir": opts.get("cache_dir")
             or os.environ.get("GAMEFACTORY3A_API_CACHE"),
@@ -861,70 +844,39 @@ class CgVideoGateway:
         if backend != "minimax-h3":
             return
 
-        runtime = str(
-            options.get("minimax_runtime")
-            or os.environ.get("MINIMAX_H3_RUNTIME")
-            or "local"
-        ).strip().lower()
-        if runtime == "api":
-            if mode not in {"text_to_video", "first_frame_to_video"}:
-                raise NotImplementedError(
-                    "MiniMax H3 API supports text_to_video and "
-                    "first_frame_to_video only"
-                )
-            if duration not in (6, 10):
-                raise ValueError("MiniMax H3 API duration_sec must be 6 or 10")
-            resolution = str(options.get("resolution") or "768P").upper()
-            if resolution == "1080P" and duration != 6:
-                raise ValueError(
-                    "MiniMax H3 API 1080P output is available only for 6 seconds"
-                )
-            return
+        if mode not in {"text_to_video", "first_frame_to_video"}:
+            raise NotImplementedError(
+                "MiniMax H3 API supports text_to_video and "
+                "first_frame_to_video only"
+            )
+        if duration not in (6, 10):
+            raise ValueError("MiniMax H3 API duration_sec must be 6 or 10")
+        resolution = str(options.get("resolution") or "768P").upper()
+        if resolution == "1080P" and duration != 6:
+            raise ValueError(
+                "MiniMax H3 API 1080P output is available only for 6 seconds"
+            )
 
-        if runtime != "local":
-            raise ValueError("minimax_runtime must be 'local' or 'api'")
-        if duration > 15:
-            raise ValueError("local MiniMax H3 duration_sec must not exceed 15")
-        for name in ("width", "height"):
-            task_key = f"video_{name}"
-            value = options.get(name, task.get(task_key))
-            if value is None:
-                continue
-            if isinstance(value, bool) or int(value) <= 0:
-                raise ValueError(f"CG-video {name} must be positive")
-            if int(value) % 32:
-                raise ValueError(
-                    f"MiniMax H3 local {name} must be divisible by 32"
-                )
-        if mode == "reference_to_video":
-            refs = task.get("reference_image_paths")
-            if not isinstance(refs, (list, tuple)) or not refs:
-                raise ValueError(
-                    "reference_to_video requires a non-empty reference_image_paths list"
-                )
-            if len(refs) > 9:
-                raise ValueError("local MiniMax H3 supports at most 9 reference images")
 
     def _check_cloud_policy(
         self,
         backend: str,
         options: Mapping[str, Any],
     ) -> None:
-        minimax_runtime = str(
-            options.get("minimax_runtime")
-            or os.environ.get("MINIMAX_H3_RUNTIME")
-            or "local"
-        ).lower()
-        if minimax_runtime not in {"local", "api"}:
-            raise ValueError("minimax_runtime must be 'local' or 'api'")
-        cloud = backend == "seedance" or (
-            backend == "minimax-h3" and minimax_runtime == "api"
-        )
-        if cloud and not self.allow_cloud:
+        resolve_minimax_runtime(options)   # 只允许 api，越界即拒
+        if not self.allow_cloud and self._bills_cloud_calls():
             raise CgVideoError(
                 "Cloud CG-video generation is disabled; enable it explicitly "
                 "on the Browser Serving server"
             )
+
+    def _bills_cloud_calls(self) -> bool:
+        """这个网关是否真会向云端发起计费请求。
+
+        注入自定义 ``model_factory`` 的桩网关（测试用）只在本地造假数据，
+        因此不要求 `allow_cloud` 许可；用默认工厂的才走真实 API。
+        """
+        return self._bills_cloud
 
 
 def _identity(value: Any, label: str) -> str:
@@ -996,8 +948,8 @@ def _fingerprints_match(stored: Mapping[str, Any], current: Mapping[str, Any]) -
     """Whether a stored artifact still describes the current request.
 
     Only keys the *stored* side recorded are compared: different backends record
-    different ``model_call`` fields (seedance has no ``width``/``steps``), and a
-    key the artifact never recorded is not evidence of a mismatch.
+    different ``model_call`` fields, and a key the artifact never recorded is not
+    evidence of a mismatch.
     """
 
     for field_name, stored_value in stored.items():

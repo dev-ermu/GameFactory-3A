@@ -2,8 +2,7 @@
 """
 tests/test_motion_cloud.py
 
-Integration test for the cloud rigging + animation chain
-(TokenHub / Tripo), the drop-in replacement for Puppeteer + MoMask.
+Integration test for the cloud rigging + animation chain (TokenHub / Tripo).
 
 Two modes, and the difference matters:
 
@@ -196,7 +195,8 @@ def test_free_text_motion_is_refused(op, task: dict) -> None:
     """
     A motion *description* must be refused, not approximated.
 
-    This endpoint retargets a fixed preset library; it is not MoMask.
+    This endpoint retargets a fixed preset library; it does not generate
+    motion from a free-text description.
     """
     print("\na free-text motion description is refused")
     try:

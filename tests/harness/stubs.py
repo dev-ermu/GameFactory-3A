@@ -403,31 +403,6 @@ class _StubBase:
 # ── Layer-A generation stubs ──────────────────────────────────────────────────
 
 
-class StubTrellis2Model(_StubBase):
-    """Mimics `models.gen_3d_object.trellis_2_model.Trellis2Model`."""
-
-    def infer(self, image: Image.Image, seed: int = 42, **kw) -> bytes:
-        self.calls.append({"op": "infer", "seed": seed, "size": image.size, **kw})
-        return b"glTF" + bytes(64)
-
-    def infer_and_save(
-        self,
-        image: Image.Image,
-        output_path: str,
-        seed: int = 42,
-        decimation_target: int = 1_000_000,
-        texture_size: int = 4096,
-    ) -> str:
-        self.calls.append({
-            "op": "infer_and_save", "seed": seed, "output_path": output_path,
-            "decimation_target": decimation_target, "texture_size": texture_size,
-        })
-        out = Path(output_path)
-        out.parent.mkdir(parents=True, exist_ok=True)
-        # A real (if trivial) GLB, padded past the ">1KB looks plausible"
-        # assertions in test/ — so engine-side importers can be smoked with it.
-        out.write_bytes(make_minimal_glb())
-        return str(out)
 
 
 class _StubCloudModel(_StubBase):
@@ -519,58 +494,6 @@ class StubMeshyModel(_StubCloudModel):
     provider = "meshy"
 
 
-class StubPuppeteerModel(_StubBase):
-    """Mimic Puppeteer's in-memory skeleton and skinning result."""
-
-    def infer(
-        self,
-        mesh: bytes,
-        mesh_format: str = ".glb",
-        seed: int = 42,
-        **kw,
-    ) -> dict:
-        self.calls.append(
-            {
-                "op": "infer",
-                "mesh_format": mesh_format,
-                "mesh_bytes": len(mesh),
-                "seed": seed,
-                **kw,
-            }
-        )
-        joints = [
-            "joints joint0 0 0 0",
-            "joints joint1 0 1 0",
-            "joints joint2 -1 1 0",
-            "joints joint3 1 1 0",
-            "joints joint4 -0.5 -1 0",
-            "joints joint5 0.5 -1 0",
-            "root joint0",
-            "hier joint0 joint1",
-            "hier joint1 joint2",
-            "hier joint1 joint3",
-            "hier joint0 joint4",
-            "hier joint0 joint5",
-        ]
-        rig = "\n".join(
-            [
-                *joints,
-                "skin 0 joint0 1.0",
-                "skin 1 joint1 1.0",
-                "skin 2 joint2 1.0",
-            ]
-        ) + "\n"
-        return {
-            "rig_text": rig,
-            "skeleton_text": "\n".join(joints) + "\n",
-            "mesh_obj_bytes": (
-                b"o StubAvatar\n"
-                b"v 0 0 0\nv 1 0 0\nv 0 1 0\nf 1 2 3\n"
-            ),
-            "joint_count": 6,
-            "skin_vertex_count": 3,
-            "seed": seed,
-        }
 
 
 class StubTripoRigCheckModel(_StubBase):
@@ -733,47 +656,12 @@ def make_stub_fbx(marker: bytes = b"stub", pad_to: int = 2048) -> bytes:
     return header + body + b"\x00" * max(0, pad_to - len(header) - len(body))
 
 
-class StubMoMaskModel(_StubBase):
-    """Mimic one HumanML3D MoMask generation at the native 20 FPS."""
-
-    def infer(self, prompt: str, seed: int = 42, **kw) -> dict:
-        self.calls.append(
-            {"op": "infer", "prompt": prompt, "seed": seed, **kw}
-        )
-        bvh = (
-            "HIERARCHY\n"
-            "ROOT Hips\n"
-            "{\n"
-            "  OFFSET 0 0 0\n"
-            "  CHANNELS 6 Xposition Yposition Zposition "
-            "Zrotation Xrotation Yrotation\n"
-            "  End Site\n"
-            "  {\n"
-            "    OFFSET 0 1 0\n"
-            "  }\n"
-            "}\n"
-            "MOTION\n"
-            "Frames: 2\n"
-            "Frame Time: 0.050000\n"
-            "0 0 0 0 0 0\n"
-            "0 0 0 5 0 0\n"
-        ).encode("utf-8")
-        joints = np.zeros((2, 22, 3), dtype=np.float32)
-        return {
-            "bvh_bytes": bvh,
-            "raw_bvh_bytes": bvh,
-            "ik_bvh_bytes": bvh,
-            "joints": joints,
-            "preview_mp4_bytes": b"\x00\x00\x00\x18ftypmp42stub",
-            "fps": 20,
-            "seed": seed,
-        }
 
 
 def retarget_mapping() -> dict:
     """Return the small humanoid mapping used by motion smoke tests."""
     return {
-        "root_bones": {"source": "Hips", "puppeteer": "joint0"},
+        "root_bones": {"source": "Hips", "rig": "joint0"},
         "bone_map": {
             "Hips": "joint0",
             "Spine": "joint1",
@@ -785,23 +673,23 @@ def retarget_mapping() -> dict:
         "retarget_chains": {
             "spine": {
                 "source": ["Hips", "Spine"],
-                "puppeteer": ["joint0", "joint1"],
+                "rig": ["joint0", "joint1"],
             },
             "left_arm": {
                 "source": ["LeftArm"],
-                "puppeteer": ["joint2"],
+                "rig": ["joint2"],
             },
             "right_arm": {
                 "source": ["RightArm"],
-                "puppeteer": ["joint3"],
+                "rig": ["joint3"],
             },
             "left_leg": {
                 "source": ["LeftLeg"],
-                "puppeteer": ["joint4"],
+                "rig": ["joint4"],
             },
             "right_leg": {
                 "source": ["RightLeg"],
-                "puppeteer": ["joint5"],
+                "rig": ["joint5"],
             },
         },
     }
@@ -868,21 +756,6 @@ def stub_retarget_motion(
     }
 
 
-class StubQwenEditModel(_StubBase):
-    """Mimics `models.gen_image.qwen_edit_model.QwenEditModel`."""
-
-    def load(self) -> None:
-        self.calls.append({"op": "load"})
-
-    def infer(self, image: Image.Image, prompt: str, seed: int = 42,
-              steps: int = 40) -> Image.Image:
-        self.calls.append({"op": "infer", "seed": seed, "steps": steps,
-                           "prompt_len": len(prompt)})
-        return make_ref_image(size=max(image.size), seed=seed)
-
-    def edit(self, image: Image.Image, prompt: str, seed: int = 42,
-             steps: int = 40) -> Image.Image:
-        return self.infer(image, prompt, seed=seed, steps=steps)
 
 
 class StubSeedreamModel(_StubBase):
@@ -948,32 +821,8 @@ class StubVideoModel(_StubBase):
         return str(out)
 
 
-class StubQwen3TTSModel(_StubBase):
-    """Mimics ``models.gen_audio.qwen3_tts_model.Qwen3TTSModel``."""
-
-    def infer(self, text: str, seed: int = 42, **kw) -> dict:
-        sample_rate = 24_000
-        duration = max(0.25, min(2.0, len(text) * 0.08))
-        samples = max(1, int(sample_rate * duration))
-        t = np.arange(samples, dtype=np.float32) / sample_rate
-        frequency = 180.0 + float(seed % 80)
-        waveform = (0.2 * np.sin(2.0 * np.pi * frequency * t)).astype(np.float32)
-        self.calls.append({"op": "infer", "text": text, "seed": seed, **kw})
-        return {"waveform": waveform[None, :], "sample_rate": sample_rate}
 
 
-class StubWooshDFlowModel(_StubBase):
-    """Mimics ``models.gen_audio.woosh_model.WooshDFlowModel``."""
-
-    def infer(self, prompt: str, seed: int = 42, duration_sec=None, **kw) -> dict:
-        sample_rate = 48_000
-        duration = float(duration_sec or 1.0)
-        samples = max(1, int(sample_rate * duration))
-        rng = np.random.default_rng(seed)
-        envelope = np.exp(-np.linspace(0.0, 8.0, samples, dtype=np.float32))
-        waveform = (0.25 * rng.standard_normal(samples) * envelope).astype(np.float32)
-        self.calls.append({"op": "infer", "prompt": prompt, "seed": seed, **kw})
-        return {"waveform": waveform[None, :], "sample_rate": sample_rate}
 
 
 class StubSeedAudioModel(_StubBase):
@@ -1005,24 +854,6 @@ class StubSeedAudioModel(_StubBase):
 # ── Tool-model stubs ──────────────────────────────────────────────────────────
 
 
-class StubRMBGModel(_StubBase):
-    """Mimics `models.tools.image_matting.rmbg_model.RMBGModel` — HxW float32 in [0, 1]."""
-
-    def infer(self, image: Image.Image, **kw) -> np.ndarray:
-        self.calls.append({"op": "infer", "size": image.size})
-        arr = np.asarray(image.convert("RGB"))
-        return (arr < 240).any(axis=-1).astype(np.float32)
-
-    def predict(self, image: Image.Image, **kw) -> np.ndarray:
-        return self.infer(image, **kw)
-
-    def __call__(self, image: Image.Image, **kw) -> np.ndarray:
-        return self.predict(image, **kw)
-
-    def remove_background(self, image: Image.Image) -> Image.Image:
-        rgba = np.array(image.convert("RGBA"))
-        rgba[..., 3] = (self.predict(image) * 255).astype(np.uint8)
-        return Image.fromarray(rgba, "RGBA")
 
 
 class StubDepthAnythingModel(_StubBase):
@@ -1038,56 +869,8 @@ class StubDepthAnythingModel(_StubBase):
         return self.predict(image, **kw)
 
 
-class StubWorldMirrorModel(_StubBase):
-    """
-    Mimics `models.gen_3d_scene.world_mirror_model.WorldMirrorModel`.
-
-    Returns a pinhole unprojection of a two-slab depth map: a near wall on the
-    left, a far wall on the right. That gives the meshing code a real occlusion
-    boundary to cut and a real surface to keep, at 64×64 and in microseconds.
-    """
-
-    #: Focal length the fake intrinsics advertise, in pixels.
-    FOCAL = 100.0
-
-    def infer(self, images, seed: int = 42, **kw) -> dict[str, np.ndarray]:
-        self.calls.append({"op": "infer", "frames": len(images), "seed": seed})
-        frames, height, width = len(images), 64, 64
-
-        depth = np.full((height, width), 2.0, dtype=np.float32)
-        depth[:, width // 2 :] = 6.0
-
-        rows, columns = np.mgrid[0:height, 0:width]
-        x = (columns - (width - 1) / 2) * depth / self.FOCAL
-        y = (rows - (height - 1) / 2) * depth / self.FOCAL
-        points = np.stack([x, y, depth], axis=-1).astype(np.float32)
-
-        intrinsic = np.array(
-            [[self.FOCAL, 0, (width - 1) / 2], [0, self.FOCAL, (height - 1) / 2], [0, 0, 1]],
-            dtype=np.float32,
-        )
-        normals = np.zeros((frames, height, width, 3), dtype=np.float32)
-        normals[..., 2] = -1.0
-
-        return {
-            "points": np.repeat(points[None], frames, axis=0),
-            "depth": np.repeat(depth[None], frames, axis=0),
-            "normals": normals,
-            "confidence": np.full((frames, height, width), 5.0, dtype=np.float32),
-            "colors": np.full((frames, height, width, 3), 180, dtype=np.uint8),
-            "camera_poses": np.repeat(np.eye(4, dtype=np.float32)[None], frames, axis=0),
-            "intrinsics": np.repeat(intrinsic[None], frames, axis=0),
-        }
 
 
-class StubWorldPlayModel(_StubBase):
-    """Mimics `models.gen_3d_scene.world_play_model.WorldPlayModel`."""
-
-    def infer(self, image: Image.Image, prompt: str = "", pose: str = "",
-              video_length: int = 61, seed: int = 42, **kw) -> list[Image.Image]:
-        self.calls.append({"op": "infer", "prompt": prompt, "pose": pose, "seed": seed})
-        # A handful of frames is enough; the geometry stub ignores their content.
-        return [image.convert("RGB") for _ in range(4)]
 
 
 # ── Registry ──────────────────────────────────────────────────────────────────
@@ -1097,24 +880,16 @@ class StubWorldPlayModel(_StubBase):
 #: `build_operator(kind, model_key="tripo")` or `smoke.py --backend tripo`.
 STUB_BACKENDS: dict[str, dict[str, Any]] = {
     "3d_object": {
-        "trellis2": StubTrellis2Model,
         "tripo": StubTripoModel,
         "meshy": StubMeshyModel,
     },
     "tpose": {
-        "qwen_edit": StubQwenEditModel,
         "seedream": StubSeedreamModel,
-    },
-    "3d_scene": {
-        "worldmirror": StubWorldMirrorModel,
-        "worldplay": StubWorldMirrorModel,
     },
     "cg_video": {
         "seedance": StubVideoModel,
-        "minimax-h3": StubVideoModel,
     },
     "audio": {
-        "local": StubQwen3TTSModel,
         "seed_audio": StubSeedAudioModel,
     },
 }
@@ -1123,37 +898,22 @@ STUB_BACKENDS: dict[str, dict[str, Any]] = {
 #: Extend this when you add an asset task, so `smoke.py --kind <new>` works.
 STUB_OPERATOR_KWARGS: dict[str, Any] = {
     "motion": lambda model_key=None: {
-        "puppeteer_model": StubPuppeteerModel(),
-        "momask_model": StubMoMaskModel(),
         "retarget_fn": stub_retarget_motion,
-        # Cloud-backend stubs — wired in alongside the local stubs so that the
-        # smoke run exercises the cloud task types too without any network I/O.
         "rig_check_model": StubTripoRigCheckModel(),
         "cloud_rig_model": StubTripoRiggingModel(),
         "cloud_animation_model": StubTripoAnimationModel(),
         "cloud_format_model": StubTripoFormatModel(),
     },
     "3d_object": lambda model_key=None: {
-        "model": STUB_BACKENDS["3d_object"][model_key or "trellis2"]()},
+        "model": STUB_BACKENDS["3d_object"][model_key or "tripo"]()},
     "tpose": lambda model_key=None: {
-        "gen_model": STUB_BACKENDS["tpose"][model_key or "qwen_edit"](),
-        "mask_model": StubRMBGModel()},
-    # `worldplay` adds the video stage in front, so a reference image alone is a
-    # valid task; `worldmirror` alone needs the task to bring its own frames.
-    "3d_scene": lambda model_key=None: {
-        "model": STUB_BACKENDS["3d_scene"][model_key or "worldmirror"](),
-        "video_model": StubWorldPlayModel()},
+        "gen_model": STUB_BACKENDS["tpose"][model_key or "seedream"](),
+        "mask_model": StubDepthAnythingModel()},
     "cg_video": lambda model_key=None: {
         "model": STUB_BACKENDS["cg_video"][model_key or "seedance"]()},
     "audio": lambda model_key=None: {
-        "dialogue_model": (
-            StubSeedAudioModel(mode="dialogue")
-            if model_key == "seed_audio" else StubQwen3TTSModel()
-        ),
-        "sound_effect_model": (
-            StubSeedAudioModel(mode="sound_effect")
-            if model_key == "seed_audio" else StubWooshDFlowModel()
-        ),
+        "dialogue_model": StubSeedAudioModel(mode="dialogue"),
+        "sound_effect_model": StubSeedAudioModel(mode="sound_effect"),
     },
 }
 
@@ -1200,7 +960,6 @@ def build_operator(task_kind: str, run_id: str = "_smoke",
 OPERATOR_LOCATION: dict[str, tuple[str, str]] = {
     "3d_object": ("operators.gen_3d_object.operator", "Gen3DObjectOperator"),
     "tpose": ("operators.gen_tpose_image.operator", "GenTPoseImageOperator"),
-    "3d_scene": ("operators.gen_3d_scene.operator", "Gen3DSceneOperator"),
     "motion": ("operators.gen_motion.operator", "GenMotionOperator"),
     "cg_video": ("operators.gen_cg_video.operator", "GenCGVideoOperator"),
     "audio": ("operators.gen_audio.operator", "GenAudioOperator"),

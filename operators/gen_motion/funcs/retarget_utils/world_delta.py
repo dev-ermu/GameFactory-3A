@@ -57,7 +57,7 @@ def resolve_roots(
     )
     target = (
         dst_override
-        or roots.get("puppeteer")
+        or roots.get("rig")
         or roots.get("target")
         or TARGET_ROOT
     )

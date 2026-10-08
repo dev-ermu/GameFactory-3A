@@ -12,7 +12,6 @@
 |---|---|---|
 | **Spec** (`operators/gen_3d_object/funcs/code_asset.py`) | 物体可被精确描述——如箱子、标识牌、车轮、步枪、栏杆 | 仅需数秒，无需GPU，无需调用API服务 |
 | **Asset pack** (`operators/gen_3d_object/funcs/asset_pack.py`) | a CC0 model of it already exists | seconds, one download |
-| **Generate** (Tripo / Meshy / TRELLIS.2) | the surface is the point — a face, creature, tree, cloth | paid or GPU-bound, minutes |
 
 `suits_code_asset(subject)` returns `code`, `generate` or `ambiguous`. It
 declines rather than guesses: a procedurally "described" face wastes a
@@ -369,14 +368,10 @@ key. Set up only the generation route you actually chose:
 # Cloud 3D backends such as Tripo and Meshy
 bash scripts/asset_env_setup/3d_object/cloud_api_install.sh
 
-# Optional local TRELLIS.2 runtime
-bash scripts/asset_env_setup/3d_object/trellis2_install.sh
 ```
 
 Use only the selected route. Keep API keys in environment variables and large
-local checkpoints outside source control or under `<REPO_PATH>/third_party/`.
 
-**Prefer the cloud APIs — Tripo, then Meshy** — over local TRELLIS.2; they are
 the more reliable route for game-ready meshes. They are paid, so before the first
 call **pause and follow *Paid cloud backend* in
 `<REPO_PATH>/agent_skills/asset_qa/README.md`**: recommend the provider, send the
@@ -384,7 +379,6 @@ purchase/API-key page (<https://platform.tripo3d.ai/api-keys> or
 <https://www.meshy.ai/api>), state the estimated cost for the planned mesh count
 including regeneration attempts, ask the user to buy access and supply
 `TRIPO_API_KEY` / `MESHY_API_KEY`, and wait for an explicit answer. Use local
-TRELLIS.2 only when the user declines or requires offline execution.
 
 ## Which Formats Each Engine Accepts
 
@@ -457,7 +451,6 @@ asset type, because what matters is how *often* a thing is drawn:
 A repeated tree at 200 000 triangles costs more than the whole rest of the
 scene. Set `role` on the plan entry and **regenerate**: a triangle budget
 cannot be fixed afterwards, because decimating a textured mesh outside the
-generator throws its UVs away, and TRELLIS.2 bakes the texture *after* it
 decimates. Never decimate a finished asset by eye.
 
 **6. Is the scale plausible?** The title states the composed bounding box.

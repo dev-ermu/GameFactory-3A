@@ -303,7 +303,7 @@ def build_mapping(
         )
         chains[name] = {
             "source": source_trimmed,
-            "puppeteer": target_trimmed,
+            "rig": target_trimmed,
         }
         for source_name, target_name in zip(
             source_trimmed,
@@ -341,7 +341,7 @@ def write_mapping(
         "target_skeleton": "Puppeteer",
         "root_bones": {
             "source": source_root,
-            "puppeteer": target_root,
+            "rig": target_root,
         },
         "bone_map": bone_map,
         "retarget_chains": chains,

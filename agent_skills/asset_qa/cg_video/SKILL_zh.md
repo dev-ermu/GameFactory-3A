@@ -13,7 +13,6 @@
 | 层级 | 位置 | 职责 |
 |---|---|---|
 | 模型层 | `<REPO_PATH>/models/gen_cg_video/` | 模型原生推理、云端传输及生命周期管理 |
-| 操作符层 | `<REPO_PATH>/operators/gen_cg_video/` | 任务字段处理、本地图像加载、产物路径管理及元数据生成 |
 | 流水线层 | `<REPO_PATH>/pipeline/assets_gen/gen_cg_video/` | 后端选择、命令行接口、JSONL批量处理及汇总 |
 | 测试框架层 | `<REPO_PATH>/tests/harness/` | 纯CPU、无网络环境下的流程链验证 |
 | 导演子技能 | `<REPO_PATH>/agent_skills/asset_qa/cg_video/game-cg-director/` | 针对特定模型的分镜提示词生成及已验证的任务条目 |
@@ -30,7 +29,6 @@ test_data/outputs/<game_id>/<run_id>/assets/cg_video/<task_id>/
 
 通过浏览器服务网关播放的游戏，会在运行时根据任务标识加载对应视频片段；此类请求会直接调用已存储的产物，而非实时生成。生产阶段需根据游戏规划生成所有指定的视频片段，同时运行播放时网关时需设置`A3GAME_BROWSER_CG_VIDEO_PREBUILT_ONLY=1`参数，这样未生成的片段会被标记为失败，而不会在页面加载时临时生成。若要求返回的字节流保持固定，需锁定对应的`run_id`：未锁定的查询会返回最新的匹配产物。
 
-切勿直接将本地图像路径传入模型。任务/JSONL文件中仅记录本地路径，由操作符负责解析并将图像转换为`PIL.Image.Image`对象。若Python调用方内存中已有图像数据，可传入图像对象，但绝不能同时提供图像对象及其对应的路径字段。
 
 ## 导演子技能与测试框架的交接
 
@@ -74,10 +72,8 @@ Runner会根据流程分别选择模型和宽高比。当JSONL文件中包含多
 
 | 请求包中的模型 | Runner的选择 |
 |---|---|
-| `h3` | `--backend minimax-h3 --minimax-runtime local --ckpt Comfy-Org/MiniMax-H3` |
 | `seedance` | `--backend seedance` |
 
-使用Seedance时需通过`--ratio`参数指定宽高比。对于本地运行的H3模型，需将宽高比转换为安装环境支持的明确指定的`--width`和`--height`参数；切勿悄悄忽略请求包中的数值。随后通过明确的任务文件和运行ID来执行标准流水线：
 
 ```bash
 python pipeline/assets_gen/gen_cg_video/run.py \
@@ -104,11 +100,8 @@ python pipeline/assets_gen/gen_cg_video/run.py \
 |---|---:|---:|---:|---:|---|
 | Seedance 2.0云API | 支持 | 支持 | 支持 | 支持 | 所有共享模式下均能提供高质量的云端生成服务 |
 | MiniMax Hailuo 2.3 API | 支持 | 支持 | 不支持 | 不支持 | 仅适用于云端文本转视频和图像转视频任务 |
-| MiniMax H3本地版 / ComfyUI | 支持 | 支持 | 支持 | 支持 | 需要大量硬件和存储资源的本地化可控生成场景 |
 
-请谨慎选择调用路径：云端调用会消耗积分；本地MiniMax方案则需要配备性能强劲的NVIDIA GPU、兼容的CUDA/PyTorch环境、充足的RAM/显存，且常见模式需要约40 GiB的空闲缓存空间（若还需使用reference-to-video功能，则需约60 GiB）。
 
-**优先选择云端API——先选Seedance 2.0，其次选MiniMax Hailuo 2.3**；仅在预算不足或需要离线生成时，才考虑使用本地MiniMax H3作为备选方案。视频是此处成本最高的资产类型，按生成时长计费，因此在首次调用前，**请暂停操作并参照`<REPO_PATH>/agent_skills/asset_qa/README.md`中的“付费云端后端”章节操作**：发送购买/API密钥页面链接（Seedance对应<https://console.volcengine.com/ark>，MiniMax对应<https://platform.minimax.io/user-center/basic-information/interface-key>），说明预估成本（包含重试情况，计算公式为视频片段数×时长×分辨率），请求用户购买访问权限并提供`ARK_API_KEY`或`MINIMAX_API_KEY`，待得到明确答复后再继续操作。
 
 ## 常用命令行用法
 
@@ -235,19 +228,14 @@ python pipeline/assets_gen/gen_cg_video/run.py \
 
 Hailuo API支持768P分辨率下生成6秒或10秒的视频，以及1080P分辨率下生成6秒的视频。该API不提供种子参数；共享的种子参数会被接受但会被忽略。
 
-### 本地MiniMax H3运行时
 
-安装ComfyUI/检查点环境：
 
 ```bash
 bash scripts/asset_env_setup/cg_video/minimax_h3_install.sh
-```接着选择本地运行时环境以及Hugging Face ID，或指定完整的本地目录：
 
 ```bash
 python pipeline/assets_gen/gen_cg_video/run.py \
   --backend minimax-h3 \
-  --minimax-runtime local \
-  --ckpt Comfy-Org/MiniMax-H3 \
   --mode first_last_frame_to_video \
   --first-frame /data/first.png \
   --last-frame /data/last.png \
@@ -255,7 +243,6 @@ python pipeline/assets_gen/gen_cg_video/run.py \
   --duration-sec 5
 ```
 
-本地默认分辨率为864×480，帧率为24fps。两个维度数值都必须是32的正整数倍。常见的预设分辨率有832×480（480P）、1344×736（720P）、1920×1088（1080P/1K）和2560×1440（2K）。只有在完整检查点可用后，才需要设置`MINIMAX_LOCAL_FILES_ONLY=1`。相关控制参数包括`COMFYUI_PATH`、`HUGGINGFACE_HUB_CACHE`、`MINIMAX_WIDTH`、`MINIMAX_HEIGHT`、`MINIMAX_FPS`、`MINIMAX_STEPS`、`MINIMAX_SCHEDULER`和`MINIMAX_REF_IMAGE_SIZE`。下载的检查点应存放在版本控制系统之外，例如`<REPO_PATH>/third_party/`目录下，或指定的Hugging Face缓存路径中。
 
 ## 测试、质量保证与成本控制
 
@@ -266,7 +253,6 @@ python tests/harness/smoke.py --kind cg_video --backend seedance
 python tests/harness/smoke.py --kind cg_video --backend minimax-h3
 ```
 
-只有在明确选定后端、运行时环境、任务文件、输出目录和缓存后，才能使用`<REPO_PATH>/tests/test_cg_video_gen.py`进行真实的API调用或本地检查点生成。以下是付费的Seedance示例：
 
 ```bash
 export ARK_API_KEY="你的API密钥"
@@ -274,7 +260,6 @@ export CG_VIDEO_BACKEND=seedance
 export CG_VIDEO_TEST_TASKS=/绝对路径/to/cg_tasks.jsonl
 export CG_VIDEO_TEST_OUT_DIR=/绝对路径/to/output
 export GAMEFACTORY3A_API_CACHE=/绝对路径/to/api_cache
-python tests/test_cg_video_gen.py
 ```
 
 该测试会在联系服务提供商前先验证任务有效性。设置`CG_VIDEO_TEST_TASK_ID=<任务ID>`即可复现特定任务结果。切勿在持续集成环境中启用付费测试，也不要为了验证代码变更而运行所有模式。

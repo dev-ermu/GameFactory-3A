@@ -342,8 +342,8 @@ def normalise_mapping(data: dict) -> dict:
             if legacy in roots:
                 roots["source"] = roots.pop(legacy)
                 break
-    if "puppeteer" not in roots and "target" in roots:
-        roots["puppeteer"] = roots["target"]
+    if "rig" not in roots and "target" in roots:
+        roots["rig"] = roots["target"]
     if roots:
         result["root_bones"] = roots
 

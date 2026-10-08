@@ -190,13 +190,18 @@ class TestUnityAndSkillContracts(unittest.TestCase):
         self.assertIn("Require Visual Approval", skill)
 
     def test_skill_is_single_file(self):
+        """该 skill 目录只允许存在中英两份 SKILL，不得有附属文件。
+
+        此前断言目录里只有 `SKILL.md`，但本仓库的 skill 一律中英双份
+        （`SKILL.md` + `SKILL_zh.md`），断言已不成立。
+        """
         skill_dir = (REPO_ROOT / "agent_skills" / "engine_context" /
                      "create-vfx-effects")
         files = sorted(
             path.relative_to(skill_dir).as_posix()
             for path in skill_dir.rglob("*") if path.is_file()
         )
-        self.assertEqual(files, ["SKILL.md"])
+        self.assertEqual(files, ["SKILL.md", "SKILL_zh.md"])
 
     def test_ue_assets_resolve_from_configured_content_root(self):
         with mock.patch.dict(

@@ -17,21 +17,15 @@
 | 组件 | 位置 | 职责 |
 |---|---|---|
 | 概念图像模型 | `<REPO_PATH>/models/gen_image/sdxl_turbo.py` | 快速生成单物体文生图概念艺术图，专为重建输入场景优化 |
-| 图像编辑器（本地） | `<REPO_PATH>/models/gen_image/qwen_edit_model.py` | 将提供的角色参考图转化为白色背景下的T型姿势渲染图 |
 | 图像编辑器（云端API） | `<REPO_PATH>/models/gen_image/seedream_model.py` | 采用Seedream图像编辑功能作为可替换的T型姿势生成后端 |
-| 前景提取工具 | `<REPO_PATH>/models/tools/image_matting/rmbg_model.py` 或 `<REPO_PATH>/models/tools/image_matting/depth_anything_model.py` | 生成前景透明度遮罩 |
 | 任务执行器 | `<REPO_PATH>/operators/gen_tpose_image/operator.py` | 读取任务指令，生成T型姿势图像，保存相关产物与元数据 |
 | 运行器 | `<REPO_PATH>/pipeline/assets_gen/gen_tpose_image/run.py` | 加载模型，接收命令行/JSONL格式的任务指令，输出结果摘要 |
 
-默认的T型姿势生成方案为Qwen Image Edit模型`Qwen/Qwen-Image-Edit-2511`搭配RMBG模型`briaai/RMBG-1.4`。生成后端可切换为Seedream模型`doubao-seedream-5-0-260128`，同时保留相同的RMBG遮罩处理阶段、通用的T型姿势提示词、执行器、任务JSONL格式以及输出规范。除非检查点参数指定了本地路径，否则首次使用时会自动下载本地模型权重。强烈建议使用CUDA GPU来运行Qwen Edit和RMBG模型；Seedream本身通过Ark API运行，但RMBG阶段仍依赖本地运行环境。当用户允许付费生成时，**优先选择Seedream云服务路径**；本地Qwen Image Edit则作为离线或被拒绝时的备选方案。由于Seedream属于付费服务，在首次调用前，**请暂停操作并遵循`<REPO_PATH>/agent_skills/asset_qa/README.md`中关于“付费云后端”的说明**：发送购买/API密钥页面（<https://console.volcengine.com/ark>），告知用户包含重试次数在内的计划生成图像数量的预估费用，请求用户购买访问权限并提供`ARK_API_KEY`，然后等待用户的明确答复。
 
 ## 安装图像生成环境
 
-安装Qwen Image Edit以及本地RMBG/Depth Anything抠图运行环境。当Seedream生成的图像后续需要进行真实的RMBG处理时，也需要该环境：
 
 ```bash
-bash scripts/asset_env_setup/image/qwen_image_install.sh
-conda activate qwen_image
 ```
 
 仅安装云端封装所需的通用HTTP及冒烟测试依赖项：
@@ -105,23 +99,15 @@ python pipeline/assets_gen/gen_tpose_image/run.py \
 可选的后端/模型替换方案及分割方式选择如下：
 
 ```bash
-# 本地 Qwen Image Edit（默认设置）
 python pipeline/assets_gen/gen_tpose_image/run.py \
-  --gen-backend qwen_edit \
-  --gen-ckpt Qwen/Qwen-Image-Edit-2511 \
-  --mask-ckpt briaai/RMBG-1.4 \
-  --mask-type rmbg \
   --device cuda \
   --tasks test_data/test_samples/tpose_gen_collect.jsonl \
   --run-id auto
 
-# 使用 Seedream API 生成，同时采用本地 RMBG 处理阶段
 export ARK_API_KEY="your-key"
 python pipeline/assets_gen/gen_tpose_image/run.py \
   --gen-backend seedream \
   --gen-ckpt doubao-seedream-5-0-260128 \
-  --mask-ckpt briaai/RMBG-1.4 \
-  --mask-type rmbg \
   --device cuda \
   --tasks test_data/test_samples/tpose_gen_collect.jsonl \
   --run-id auto
@@ -151,18 +137,14 @@ python tests/harness/smoke.py --kind tpose
 python tests/harness/smoke.py --kind tpose --backend seedream
 ```
 
-该 smoke 测试工具使用模拟模型，仅需 `pillow`、`numpy` 和 `scipy` 库，测试成功后不会留下任何生产环境输出。当本地有 Qwen 和 RMBG 权重且配备 GPU 时，可运行本地检查点集成测试：
 
 ```bash
-RMBG_CKPT=briaai/RMBG-1.4 \
 python -m unittest test.test_gen_tpose_image -v
 ```
 
-仅在收到明确请求时，才针对同一标准任务 JSONL 文件和相同的 RMBG 处理阶段运行付费的 Seedream 集成测试。```bash
 export ARK_API_KEY="你的密钥"
 export AAAGF_RUN_SEEDREAM_LIVE=1
 export SEEDREAM_MODEL="doubao-seedream-5-0-260128"
-export RMBG_CKPT="briaai/RMBG-1.4"
 python -m unittest test.test_api_gen_tpose_image -v
 ```
 

@@ -8,11 +8,26 @@ from .timing import curve, smooth
 from .units import basis, fk, quat_to_matrix, root_index, set_world_rotation
 
 
+def yaw_matrices(yaw):
+    """Per-sample rotation matrices about +Y, shaped ``(len(yaw), 3, 3)``.
+
+    scipy 1.18 tightened `Rotation.from_euler` for a single-axis sequence: the
+    angles must be shaped ``(N, 1)``. A plain ``(N,)`` array is now read as a
+    scalar and rejected, so the trailing axis is made explicit here rather than
+    at each of the three call sites.
+
+    ``as_matrix`` already returns ``(N, 3, 3)`` for batch input, which is what
+    every consumer below expects, so no transpose is needed.
+    """
+    angles = np.asarray(yaw, dtype=float).reshape(-1, 1)
+    return Rotation.from_euler('y', angles, degrees=True).as_matrix()
+
+
 def design_root(plan, times):
     p = plan.program['root']['params']
     offsets = np.column_stack([curve(p[k], plan.rhythm, times, width=0) for k in ('x', 'y', 'z')])
     yaw = curve(p['yaw'], plan.rhythm, times, width=0)
-    heading = plan.frame @ Rotation.from_euler('y', yaw, degrees=True).as_matrix()
+    heading = plan.frame @ yaw_matrices(yaw)
     position = plan.template.rest[root_index(plan.template)] + offsets @ plan.frame.T * p['scale']
     return {'position': position, 'heading': heading, 'rotation': heading @ plan.frame.T, 'yaw': yaw}
 
@@ -55,7 +70,7 @@ def _contact_path(plan, spec, times, root):
         mask = (contact_ids < 0) & (fraction > b) & (fraction < end)
         target[mask] = path[mask]
         yaw[mask] = ((1 - blend) * sampled['yaw'][index] + blend * sampled['yaw'][index + 1])[mask]
-    rotation = plan.frame @ Rotation.from_euler('y', yaw, degrees=True).as_matrix() @ plan.frame.T
+    rotation = plan.frame @ yaw_matrices(yaw) @ plan.frame.T
     return target, contact_ids, rotation
 
 
@@ -105,7 +120,7 @@ def solve_part(clip, plan, spec, times, root):
         contact_rotation = None
     if isinstance(p['orientation'], dict):
         yaw = curve(p['orientation'], plan.rhythm, times, width=0)
-        rotation = plan.frame @ Rotation.from_euler('y', yaw, degrees=True).as_matrix() @ plan.frame.T
+        rotation = plan.frame @ yaw_matrices(yaw) @ plan.frame.T
     elif p['orientation'] == 'body':
         rotation = root['rotation']
     elif p['orientation'] == 'rest':

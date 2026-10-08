@@ -201,15 +201,13 @@ class TestConstruction(unittest.TestCase):
 
 
 class TestSwappability(unittest.TestCase):
-    """R6 — the three backends must fill the same operator slot."""
+    """R6 — the cloud backends must fill the same operator slot."""
 
     #: What `Gen3DObjectOperator.run` passes, in order.
     EXPECTED = ["image", "output_path", "seed", "decimation_target", "texture_size"]
 
-    def test_infer_and_save_signature_matches_trellis(self):
-        from models.gen_3d_object import trellis_2_model
-
-        for cls in (trellis_2_model.Trellis2Model, TripoModel, MeshyModel):
+    def test_infer_and_save_signature_is_the_operator_contract(self):
+        for cls in (TripoModel, MeshyModel):
             with self.subTest(cls=cls.__name__):
                 params = list(inspect.signature(cls.infer_and_save).parameters)
                 self.assertEqual(params[1:6], self.EXPECTED)
@@ -419,7 +417,7 @@ class TestOperatorIntegration(unittest.TestCase):
     def test_operator_runs_with_each_stub_backend(self):
         from pipeline.common import paths
 
-        for backend in ("trellis2", "tripo", "meshy"):
+        for backend in ("tripo", "meshy"):
             with self.subTest(backend=backend):
                 op = build_operator("3d_object", run_id="_unittest",
                                           model_key=backend)

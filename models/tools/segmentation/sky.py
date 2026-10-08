@@ -34,9 +34,8 @@ from PIL import Image
 
 from models.tools.base import BaseToolModel
 
-#: HuggingFace repo and filename the ONNX weights are pulled from when no local
-#: path is given.
-HF_REPO = "JianyuanWang/skyseg"
+#: 期望的权重文件名。**本仓库不下载任何模型权重**，请自行把该文件放到
+#: 路径上并通过 `model_path` 传入。
 HF_FILENAME = "skyseg.onnx"
 
 #: Resolution the network expects, (width, height).
@@ -64,7 +63,8 @@ class SkySegmentationModel(BaseToolModel):
     ):
         """
         Args:
-            model_path: Path to `skyseg.onnx`. Downloaded from the Hub when None.
+            model_path: 指向本地 `skyseg.onnx` 的路径。本仓库不下载权重，
+                缺失时直接报错。
             device: 保留以维持接口一致。推理固定走 ONNX Runtime 的 CPU
                 provider——这个网络足够小，引入 CUDA provider 不划算。
             input_size: (width, height) the image is resized to for inference.
@@ -77,14 +77,12 @@ class SkySegmentationModel(BaseToolModel):
         import onnxruntime
 
         path = self.model_path
-        # Empty is treated as absent: these paths usually arrive from an
-        # environment variable, and an unset one reads as "" often enough that
-        # the alternative is an unhelpful failure from deep inside onnxruntime.
+        # 权重必须由使用者自行放置：本仓库不再从 Hub 自动下载。
         if not path:
-            from huggingface_hub import hf_hub_download
-
-            path = hf_hub_download(HF_REPO, HF_FILENAME)
-            self.model_path = path
+            raise FileNotFoundError(
+                f"{type(self).__name__} 需要一个本地 {HF_FILENAME} 路径。"
+                "本项目不下载模型权重，请下载后用 model_path=... 传入。"
+            )
 
         self.model = onnxruntime.InferenceSession(
             path, providers=["CPUExecutionProvider"]

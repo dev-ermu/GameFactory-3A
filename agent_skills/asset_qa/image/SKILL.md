@@ -24,20 +24,13 @@ They tend to become fused geometry, baked texture, or missing body parts.
 | Concept image model | `<REPO_PATH>/models/gen_image/sdxl_turbo.py` | Fast single-object text-to-image concept art; tuned for reconstruction inputs |
 | Image editor (local) | `<REPO_PATH>/models/gen_image/qwen_edit_model.py` | Turns a supplied character reference into a white-background T-pose render |
 | Image editor (cloud API) | `<REPO_PATH>/models/gen_image/seedream_model.py` | Uses Seedream image editing as a swappable T-pose generation backend |
-| Foreground extraction | `<REPO_PATH>/models/tools/image_matting/rmbg_model.py` or `<REPO_PATH>/models/tools/image_matting/depth_anything_model.py` | Creates a foreground alpha mask |
 | Task operator | `<REPO_PATH>/operators/gen_tpose_image/operator.py` | Reads a task, generates the T-pose, saves artifacts and metadata |
 | Runner | `<REPO_PATH>/pipeline/assets_gen/gen_tpose_image/run.py` | Loads models, accepts CLI/JSONL tasks, and writes result summaries |
 
-The default T-pose route is Qwen Image Edit
-`Qwen/Qwen-Image-Edit-2511` plus RMBG `briaai/RMBG-1.4`. The generation backend
 can be changed to Seedream `doubao-seedream-5-0-260128` while keeping the same
-RMBG mask stage, shared T-pose prompt, operator, task JSONL, and output contract.
 Local model weights are downloaded on first use unless checkpoint flags point to
-local paths. A CUDA GPU is strongly recommended for Qwen Edit and RMBG; Seedream
-itself runs through the Ark API, but the RMBG stage still uses the local runtime.
 
 **Prefer the Seedream cloud route** when the user permits paid generation; local
-Qwen Image Edit is the offline/declined fallback. Seedream is paid, so before the
 first call **pause and follow *Paid cloud backend* in
 `<REPO_PATH>/agent_skills/asset_qa/README.md`**: send the purchase/API-key page
 (<https://console.volcengine.com/ark>), state the estimated cost for the planned
@@ -46,8 +39,6 @@ image count including retries, ask the user to buy access and supply
 
 ## Install the image environment
 
-Install Qwen Image Edit and the local RMBG / Depth Anything mask runtime. This
-environment is also required when Seedream generation is followed by real RMBG:
 
 ```bash
 bash scripts/asset_env_setup/image/qwen_image_install.sh
@@ -134,30 +125,23 @@ python pipeline/assets_gen/gen_tpose_image/run.py \
 Optional backend/model overrides and segmentation choice:
 
 ```bash
-# Local Qwen Image Edit (default)
 python pipeline/assets_gen/gen_tpose_image/run.py \
   --gen-backend qwen_edit \
   --gen-ckpt Qwen/Qwen-Image-Edit-2511 \
-  --mask-ckpt briaai/RMBG-1.4 \
-  --mask-type rmbg \
   --device cuda \
   --tasks test_data/test_samples/tpose_gen_collect.jsonl \
   --run-id auto
 
-# Seedream API generation with the same local RMBG stage
 export ARK_API_KEY="your-key"
 python pipeline/assets_gen/gen_tpose_image/run.py \
   --gen-backend seedream \
   --gen-ckpt doubao-seedream-5-0-260128 \
-  --mask-ckpt briaai/RMBG-1.4 \
-  --mask-type rmbg \
   --device cuda \
   --tasks test_data/test_samples/tpose_gen_collect.jsonl \
   --run-id auto
 ```
 
 Use `--mask-type depth --mask-ckpt LiheYoung/depth-anything-small-hf` only
-when the Depth Anything backend is intentionally selected. `--out-dir` is
 legacy flat-output mode for debugging; do not use it for game deliverables.
 
 ## Outputs and metadata
@@ -187,21 +171,17 @@ python tests/harness/smoke.py --kind tpose --backend seedream
 
 The smoke harness uses stub models, requires only `pillow`, `numpy`, and `scipy`,
 and leaves no production output after success. Run the local checkpoint integration
-test when Qwen and RMBG weights plus a GPU are intentionally available:
 
 ```bash
-RMBG_CKPT=briaai/RMBG-1.4 \
 python -m unittest test.test_gen_tpose_image -v
 ```
 
 Run the paid Seedream integration against the same canonical task JSONL and the
-same RMBG stage only when explicitly requested:
 
 ```bash
 export ARK_API_KEY="your-key"
 export AAAGF_RUN_SEEDREAM_LIVE=1
 export SEEDREAM_MODEL="doubao-seedream-5-0-260128"
-export RMBG_CKPT="briaai/RMBG-1.4"
 python -m unittest test.test_api_gen_tpose_image -v
 ```
 

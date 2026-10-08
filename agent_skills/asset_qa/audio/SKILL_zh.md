@@ -26,7 +26,6 @@
 2. 资产类型：`dialogue`（对话）或 `sound_effect`（音效）；
 3. 游戏代码要求该音频的播放时长（发射速率间隔、动画长度、循环周期），以及语言/语音要求、情感表达、距离感、视角设定和任何叙事语境相关信息；
 4. 风格参考、音量/混音要求、是否需要循环，以及验收标准；
-5. 获取方式（下载或生成）、后端选择、预期成本，以及授权/来源信息。
 
 切勿要求生成器模仿有版权的真人表演者声音，或在未取得相应授权的情况下使用参考录音。绝对不要将音频API密钥或私有参考录音提交到代码库。
 
@@ -35,13 +34,9 @@
 | 需求场景 | 推荐获取方式 | 备注 |
 |---|---|---|
 | 角色对话/文本转语音 | Qwen3-TTS 或 Seed Audio | 需选择已获授权且适合该游戏的语音，同时记录说话人配置信息。 |
-| **自然/机械类单次音效**（枪声、雷声、雨声、风声、脚步声、引擎声、撞击声、开门声） | **下载已获授权许可的录音** | 这类音效用真实录音的效果优于生成音效；详见下方的“优先下载自然音效”说明。 |
-| 无法从外部获取的音效、拟音或环境音 | Sony Woosh-DFlow 或 Seed Audio | 先生成针对性的单次音效，通过质量审核后再进行分层与混音处理。 |
 | 快速生成的云端对话或音效 | Seed Audio 1.0 | 该API同时支持两种需求，可输出离线WAV资产。 |
 
-若需离线执行、保障隐私、确保可复现性或控制预算，可选择本地/开源后端；若允许且能满足既定质量要求，则可选用云端后端。切勿擅自替换后端：若更换后端，需说明替代方案及其影响。**若选择生成式路线，除非出于离线执行、隐私保护或预算限制等原因，否则对话内容以及无法下载的音效请优先使用Seed Audio云后端。**该服务为付费项目，因此在首次调用前，**请暂停操作并参照`<REPO_PATH>/agent_skills/asset_qa/README.md`中“付费云后端”一节的要求**：发送购买/API密钥页面（<https://console.volcengine.com/speech/>），说明计划台词及含重录次数在内的单次生成预估费用，请求用户购买访问权限并提供`SEED_AUDIO_API_KEY`，随后等待用户的明确答复。本地Qwen3-TTS和Woosh-DFlow可作为备选方案。
 
-### 优先下载自然音效
 
 对于**枪声、雷声、雨声、风声、脚步声、引擎声及撞击声**，建议选用所选引擎音频库中收录的真实录音，或经过许可审核的免费资源库（CC0 / CC-BY）——现有资源库已能很好地覆盖这类音效，且真实录音的效果比生成的模拟音效更具说服力。需记录录音来源与许可信息，且不得将非商用素材纳入产品构建中。只有在找不到合适的现成音效或该音效属于虚构内容（如能量武器音效、魔法咒语音效）时，才考虑生成。
 
@@ -53,29 +48,19 @@
 ## 环境搭建
 
 ### 本地后端依赖
-使用Qwen3-TTS时，请按照[Qwen3-TTS仓库](https://github.com/QwenLM/Qwen3-TTS)的说明安装`qwen-tts`。使用Woosh-DFlow时，需先克隆[Woosh仓库](https://github.com/SonyResearch/Woosh)，按照其安装说明完成配置，之后再下载或设置检查点。
 
 ### 共享云API依赖
 ```bash
 bash scripts/asset_env_setup/audio/cloud_api_install.sh
 ```
 
-### 本地Woosh-DFlow音效检查点
-首次运行本地Woosh-DFlow时可自动下载检查点。若想使用预先安装的检查点，需进行如下配置：
 ```bash
-export WOOSH_DFLOW_CKPT=/path/to/Woosh-DFlow
-export WOOSH_AE_CKPT=/path/to/Woosh-AE
-export WOOSH_TEXT_CONDITIONER_CKPT=/path/to/TextConditionerA
-# 可选：覆盖发布版下载地址：
-export WOOSH_RELEASE_BASE_URL=https://...
 ```
-对于离线环境或已预置好相关资源的机器，可禁用自动下载功能：
 ```bash
 python pipeline/assets_gen/gen_audio/run.py \
   --only-audio-type sound_effect \
   --no-auto-download
 ```
-大型检查点与安装包应存放在`<REPO_PATH>/third_party/`目录下，或配置外部模型缓存路径；切勿将其提交至源代码控制系统。
 
 ## Seed Audio 1.0云后端Seed Audio无需更改任务JSON文件，即可占用现有的音频插槽：
 

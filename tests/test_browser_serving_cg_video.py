@@ -47,7 +47,7 @@ class _RecordingVideoModel:
         target.write_bytes(b"stub-mp4")
         self.last_call_info = {
             "provider": "stub",
-            "runtime": "local",
+            "runtime": "api",
             "model": "stub-h3",
             "bytes": len(b"stub-mp4"),
             "cached": False,
@@ -73,7 +73,7 @@ class BrowserServingCgVideoTests(unittest.TestCase):
                         "model": "h3",
                         "mode": "text_to_video",
                         "scene": "opening",
-                        "duration_sec": 1,
+                        "duration_sec": 6,
                         "aspect_ratio": "16:9",
                         "prompt": "A short establishing shot.",
                     }
@@ -176,7 +176,7 @@ class CgVideoReuseTests(unittest.TestCase):
             "model": "h3",
             "mode": "text_to_video",
             "scene": "opening",
-            "duration_sec": 1,
+            "duration_sec": 6,
             "seed": 42,
             "prompt": "A short establishing shot.",
         }
@@ -229,12 +229,12 @@ class CgVideoReuseTests(unittest.TestCase):
             "run_id": run_id,
             "mode": "text_to_video",
             "prompt": "A short establishing shot.",
-            "duration_sec": 1,
+            "duration_sec": 6,
             "seed": 42,
             "first_frame_path": None,
             "last_frame_path": None,
             "reference_image_paths": [],
-            "model_call": {"provider": "stub", "runtime": "local"},
+            "model_call": {"provider": "stub", "runtime": "api"},
             **overrides,
         }
         (task_dir / "meta.json").write_text(json.dumps(meta), encoding="utf-8")

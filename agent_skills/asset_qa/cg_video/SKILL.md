@@ -108,7 +108,6 @@ when a JSONL contains mixed execution configurations:
 
 | Envelope model | Runner selection |
 |---|---|
-| `h3` | `--backend minimax-h3 --minimax-runtime local --ckpt Comfy-Org/MiniMax-H3` |
 | `seedance` | `--backend seedance` |
 
 Pass Seedance aspect ratio with `--ratio`. For local H3, translate the ratio to
@@ -148,9 +147,7 @@ rather than silently routing the request to a different model.
 |---|---:|---:|---:|---:|---|
 | Seedance 2.0 cloud API | yes | yes | yes | yes | High-quality cloud generation across all shared modes |
 | MiniMax Hailuo 2.3 API | yes | yes | no | no | Cloud T2V and I2V only |
-| MiniMax H3 local / ComfyUI | yes | yes | yes | yes | Local controlled generation with substantial hardware and storage |
 
-Choose the route deliberately. Cloud calls may cost credits; the local MiniMax
 path needs a capable NVIDIA GPU, a compatible CUDA/PyTorch stack, large RAM/VRAM,
 and approximately 40 GiB free cache space for common modes (about 60 GiB if
 reference-to-video is also required).
@@ -297,21 +294,16 @@ python pipeline/assets_gen/gen_cg_video/run.py \
 The Hailuo API supports 6 s or 10 s at 768P and 6 s at 1080P. It does not expose
 a seed; the shared seed is accepted and recorded as ignored.
 
-### Local MiniMax H3 runtime
 
-Install the ComfyUI/checkpoint environment:
 
 ```bash
 bash scripts/asset_env_setup/cg_video/minimax_h3_install.sh
 ```
 
-Then choose the local runtime and a Hugging Face id or complete local directory:
 
 ```bash
 python pipeline/assets_gen/gen_cg_video/run.py \
   --backend minimax-h3 \
-  --minimax-runtime local \
-  --ckpt Comfy-Org/MiniMax-H3 \
   --mode first_last_frame_to_video \
   --first-frame /data/first.png \
   --last-frame /data/last.png \
@@ -322,11 +314,8 @@ python pipeline/assets_gen/gen_cg_video/run.py \
 The local default is 864×480 at 24 fps. Both dimensions must be positive
 multiples of 32. Common presets are 832×480 (480P), 1344×736 (720P),
 1920×1088 (1080P/1K), and 2560×1440 (2K). Use
-`MINIMAX_LOCAL_FILES_ONLY=1` only after a complete checkpoint is available.
 Relevant controls include
-`COMFYUI_PATH`, `HUGGINGFACE_HUB_CACHE`, `MINIMAX_WIDTH`, `MINIMAX_HEIGHT`,
 `MINIMAX_FPS`, `MINIMAX_STEPS`, `MINIMAX_SCHEDULER`, and
-`MINIMAX_REF_IMAGE_SIZE`. Keep downloaded checkpoints outside source control,
 for example under `<REPO_PATH>/third_party/` or a configured Hugging Face cache.
 
 ## Tests, QA, and cost controls
@@ -338,7 +327,6 @@ python tests/harness/smoke.py --kind cg_video --backend seedance
 python tests/harness/smoke.py --kind cg_video --backend minimax-h3
 ```
 
-Use `<REPO_PATH>/tests/test_cg_video_gen.py` for real API or local checkpoint generation only
 after explicitly selecting backend, runtime, task file, output directory, and
 cache. A paid Seedance example:
 
@@ -348,7 +336,6 @@ export CG_VIDEO_BACKEND=seedance
 export CG_VIDEO_TEST_TASKS=/absolute/path/to/cg_tasks.jsonl
 export CG_VIDEO_TEST_OUT_DIR=/absolute/path/to/output
 export GAMEFACTORY3A_API_CACHE=/absolute/path/to/api_cache
-python tests/test_cg_video_gen.py
 ```
 
 The test validates tasks before contacting a provider. Set

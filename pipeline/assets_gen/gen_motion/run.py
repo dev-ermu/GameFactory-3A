@@ -26,7 +26,7 @@ DEFAULT_TASKS = paths.collect_jsonl(TASK_KIND)
 CLOUD_TASK_TYPES = frozenset({"cloud_rig", "cloud_humanoid"})
 
 
-def _guard_local_runtimes(task_types: set[str]) -> None:
+def _guard_cloud_credentials(task_types: set[str]) -> None:
     """在加载任何运行时之前，先检查这一批任务会用到哪些。
 
     云端 task_type 需要的是 `.env` 凭证，而不是 GPU。
@@ -397,7 +397,7 @@ def main() -> None:
     )
     if demo_requested:
         task = _demo_task(args, parser)
-        _guard_local_runtimes({args.task_type})
+        _guard_cloud_credentials({args.task_type})
         operator = _build_operator_for_types(
             args,
             {args.task_type},
@@ -411,7 +411,7 @@ def main() -> None:
     if not task_types:
         print("[run] No matching tasks - nothing to do.")
         return
-    _guard_local_runtimes(task_types)
+    _guard_cloud_credentials(task_types)
     operator = _build_operator_for_types(args, task_types, run_id)
     print(f"[run] run_id={run_id}  tasks={paths.rel_to_repo(tasks_path)}")
     results = run_from_jsonl(

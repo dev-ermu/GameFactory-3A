@@ -15,25 +15,13 @@ classification, response cache, submit → poll → download) lives in
 
 | Slot | Class | File | Kind | Needs |
 |------|-------|------|------|-------|
-| `gen_3d_object` | `Trellis2Model` | `gen_3d_object/trellis_2_model.py` | local weights | GPU + the o-voxel extension |
 | `gen_3d_object` | `TripoModel` | `gen_3d_object/tripo_model.py` | cloud API | `$TRIPO_API_KEY` + `scripts/asset_env_setup/3d_object/cloud_api_install.sh` |
 | `gen_3d_object` | `MeshyModel` | `gen_3d_object/meshy_model.py` | cloud API | `$MESHY_API_KEY` + `scripts/asset_env_setup/3d_object/cloud_api_install.sh` |
-| `gen_3d_scene` | `WorldMirrorModel` | `gen_3d_scene/world_mirror_model.py` | local weights | GPU |
-| `gen_3d_scene` | `WorldPlayModel` | `gen_3d_scene/world_play_model.py` | local weights | GPU + a checkout of HY-WorldPlay |
 | `gen_cg_video` | `SeedanceModel` | `gen_cg_video/seedance_model.py` | cloud API | `$ARK_API_KEY` + `scripts/asset_env_setup/cg_video/cloud_api_install.sh` |
 | `gen_cg_video` | `MiniMaxH3Model` | `gen_cg_video/minimax_h3_model.py` | cloud API + local pruned INT8 | `$MINIMAX_API_KEY` or `scripts/asset_env_setup/cg_video/minimax_h3_install.sh` |
-| `gen_image` | `QwenEditModel` | `gen_image/qwen_edit_model.py` | local weights | GPU |
 | `gen_image` | `SeedreamModel` | `gen_image/seedream_model.py` | cloud API | `$ARK_API_KEY` + `scripts/asset_env_setup/image/cloud_api_install.sh` |
-| `gen_image` | `SDXLTurboModel` | `gen_image/sdxl_turbo.py` | local weights | GPU; concept art only, not game output |
 | `gen_audio` | `SeedAudioModel` | `gen_audio/seed_audio_model.py` | cloud API | `$SEED_AUDIO_API_KEY` + `scripts/asset_env_setup/audio/cloud_api_install.sh`; one class serves both dialogue and SFX slots |
-| `gen_audio` | `Qwen3TTSModel` | `gen_audio/qwen3_tts_model.py` | local weights | `pip install -U qwen-tts`; CustomVoice / VoiceDesign / voice clone |
-| `gen_audio` | `WooshDFlowModel` | `gen_audio/woosh_model.py` | local weights | Woosh-DFlow, Woosh-AE, TextConditionerA checkpoints; weights are CC-BY-NC |
-| `gen_motion` | `PuppeteerModel` | `gen_motion/puppeteer_model.py` | external source + local weights | CUDA rigging runtime |
-| `gen_motion` | `MoMaskModel` | `gen_motion/momask_model.py` | external source + local weights | CPU or CUDA generation runtime |
-| `tools/image_matting` | `RMBGModel`, `DepthAnythingModel` | `tools/image_matting/{rmbg_model.py,depth_anything_model.py}` | local weights | — |
-| `tools/segmentation` | `SkySegmentationModel` | `tools/segmentation/sky.py` | local weights | `onnxruntime` (CPU is fine) |
 
-`PuppeteerModel` and `MoMaskModel` run their fixed upstream repositories in
 isolated subprocesses. This avoids namespace collisions and releases GPU memory
 between the rigging and motion-generation stages. Their repositories, weights,
 caches and test assets are external runtime data; only these wrappers and the
@@ -42,7 +30,6 @@ reproducible setup scripts belong in Git.
 All three `gen_3d_object` backends expose the same
 `infer_and_save(image, output_path, seed, decimation_target, texture_size)`, so
 `Gen3DObjectOperator` swaps between them without changing (R6). Pick one with
-`python pipeline/assets_gen/gen_3d_object/run.py --backend {trellis2,tripo,meshy}`.
 
 | | Tripo | Meshy |
 |---|---|---|
@@ -53,11 +40,8 @@ All three `gen_3d_object` backends expose the same
 | face budget | `face_limit` | `target_polycount`, 100-300 000 |
 
 The two `gen_3d_scene` wrappers chain rather than substitute for each other.
-`WorldPlayModel` flies a camera through a reference image to produce frames and
-`WorldMirrorModel` reconstructs geometry from frames, so `Gen3DSceneOperator`
 takes them in separate slots. Only the geometry slot is required — a task that
 already has footage, or that is content with what a single view can see, needs
-no world model at all. `world_mirror_utils/` holds the vendored HunyuanWorldMirror
 source that backs the geometry wrapper; see its README for what was changed.
 
 `SkySegmentationModel` is a third, smaller piece of the same chain. Depth heads
@@ -69,11 +53,5 @@ the scene. Only segmentation finds it.
 
 | Directory        | Purpose                              | Candidate models |
 |------------------|--------------------------------------|------------------|
-| `gen_3d_object/` | Single 3D asset generation           | TRELLIS.2, Hunyuan3D-2.1, TripoSG, Step1X-3D, Direct3D-S2, Craftsman3D, Michelangelo, Meshy, Tripo, Rodin, CSM, Luma Genie |
-| `gen_3d_scene/`  | Whole-scene / world generation       | Hunyuan-WorldPlay2, FlashWorld, FantasyWorld |
-| `gen_motion/`    | Motion generation and rigging models | Puppeteer and MoMask implemented; MDM, MLD, T2M-GPT, MotionGPT are candidates |
 | `gen_cg_video/`  | Cinematic / CG video generation      | LTX-2.3, HunyuanVideo, Wan, Mochi, CogVideoX, Open-Sora, Seedance 2, Kling 3, Veo 3, Sora 2, Runway Gen-4, Hailuo, Vidu |
-| `gen_audio/`     | Character voice, dialogue, and game sound generation | Seed Audio, Qwen3-TTS, and Woosh-DFlow implemented; other speech and SFX backends are candidates |
-| `reasoning/`     | LLMs / VLMs used by the pipeline     | Claude, GPT-5.5, GLM, Kimi, DeepSeek, Gemini, Qwen, Grok, Llama, Mistral |
-| `tools/`         | Utility models (depth, RMBG, seg.)   | Depth-Anything, RMBG, SAM, etc.       |
 | `unified_model/` | Composite / multimodal pipelines     | e.g., end-to-end asset+motion models  |

@@ -34,7 +34,6 @@ For every audio task, record:
    delivery, distance, perspective, and any diegetic context;
 4. style references, loudness/mixing intent, looping need, and acceptance
    criteria;
-5. route (download vs generate), backend choice, expected cost, and
    licence/provenance.
 
 Do not ask a generator to imitate a named living performer or use reference
@@ -46,8 +45,6 @@ reference recordings.
 | Need | Preferred route | Notes |
 |---|---|---|
 | Character dialogue / TTS | Qwen3-TTS or Seed Audio | Choose a voice that is licensed and suitable for the game; record speaker configuration. |
-| **Natural / mechanical one-shots** (gunshots, thunder, rain, wind, footsteps, engines, impacts, doors) | **Download a licence-checked recording** | A real recording beats a generated one for these; see *Download natural sound effects first* below. |
-| Sound effects / foley / ambience that cannot be sourced | Sony Woosh-DFlow or Seed Audio | Generate a focused one-shot first; layer and mix only after QA. |
 | Fast cloud dialogue or SFX | Seed Audio 1.0 | One API supports both slots and outputs an offline WAV asset. |
 
 Use a local/open backend when offline execution, privacy, reproducibility, or
@@ -56,16 +53,13 @@ planned quality. Do not silently substitute one backend for another: report the
 fallback and its implications.
 
 **When generation is the chosen route, prefer the Seed Audio cloud backend** for
-dialogue and for the effects that cannot be downloaded, unless offline execution,
 privacy, or a declined budget rules it out. It is paid, so before the first call
 **pause and follow *Paid cloud backend* in
 `<REPO_PATH>/agent_skills/asset_qa/README.md`**: send the purchase/API-key page
 (<https://console.volcengine.com/speech/>), state the estimated cost for the
 planned line and one-shot count including retakes, ask the user to buy access and
 supply `SEED_AUDIO_API_KEY`, and wait for an explicit answer. Local Qwen3-TTS and
-Woosh-DFlow are the fallback.
 
-### Download natural sound effects first
 
 For **gunshots, thunder, rain, wind, footsteps, engine and impact sounds**, prefer
 a real recording from the selected engine's audio library or a licence-checked
@@ -89,9 +83,6 @@ suitable can be sourced or the sound is fictional (energy weapon, magic spell).
 ### Local backend dependencies
 
 For Qwen3-TTS, install `qwen-tts` as described in the
-[Qwen3-TTS repository](https://github.com/QwenLM/Qwen3-TTS). For Woosh-DFlow,
-clone the [Woosh repository](https://github.com/SonyResearch/Woosh) and follow
-its installation instructions before downloading or configuring checkpoints.
 
 ### Shared cloud API dependency
 
@@ -99,28 +90,17 @@ its installation instructions before downloading or configuring checkpoints.
 bash scripts/asset_env_setup/audio/cloud_api_install.sh
 ```
 
-### Local Woosh-DFlow sound-effect checkpoints
 
-The first local Woosh-DFlow run can download checkpoints automatically. To use
-preinstalled checkpoints, configure:
 
 ```bash
-export WOOSH_DFLOW_CKPT=/path/to/Woosh-DFlow
-export WOOSH_AE_CKPT=/path/to/Woosh-AE
-export WOOSH_TEXT_CONDITIONER_CKPT=/path/to/TextConditionerA
-# Optional release download location override:
-export WOOSH_RELEASE_BASE_URL=https://...
 ```
 
-For offline or pre-provisioned machines, disable automatic downloads:
 
 ```bash
 python pipeline/assets_gen/gen_audio/run.py \
   --only-audio-type sound_effect \
-  --no-auto-download
 ```
 
-Keep large checkpoints and installer packages under `<REPO_PATH>/third_party/` or an
 externally configured model cache; do not commit them to source control.
 
 ## Seed Audio 1.0 cloud backend

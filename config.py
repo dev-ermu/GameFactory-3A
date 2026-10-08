@@ -86,7 +86,7 @@ class Settings(BaseSettings):
     minimax_api_base: str = ""
     minimax_api_key: str = ""
     minimax_video_model: str = "MiniMax-Hailuo-2.3"
-    minimax_h3_runtime: str = "auto"
+    minimax_h3_runtime: str = "api"
     tokenhub_api_base: str = ""
     tokenhub_api_key: str = ""
 

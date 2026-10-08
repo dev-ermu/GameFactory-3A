@@ -672,7 +672,7 @@ class ObjMeshInputTest(unittest.TestCase):
             settings['preview']['stretch_max_limit'] = 0
             config = root / 'config.json'
             config.write_text(json.dumps(settings))
-            result = subprocess.run([sys.executable, '-m', 'test.test_vibe_rigging', 'rig-mesh', '--input', str(source),
+            result = subprocess.run([sys.executable, '-m', 'tests.test_vibe_rigging', 'rig-mesh', '--input', str(source),
                                      '--output-dir', str(output), '--config', str(config)],
                                     cwd=Path(__file__).resolve().parents[1], capture_output=True, text=True)
             self.assertEqual((result.returncode, result.stderr), (1, ''))
