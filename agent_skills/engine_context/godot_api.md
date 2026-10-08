@@ -304,7 +304,6 @@ current lock state.
   game's explicit error/fallback cleanup path, then emits
   `gameplay_pause_changed(false)`.
 - The director cannot infer the correct hit window, projectile release, or
-  animation transition; those remain game-owned and require native playtest
   verification.
 
 ### Runtime evidence
@@ -327,33 +326,7 @@ contains, at minimum:
 
 The record distinguishes the requested event, trigger source, native playback
 call, monotonic runtime ordering, and caller metadata. Keep the event log with
-the native playtest trace; visual/audio success still requires observing the
 running Godot project.
-
-## Playtest Recording
-
-- `godot.playtest.record(...)` records the take inside the game process: the
-  client writes the scenario (`_scenario.json`) and the recorder script into
-  the take directory, ensures a record scene (`scenes/main_record.tscn`,
-  created from `main.tscn` when missing), and launches the game with
-  `--a3-record`, `--a3-record-fps`, and `--a3-record-duration`. The in-game
-  recorder drives the match, captures viewport frames through
-  `get_viewport().get_texture().get_image()` at the requested rate, and
-  quits the game when the take ends. Parameters: `output_dir`, `scenario`
-  or `action_plan`, `duration`, `fps`, `width`, `height`, `timeout`,
-  `headless`, `ffmpeg`, and `dry_run`.
-- `headless` must stay false for capture: headless Godot has no rendering
-  server. The viewport size comes from `width`/`height` via `--resolution`.
-- Supported action names are `move`, `look`, `jump`, `attack`, `interact`,
-  `dash`, `pause`, `restart`, and `wait`. Every action has a positive integer
-  `duration_ms`; scenario plans must be non-empty and fit within `duration`.
-  Input is applied in-engine (`Input.parse_input_event()` or the autonomous
-  AI drivers), so no host-side input injection is needed.
-- The output layout is shared with the other adapters: `frames/`,
-  `actions.jsonl`, `report.json`, and `video.mp4` when FFmpeg is available.
-  The report schema is `gamefactory3a.godot.playtest_report.v1`.
-- Missing FFmpeg is non-fatal: frames, the action trace, and the report are
-  retained without the video.
 
 ## 4. Runnable call patterns
 
@@ -543,7 +516,6 @@ Each has a real main `PackedScene`, deterministic unattended driver, manual
 keyboard mode, and a Godot smoke script that advances live physics. The RPG
 smoke also proves that Godot instantiated a mesh and skeleton from glTF and is
 advancing its imported bone animation. Their
-`mechanic_contract.json` maps to reviewer copies under
 `test_data/outputs/<game_id>/<run_id>/mechanic/<task_id>/`.
 
 ## 6. Coordinate system

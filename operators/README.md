@@ -37,10 +37,7 @@ both, so do not import them:
 | Reserved | Intended scope | Current state |
 |---|---|---|
 | `process_input` | Parse text, preprocess image, extract character | Placeholder |
-| `gen_ui` | HUD / front-end generation, with `agent/`, `prompts/`, `skills/` | Placeholder; the runnable UI path is `pipeline/code_gen/gen_ui/` |
 
-Code generation for gameplay and UI has no operator layer: `pipeline/code_gen/gen_mechanic/`
-and `pipeline/code_gen/gen_ui/` drive an agent against the engine adapters directly.
 
 `metrics/` exposes a single `evaluate(result, task)` entry point per task and runs
 without a model, weights, or a GPU. Only `gen_3d_scene` (boundary-edge ratio,

@@ -44,7 +44,6 @@ produce `A3GAME_SMOKE_OK`.
 
 ## Generated-output traceability
 
-`mechanic_contract.json` in each project records its exact reviewer output path:
 
 | Reference | Generated demonstration |
 | --- | --- |
@@ -80,7 +79,6 @@ code:
 from engine_adapters.godot import GodotClient
 
 client = GodotClient(godot_executable="godot4")
-client.project.assemble_modules(
     "path/to/mechanic-artifact",
     "path/to/ui-artifact",
     "path/to/product-project",

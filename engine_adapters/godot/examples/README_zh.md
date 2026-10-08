@@ -30,7 +30,6 @@ done
 
 ## 生成输出可追溯性
 
-每个项目中的`mechanic_contract.json`文件会记录其对应的精确审查输出路径：| 参考项目 | 生成的演示版本 |
 | --- | --- |
 | `NeonDodge2D` | `test_data/outputs/game101/godot/` |
 | `SolarRally3D` | `test_data/outputs/game202/godot/` |
@@ -55,7 +54,6 @@ Godot没有与Unity的`.asmdef`或Unreal的`.uplugin`直接等效的模块规则
 from engine_adapters.godot import GodotClient
 
 client = GodotClient(godot_executable="godot4")
-client.project.assemble_modules(
     "path/to/mechanic-artifact",
     "path/to/ui-artifact",
     "path/to/product-project",

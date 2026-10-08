@@ -41,20 +41,3 @@ GAMEFACTORY3A_ROOT=$PWD blender --factory-startup \
 
 Walking up from the script also finds the repo root if the env var is unset.
 
-## Playtest
-
-Presses bound keys via `Controls`; the example's own `--no-render` run uses policy:
-
-```python
-from engine_adapters.blender import BlenderClient
-
-BlenderClient(
-    project_path="engine_adapters/blender/examples/FPSExample",
-).playtest.record(
-    output_dir="/tmp/blender_playtest",
-    duration=8,
-    no_render=True,
-)
-```
-
-Optional: set `playtest_actions` on the `Game` subclass. Else genre bindings.

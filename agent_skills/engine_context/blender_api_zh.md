@@ -2,7 +2,6 @@
 
 本文是为使用Blender Python编写代码的开发者准备的API说明。Blender并非游戏发行时所针对的目标引擎；它是**生成器与引擎之间的中立中转站**——在本代码库中，只有它负责读取`.ply`和`.usd`文件，修正生成器产生的轴心点或缩放错误，且无需项目文件、许可证或GPU即可渲染出结果图片。
 
-`blender.playtest.*`并非基准测试工具：它仅记录游戏运行时的实际情况，并不对测试结果做出合格/不合格判定。详情请参阅**Playtest**部分。
 
 推荐参考现有实现进行扩展而非重新编写：
 `<REPO_PATH>/engine_adapters/blender/`。
@@ -282,19 +281,15 @@ def drain_pending(self, max_ops=32):    # 主线程：在此处使用bpy
 
 ## 11. 试玩测试
 
-- `blender.playtest.record`：驱动`game.py`执行探测到的操作，并生成`frames/`、`video.mp4`以及`report.json`文件。这回答了游戏自身使用`--no-render`参数运行时无法解答的问题：*游戏能否正常运行*。该运行模式由无人值守策略驱动；测试人员按下游戏宣称会响应的按键，并记录下发生的情况。利用它可确认生成的机制是否有效，也能生成可供人观看的视频片段。它只是佐证材料，并非权威基准——后续评估报告中的`checks`字段会说明录制内容完整，`game_state`则用于判断游戏是否做出了响应。
 
 ```bash
-python -m pipeline.code_gen.playtest.run \
     --engine blender \
     --project test_data/outputs/<game>/<run>/mechanic/<task> \
     --duration 10 --fps 20 \
     --no-render
 
-python -m pipeline.code_gen.playtest.eval --report <out_dir>/report.json
 ```
 
-`run.py`不会记录任何数据也不会打分；`eval.py`会读取已写好的报告且同样不记录任何内容。`--no-render`参数会跳过Cycles渲染器；若要生成`video.mp4`，可去掉该参数。适配器`blender.playtest.record`仍可直接调用。
 
 ### 这不是屏幕录制
 
@@ -304,7 +299,6 @@ python -m pipeline.code_gen.playtest.eval --report <out_dir>/report.json
 
 ### 不可协商的限制条件
 
-每一条限制都是经过反复尝试后总结得出的。`playtest/record.py`文件中包含了这些要求。
 
 1. **输入必须是真实的`Controls`对象。**按键信号会通过`ScriptedSource`/`from_held`传递，这是键盘操作对应的处理表。**没有任何程序会直接操控角色**，因为若录制内容直接定位角色位置，那只能说明存在补间动画，而非游戏具备可玩性。`report.json`中的`game_state`字段可用于验证这一点——真实的游戏运行会显示`shots_fired`/`kills`数值变化，或汽车离开起始线。
 2. **时钟以时间步长为基准。**捕获的一帧对应一次模拟步骤。按相同速率编码能保证视频的准确性，无论Cycles渲染耗时多久。若依靠系统时钟推进模拟，渲染缓慢时就会出现画面“瞬移”现象。
@@ -318,7 +312,6 @@ python -m pipeline.code_gen.playtest.eval --report <out_dir>/report.json
 
 | 来源 | 提供的内容 |
 |---|---|
-| `Game.playtest_actions` | 游戏自行声明的操作方案 |
 | 对应`genre`类别的`AXIS_BINDINGS`/`BUTTON_BINDINGS` | `from_held`函数调用的映射表 |
 | 内置默认方案 | WASD + 空格 + 鼠标点击，确保没有额外标注的游戏也能正常录制 |
 
@@ -326,7 +319,6 @@ python -m pipeline.code_gen.playtest.eval --report <out_dir>/report.json
 - **移动操作需持续按住；动作指令需轻点触发。** 持续一帧的`forward`指令只能让角色移动几厘米；反之，离散的动作指令必须释放后才能生效——比如半自动武器若未释放扳机就不会连续发射。
 - **重复的操作会被忽略。** 绑定设置中可能会同时把`W`和`UP_ARROW`都设为前进指令；若依次按下这两个键，只会录制一次相同的操作。
 
-有特定叙事需求的游戏应在`Game`子类中声明`playtest_actions`——格式为`{id, keys?, taps?, mouse?, duration?}`——这种方式显然优于自动发现机制，因为只有游戏自身才知道敌人的位置。自动发现只是最低要求，并非最佳方案。
 
 ### 无声的早期返回会导致整段录制作废
 

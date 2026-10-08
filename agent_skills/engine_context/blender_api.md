@@ -6,8 +6,6 @@ engine** — the only place in this repo that reads `.ply` and `.usd`, fixes a
 pivot or a scale the generator got wrong, and renders a picture of the result
 without a project, a licence or a GPU.
 
-`blender.playtest.*` is not a benchmark: it records what happened when the
-game was played and makes no pass/fail claim of its own. See **Playtest**.
 
 Reference implementations to extend rather than rewrite:
 `<REPO_PATH>/engine_adapters/blender/`.
@@ -408,13 +406,10 @@ sender that retries must not end up with two characters.
 
 ---
 
-## 11. Playtest
 
-- `blender.playtest.record` - Drives a `game.py` through discovered actions
   and writes `frames/`, `video.mp4`, and `report.json`.
 
 This answers a question the game's own `--no-render` run cannot: *does the
-game play*. That run is driven by the unattended policy; a playtest presses
 the keys the game itself declares it listens for and records what happened.
 Use it to confirm a generated mechanic works, and to produce a clip a human
 can watch. It is evidence, not an authoritative benchmark — `checks` in a
@@ -422,18 +417,15 @@ later evaluation report say the recording is intact, and `game_state` is
 what says the game responded.
 
 ```bash
-python -m pipeline.code_gen.playtest.run \
     --engine blender \
     --project test_data/outputs/<game>/<run>/mechanic/<task> \
     --duration 10 --fps 20 \
     --no-render
 
-python -m pipeline.code_gen.playtest.eval --report <out_dir>/report.json
 ```
 
 `run.py` records and scores nothing; `eval.py` reads a written report and
 records nothing. `--no-render` skips Cycles; drop it for `video.mp4`.
-The adapter `blender.playtest.record` is still callable directly.
 
 ### This Is Not Screen Recording
 
@@ -444,13 +436,11 @@ already does), one tick is one baked frame, and Cycles then renders the
 baked range. The video is smooth at the target frame rate however long each
 frame actually took.
 
-`--play` is a different question: it needs a real window. A playtest does
 not open one. It fills `controls.ScriptedSource` and runs the same loop
 `--replay-input` uses.
 
 ### Constraints That Are Not Negotiable
 
-Each was found by failing without it. `playtest/record.py` carries them.
 
 1. **Input is real `Controls`.** Keys go through `ScriptedSource` /
    `from_held`, which is the table a keyboard session dispatches on.
@@ -485,7 +475,6 @@ game. Instead the running game is asked, in this order, and
 
 | Source | What it yields |
 |---|---|
-| `Game.playtest_actions` | A plan the game declares for itself |
 | `AXIS_BINDINGS` / `BUTTON_BINDINGS` for `genre` | The tables `from_held` dispatches on |
 | built-in fallback | WASD + Space + click, so an unannotated game still records |
 
@@ -498,7 +487,6 @@ game that appears not to respond:
 - **Duplicate actions are dropped.** Bindings list `W` *and* `UP_ARROW`
   for forward; pressing each in turn would record the same thing twice.
 
-A game with a specific story to tell should declare `playtest_actions` on
 the `Game` subclass — `{id, keys?, taps?, mouse?, duration?}` — which is
 strictly better than discovery because only the game knows where its
 enemies are. Discovery is the floor, not the ceiling.

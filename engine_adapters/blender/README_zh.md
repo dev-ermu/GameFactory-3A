@@ -13,7 +13,6 @@ Blender（`bpy`）参考代码——用于资产导入、无头预览以及可�
 | `render_preview.py` | `bpy`解释器 | 无头模式下对资产进行旋转展示或静态渲染 |
 | `game/` | `bpy`解释器 | 生成机制所依赖的游戏玩法工具包 |
 | `examples/` | `bpy`解释器 | 该适配器支持的各类游戏类型机制（第一人称射击/赛车/格斗/RPG） |
-| `playtest/` | 宿主Python + `bpy`解释器 | 探索操作方式，驱动`Controls`，生成`frames/`文件夹中的帧、`video.mp4`视频及`report.json`报告 |
 | `runtime/` | `bpy`解释器 | 通过UDP传输JSON指令驱动的实时会话——包括生成物体、移动物体、添加特效、生成快照等操作 |
 | `../../scripts/import_generated_asset.py` | 宿主Python | 查找Blender安装路径，启动导入程序并读取报告 |
 | `../../scripts/prepare_world_asset.py` | 宿主Python | 世界场景导出→生成单个完整的`.glb`文件（无需使用Blender） |
@@ -26,7 +25,6 @@ Blender（`bpy`）参考代码——用于资产导入、无头预览以及可�
 
 `game/`也有自己的实时模式——即`--play`参数，它会在窗口中通过键盘输入来触发相同的规则，而非先进行烘焙。这并非第三种实现方式：它使用的是同一固定时间步长的`tick()`函数，且游玩过程中产生的输入记录会被保存下来，以便离线重新渲染出相同的过程。详情请参阅下方的两个章节。
 
-`playtest/`是无人工干预的`--play`模式：自动识别按键操作，随后生成`report.json`报告和视频片段。
 
 ## 运行方式
 
@@ -111,8 +109,6 @@ from engine_adapters.blender import BlenderClient
 
 BlenderClient(
     project_path="engine_adapters/blender/examples/FPSExample",
-).playtest.record(
-    output_dir="/tmp/blender_playtest",
     duration=8,
     no_render=True,
 )

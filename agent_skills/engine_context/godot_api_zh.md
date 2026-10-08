@@ -250,14 +250,6 @@ class_name A3GameMediaDirector
 
 该记录明确了所请求的事件、触发源、原生播放调用、单调运行时排序以及调用方元数据。请保留事件日志与原生试玩追踪信息；若要确认视觉/音频效果是否正常，仍需观察正在运行的Godot项目。
 
-## 试玩录制
-
-- `godot.playtest.record(...)` 会在游戏进程内录制内容：客户端会将场景文件（`_scenario.json`）和录制脚本写入录制目录，确保存在录制场景（`scenes/main_record.tscn`，若缺失则会根据`main.tscn`生成），随后以`--a3-record`、`--a3-record-fps`和`--a3-record-duration`参数启动游戏。游戏内的录制器会驱动游戏进程，按照指定频率通过`get_viewport().get_texture().get_image()`捕获视口帧，录制结束后自动退出游戏。相关参数包括：`output_dir`、`scenario`或`action_plan`、`duration`、`fps`、`width`、`height`、`timeout`、`headless`、`ffmpeg`和`dry_run`。
-- 若要捕获画面，`headless`参数必须设为`false`：无头模式的Godot没有渲染服务器。视口尺寸通过`--resolution`参数由`width`/`height`指定。
-- 支持的动作名称包括`move`、`look`、`jump`、`attack`、`interact`、`dash`、`pause`、`restart`和`wait`。每个动作都对应一个正整数`duration_ms`；场景规划不能为空且需包含在`duration`时间范围内。输入指令会在引擎内部处理（`Input.parse_input_event()`或自主AI驱动程序），因此无需在主机端注入输入指令。
-- 输出布局与其他适配器一致：当FFmpeg可用时，会生成`frames/`、`actions.jsonl`、`report.json`和`video.mp4`文件。报告的结构为`gamefactory3a.godot.playtest_report.v1`。
-- 即使缺少FFmpeg也不会导致致命错误：即便没有视频文件，帧数据、动作轨迹和报告仍会被保留。
-
 ## 4. 可执行的调用模式
 
 ### E0 — 环境检查
@@ -423,7 +415,6 @@ assert status["ok"], status["errors"]
 - `OrbitPinball2D`：刚体弹珠游戏，包含静态碰撞体、动画弹射器、冲击力计算，以及连击/生命值循环；
 - `FpsArena3D`：第一人称视角游戏，涵盖角色移动、摄像机控制的瞄准、射线射击、目标设定、弹药/装填状态以及准星HUD；
 - `ArenaDuel3D`：第二人称视角对战游戏，采用属于比赛场景的摄像头，角色面向固定、有攻击窗口、生命值设定、回合与得分系统；
-- `RpgExplorer3D`：第三人称视角探索游戏，基于摄像机相对位置移动，包含不平坦地形、任务物品拾取、耐力系统，以及原生导入的带蒙皮的glTF格式 `Walk` 动画片段。每个场景都包含一个真正的主`PackedScene`、确定性无人值守驱动程序、手动键盘模式，以及一个用于实时更新物理效果的Godot烟雾脚本。该RPG烟雾效果还证明了Godot已从glTF文件中实例化网格和骨骼，并正在播放导入的骨骼动画。其`mechanic_contract.json`文件会映射到`test_data/outputs/<game_id>/<run_id>/mechanic/<task_id>/`路径下的审阅者副本中。
 
 ## 6. 坐标系
 

@@ -24,9 +24,6 @@ pipeline/
 │   ├── gen_cg_video/{run.py, eval.py}       #   text / frame → CG video
 │   └── gen_audio/{run.py, eval.py}          #   text / reference → dialogue or game SFX
 │
-└── code_gen/                                # Code generation tasks
-    ├── gen_mechanic/{run.py, eval.py}       #   spec + engine template → code + trace
-    └── gen_ui/{run.py, eval.py}             #   UI spec → UI code + screenshots
 ```
 
 An end-to-end game slice has no runner of its own: the agent orchestrates the

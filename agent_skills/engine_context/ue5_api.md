@@ -294,35 +294,6 @@ This native C++ contract is intentionally separate from the host-side
 `UEClient` contract above. `UEClient` prepares and executes the project; it is
 not a dependency inside the generated Unreal module.
 
-## Playtest Recording
-
-- `ue.playtest.record(...)` launches one dedicated game process and records
-  the take in-engine: the compiled `A3GamePlayable` plugin's
-  `UA3GamePlaytestRecorderSubsystem` reads the `-A3Playtest*` command-line
-  arguments, captures PNG frames through the engine screenshot pipeline
-  once gameplay has begun (`HasBegunPlay`), writes the `play_started.json`
-  input gate, and exits the game when the take ends. Parameters:
-  `output_dir`, `map_path`, `scenario` or `action_plan`, `duration`, `fps`,
-  `warmup`, `timeout`, `ffmpeg`, and `dry_run`.
-- With a staged build (`Binaries/Win64/<Project>.exe` plus `Content/Paks`)
-  the packaged game runs directly; unstaged projects launch
-  `UnrealEditor.exe <project> <map> -game` instead. Plugin source changes
-  require rebuilding the matching target before recording.
-- Supported action names are `move`, `look`, `jump`, `attack`, `interact`,
-  `dash`, `pause`, `restart`, and `wait`. Every action has a positive integer
-  `duration_ms`; scenario plans must be non-empty and fit within `duration`.
-  On Windows the client injects the timeline as real keyboard events via
-  `SendInput` after the `play_started.json` marker; other platforms record
-  the trace only.
-- The output layout is shared with the other adapters: `frames/`,
-  `actions.jsonl`, `report.json`, optional `video.mp4` (requires FFmpeg on
-  PATH or `ffmpeg=`), plus `play_started.json` and `_editor_report.json`
-  (the in-game recorder report, surfaced as `native_report`). The report
-  schema is `gamefactory3a.ue5.playtest_report.v1` and includes `status`,
-  `frames`, `recorded_seconds`, `executed_actions`, `video`, and `warnings`.
-- Missing FFmpeg is non-fatal: frames, the action trace, and the report are
-  retained without the video.
-
 ## UE5 Media Director: audio, video CG, animation CG, and VFX
 
 Use the public `UA3GameMediaSubsystem` in generated native gameplay code; it
@@ -380,7 +351,6 @@ lock state.
   picture still needs a game-owned `UMediaTexture`/UMG surface bound to
   `GetMediaPlayer(eventKey)`.
 - The subsystem cannot infer the correct hit window, projectile release, or
-  animation transition; those remain game-owned and require native playtest
   verification.
 
 ### Runtime evidence
@@ -402,7 +372,6 @@ equivalent to:
 ```
 
 Each record is broadcast through `OnMediaEvent` and appended to the log
-returned by `GetEventLogJson()`. Keep the event log with the native playtest
 trace; visual/audio success still requires observing the running UE5
 project. UE game code should depend only on this public subsystem surface,
 never on adapter-private registries, transports, editor scripts, or

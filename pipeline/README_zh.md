@@ -22,9 +22,6 @@ pipeline/
 │   ├── gen_cg_video/{run.py, eval.py}       #   文本/帧 → 计算机生成视频
 │   └── gen_audio/{run.py, eval.py}          #   文本/参考素材 → 对话或游戏音效
 │
-└── code_gen/                                # 代码生成任务
-    ├── gen_mechanic/{run.py, eval.py}       #   规格说明 + 引擎模板 → 代码 + 执行轨迹
-    └── gen_ui/{run.py, eval.py}             #   界面规格说明 → 界面代码 + 截图
 ```
 
 端到端的游戏切片没有专属的运行器：智能体通过遵循 `agent_skills/setting_overview.md` 中的指引来协调上述任务运行器。`pipeline` 任务类型会在 `common/paths.py` 中注册，以确保切片产物和 `pipeline_task.jsonl` 输入文件的存储位置保持稳定。

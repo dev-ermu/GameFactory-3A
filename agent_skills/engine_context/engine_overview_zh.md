@@ -19,8 +19,6 @@
 
 | 任务类型 | 所需上下文 |
 |---|---|
-| 机制生成 | `<REPO_PATH>/agent_skills/code_gen/mechanic/game_generation.md` → 选定的引擎API |
-| UI生成 | `<REPO_PATH>/agent_skills/code_gen/ui/game_ui_generation.md` → 选定的引擎API → `<REPO_PATH>/agent_skills/engine_context/browser_serving_api.md` |
 | 引擎组装、构建、测试或运行时操作 | 选定的引擎API |
 | 试玩录制或游戏过程记录采集 | 选定的引擎API（试玩相关章节） |
 | 由游戏玩法触发的音频、视频CG、动画CG或视觉特效 | 选定的引擎API（媒体调度相关章节） |
@@ -90,7 +88,6 @@ Browser Play仅使用公共的浏览器服务API，它不得导入引擎客户�
 - 仅读取任务包中声明的最终上游产物。
 - 仓库输出路径请使用`<REPO_PATH>/pipeline/common/paths.py`。
 - 当所选Skill有要求时，需在`context_used.json`中记录实际使用的上下文信息。
-- 代码生成、组装、执行和评估各环节的权责划分明确，仅完成源代码生成并不等同于游戏具备可玩性。
 
 ## 终止条件
 

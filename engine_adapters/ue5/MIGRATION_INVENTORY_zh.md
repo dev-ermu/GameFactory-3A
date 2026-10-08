@@ -1,6 +1,5 @@
 # UE5适配器迁移清单
 
-状态：UEClient v1版本、引擎原生自动化测试执行、AAAGamePlayable运行时框架、UE脚本仓库、预览工具、参考游戏玩法插件提取、已实现的API文档以及引擎中立的Mechanic Agent协议均已完成。Stub类型的非交互式Codex后端、引擎中立的Mechanic Operator以及仅用于生成的Pipeline runner也已实现。一个真实的Codex FPS项目已经成功编译出Editor/游戏目标版本，通过了自动生成的自动化测试，并通过单独执行的UEClient验证，成功加载了导入的资源。由于引擎执行不属于Agent编排范畴，早期的自动导入功能已被从`GenMechanicOperator`中移除。符合规范的现有制品评估器、UE执行迁移、受限修复协调器、实时追踪/证据捕获以及平台服务等功能仍待实现。
 
 源代码仓库：
 
@@ -54,11 +53,9 @@ D:\Desktop\game\3AGameFactory
 - 新增与引擎无关的`game_generation.md`技能描述，以及`system.md`、`task.md`和`repair.md`提示词模板；
 - 将具体的引擎调用方式改为通过只读路径精确引用选定的单个API文件，而非在提示词中嵌入完整的API内容；
 - 新增由Operator提供的通用项目和游戏所属模块标识符；
-- 新增可序列化为JSON的Mechanic Agent请求/结果契约，明确了工作区/只读边界以及明确的测试/基准测试权限；
 - 新增CPU安全的`StubAgent`，仅实现`model.run(request)`功能；
 - 分别记录创建的、修改的和删除的Agent文件；
 - 新增16项针对跨引擎提示词、请求/结果、沙盒环境、修复机制、鸭子类型以及Stub契约的专项测试。
-- 实现了`GenMechanicOperator(model, output_dir, run_id, default_game_id)`、`run()`和`run_batch()`函数；
 - 实现了任务/需求加载、稳定的项目/模块命名、提示词渲染、对`model.run(request)`的验证、Agent文件所有权检查、转录/结果持久化、工件检查以及失败的`meta.json`处理功能；
 - 将`AAAGamePlayable`与规范化的生成插件源码同步到Stub生成的UE项目中；
 - 实现了`pipeline/mechanic/run.py`，其中包含`load_model`、`make_operator`、`generate`、`run_from_jsonl`和`main`函数；
@@ -67,24 +64,19 @@ D:\Desktop\game\3AGameFactory
 2026年8月4日完成的内容：
 - 实现了 `CodexAgent`，支持非交互式的 `codex exec` 命令、工作区写入沙箱机制、超时处理、JSON 事件记录、使用情况统计，以及生成/修改/删除文件的快照功能；
 - 在不更改鸭子类型接口 `model.run(request)` 或 Operator 构造函数契约的前提下，接入了 `--backend codex` 参数；
-- 在 `fps_skill_validation_v1` 目录下生成了 `AAAGameCyberPrisonFPS` 游戏以及独立的 `CyberPrisonFPS` 游戏玩法插件；
 - 通过公共的 UEClient 操作，从 `fps_baseline_v1` 导入废弃监狱场景、玩家/敌人角色模型、步枪以及七种特定角色的动作数据；
 - 使用 UE 5.4 成功编译了 `AAAGameCyberPrisonFPS` 和 `AAAGameCyberPrisonFPSEditor`；
 - 执行 `AAAGame.CyberPrisonFPS.*` 测试：共发现3个测试用例，全部通过，无失败用例；
 - 启动监狱地图并保留了相关日志，证明玩家模型、步枪能够正常加载，右手部位可正确附着武器，同时生成了三个敌人角色，触发了追击/攻击状态，且玩家受到伤害的逻辑也正常运行；
-- 为 `GenMechanicOperator` 添加了自动导入A层的功能：包括编辑器准备工作、编辑器生命周期管控、原生场景导入、角色/武器导入、骨骼-角色动作导入、单项导入结果记录以及导入清单生成；
 - 通过 `AAAGAME_UE_ROOT` 参数支持了运行器 `--ue-root` 选项；
-- 新增了针对自动导入功能的 Operator 专项测试；目前该专项的 Mechanic Agent/Operator 套件包含25个通过的测试用例。
 
 2026年8月4日完成的架构修正内容：
 - 替换了自动导入 Operator 的部署方式，同时保留了现有的 UEClient 实现及验证依据；
-- 从 `GenMechanicOperator` 中移除了所有引擎适配器导入、UE 项目/插件同步、描述符导入、编辑器生命周期管理以及执行元数据相关功能；
 - 将 Operator 的功能简化为技能/提示词/上下文组装、调用 `model.run(request)` 进行生成/修复、工作区变更验证以及 Agent 证据记录；
 - 移除了生成过程中的项目/插件/启动完整性检查逻辑；
 - 将 `pipeline/mechanic/run.py` 恢复为 Pipeline README中描述的仅用于生成的五函数API，同时移除了 `--ue-root` 参数；
 - 将引擎 API 参考路径明确设为任务/命令行输入项；
 - 预留 `pipeline/mechanic/eval.py` 用于现有产物的评估；
-- 所有31个Mechanic Agent/Operator/运行器测试用例均通过，且确认 `operators/gen_mechanic` 目录下已不存在 `engine_adapters` 或 `UEClient` 的相关引用。
 
 尚未完成的事项：- 通过`pipeline.common.paths`实现`pipeline/mechanic/eval.py`；
 - 将描述符导入、项目准备、权威构建、生成的测试以及运行时证据迁移到UE评估/执行流程中；
@@ -103,7 +95,6 @@ D:\Desktop\game\3AGameFactory
 test_samples
     |
     v
-GenMechanicOperator
     |
     v
 CodexAgent
@@ -130,7 +121,6 @@ P1  机制契约稳定化
     任务定义的状态/输入/事件/观测/UI模式
 
 P2  UI Agent
-    GenUIOperator → 平视显示器/HUD/菜单/结束状态 → 截图与元数据
 
 P3  完整游戏流水线
     图层A资源 → 机制模块 → UI → 打包/评估
@@ -179,9 +169,7 @@ UI必须遵循稳定的绑定契约，而非直接绑定到生成的机制所使
   tests_passed = 1
   tests_failed = 0
   ```
-- 执行命令 `python -m unittest test.test_gen_mechanic_agent_contract -v` 后，所有 17 项机械代理上下文/契约测试均通过；
 - 自定义的非 UE API 参考文件通过了相同的请求契约测试，证实该代理协议不依赖于 UE 特定的调用；
-- 执行命令 `python -m unittest test.test_gen_mechanic_agent_contract test.test_gen_mechanic_operator -v` 后，所有 31 项针对性机械测试均通过，这些测试涵盖持久化生成/修复、Operator 纯净性、轻量级生成器运行行为以及引擎 API 参考的显式处理等内容；
 - 执行命令 `pipeline/mechanic/run.py --backend stub --game gameA_cyberpunk_shooter --run-id fps_baseline_v1` 后，`fps_core_001` 任务完成，生成的文件包括：
 
   ```text
@@ -248,7 +236,6 @@ UnrealBuildTool可能需要提升沙盒权限，因为它会在`C:\Users\Y4624\A
 1. [已完成] 添加一个与引擎无关的技能：
 
    ```text
-   operators/gen_mechanic/skills/game_generation.md
    ```
 
 2. [已完成] 该技能会读取任务需求、验收标准、生成的资产描述、选定的引擎API参考文档以及可选的只读示例。
@@ -265,10 +252,8 @@ UnrealBuildTool可能需要提升沙盒权限，因为它会在`C:\Users\Y4624\A
 
 ### D阶段——实现机制操作员 [Agent编排功能已完成]
 
-`GenMechanicOperator`必须与现有的操作员管理接口保持一致：
 
 ```python
-GenMechanicOperator(
     model,
     output_dir=None,
     run_id="default",
@@ -342,7 +327,6 @@ Stub运行模式仍作为源契约的基准。Codex验证运行完成了步骤1-
 
 阶段G完成后：
 
-1. 实现`GenUIOperator`，即UI Agent的后端集成部分，包括提示词、技能、运行器、截图以及元数据功能；
 2. 依据稳定的机制绑定契约生成`fps_hud_001`；
 3. 实现所需的HUD、暂停、胜利和失败状态界面；
 4. 明确区分UE运行时HUD与浏览器/平台前端的选择逻辑，不新增顶层的任务类型。
@@ -372,8 +356,6 @@ Stub运行模式仍作为源契约的基准。Codex验证运行完成了步骤1-
 
 ### Agent API参考- 保持`agent_skills/engine_context/ue5_api.md`与真实的公共`UEClient` API以及`AAAGamePlayable`公共头文件同步。
 - 待公共`z_other_serving` API问世后，完善`agent_skills/engine_context/z_other_serve_func.md`。切勿将拟定的API当作已实现的API来记录。
-- 位于`operators/gen_mechanic/skills`下的机械师Agent技能必须以`ue5_api.md`作为必需的参考文档。
-- 位于`operators/gen_ui/skills`下的UI Agent技能必须将`z_other_serve_func.md`作为浏览器/平台前端开发所需的参考文档；UE运行时HUD开发也可参考`ue5_api.md`。
 - 这些参考文件描述了可调用的API及其边界。各游戏的具体行为与参数仍由用户的需求及任务JSONL文件决定。
 
 ### 生成的游戏插件流程
@@ -396,11 +378,8 @@ Agent不得手动复制适配器的内部代码、修改`AAAGamePlayable`、包�
 - 只要绑定契约保持兼容，后续对机制模块的重构即便改变了具体类结构，也无需强制重新生成UI。
 
 ### 流水线部署
-- `pipeline/mechanic/run.py`负责筛选任务、加载基于Agent的`model`，将其注入`GenMechanicOperator`，批量驱动生成流程，并写入总结信息。
-- `GenMechanicOperator`会整合需求说明、引擎引用、Skill、提示词、示例上下文、输出工作区、生成/修复Agent请求以及Agent元数据。
 - Agent请求具有机制模块特异性，但与引擎无关；所选的API参考文档决定了具体的引擎调用方式。
 - `pipeline/mechanic/eval.py`必须读取现有的机制模块产物，并使用公开的引擎适配器API，且无需导入生成运行器。
-- `pipeline/ui/run.py`通过`GenUIOperator`执行对应的UI/前端生成工作。
 - 机制模块和UI的输出会分别作为独立的标准产物留存。
 - `pipeline/full_pipeline/run.py`会将现有的资源、机制模块及UI产物整合为最终的可运行版本，但它不会构建`UEClient`。
 - 评估工作与生成流程分离，会读取为指定`run_id`已写入的产物进行评估。
@@ -554,10 +533,6 @@ Source/AAAGamePlayable/Public/
 
 ### 移出运行时框架| 当前文件 | 分类 | 目标 |
 | --- | --- | --- |
-| `OpenWLPlayableCharacter.*` | 格斗/第一人称射击游戏玩法，包含具体的移动/摄像机逻辑 | 参考游戏玩法插件 |
-| `OpenWLPlayerController.*` | 格斗/第一人称射击/赛车游戏的按键与动作映射 | 参考游戏玩法插件 |
-| `OpenWLGameMode.*` | 竞技场/第一人称射击/赛车游戏规则与角色生成逻辑 | 参考游戏玩法插件 |
-| `OpenWLFighterHUD.*` | 格斗/第一人称射击/赛车游戏的人机界面 | 参考游戏玩法插件 |
 | `OpenWLArcadeVehiclePawn.*` | 赛车功能实现 | 赛车参考插件 |
 | `OpenWLPreviewCharacter.*` | 资产预览工具 | 由适配器单独维护的预览工具插件 |
 | `OpenWLPreviewGameMode.*` | 资产预览工具 | 由适配器单独维护的预览工具插件 |

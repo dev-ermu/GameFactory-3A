@@ -10,7 +10,6 @@ mechanic / UI code, and used at runtime for RPC-style asset delivery.
 | `ue5/`      | UE5 Blueprint templates, C++ modules, Python-remote scripts, importer helpers |
 | `unity3d/`  | Unity3D C# templates, Editor scripts, PackageManager manifests |
 | `godot/`    | Godot 4 public Client, full GDScript runtime plugin, import/export/test helpers, native gameplay references |
-| `blender/`  | Blender Python (`bpy`) importers, headless render, `game/` kit, `examples/` genre mechanics, `playtest/` recording |
 | `three_js/` | Web runtime: `ThreeClient` Python API, `A3GamePlayable` JS framework, glTF loaders, scene scaffolds, HUD overlays |
 
 `ue5/`, `unity3d/`, `godot/`, and `three_js/` implement the full versioned
@@ -31,7 +30,6 @@ gameplay extends but never edits:
 | `blender/` | `engine_adapters/blender/game` (Python kit) | a project-local `game.py`; reference copies in `blender/examples/` |
 
 `three_js/` exposes `ThreeClient`; `blender/` exposes `BlenderClient` the
-same way. Playtest recording is `client.playtest.record(...)` on either.
 
 See `three_js/MIGRATION_INVENTORY.md` for why the three.js framework also
 owns renderer, frame loop, input, animation, and collision scaffolding

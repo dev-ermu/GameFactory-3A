@@ -218,7 +218,6 @@ ordering to the game.
 `A3GameAssetLibrary.load()` tolerates a missing manifest and records the
 reason in `warnings`, because a procedurally built game imports nothing.
 Check `assets.available` before reaching for an artifact, or pass
-`requireManifest: true` when the game genuinely cannot run without
 imported content.
 
 ## What the framework owns

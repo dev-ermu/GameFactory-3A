@@ -15,11 +15,9 @@
 | 写法 | 含义 |
 |---|---|
 | `<REPO_PATH>/agent_skills/engine_context/ue5_api.md` | 一个技能模块，位于技能树内 |
-| `<REPO_PATH>/agent_skills/code_gen/mechanic/game_generation.md` | 一个技能模块，位于技能树内 |
 | `<REPO_PATH>/engine_adapters/ue5/` | 引擎参考代码——与`agent_skills/`同级，并非其内部子目录 |
 | `<REPO_PATH>/pipeline/`、`<REPO_PATH>/operators/`、`<REPO_PATH>/models/`、`<REPO_PATH>/scripts/`、`<REPO_PATH>/test/`、`<REPO_PATH>/test_data/`、`<REPO_PATH>/third_party/` | 同样与`agent_skills/`同级 |
 
-因此，没有前缀的`engine_context/...`或`code_gen/...`片段是相对于`agent_skills/`的路径；而`engine_adapters/...`及上述目录则是相对于代码库根目录的路径。在打开任何路径前，务必先将其解析为`<REPO_PATH>/`开头的完整路径。代码块中的Shell命令也以代码库根目录为相对起点：执行时需将`<REPO_PATH>`设为工作目录。
 
 ## 配置说明
 
@@ -56,13 +54,10 @@
 | 准备角色图像或T型姿势模型 | `<REPO_PATH>/agent_skills/asset_qa/image/SKILL.md` | 预处理完成后，需查阅对应的3D物体或动画相关技能文档 |
 | 生成对话或音效 | `<REPO_PATH>/agent_skills/asset_qa/audio/SKILL.md` | 集成到游戏中前，需查阅对应选定引擎的API文档 |
 | 生成CG视频 | `<REPO_PATH>/agent_skills/asset_qa/cg_video/SKILL.md` | 若方案仅定义了视频片段的用途但尚未给出可用于模型训练的提示词，可查阅`<REPO_PATH>/agent_skills/asset_qa/cg_video/game-cg-director/SKILL.md`；若视频需在游戏中使用，则需查阅对应选定引擎的API文档 |
-| 生成游戏玩法机制 | `<REPO_PATH>/agent_skills/engine_context/engine_overview.md` | 随后查阅`<REPO_PATH>/agent_skills/code_gen/mechanic/game_generation.md`，最后再查阅对应选定引擎的API文档 |
-| 生成UI或网页版游戏 | `<REPO_PATH>/agent_skills/engine_context/engine_overview.md` | 随后查阅`<REPO_PATH>/agent_skills/code_gen/ui/game_ui_generation.md`，之后查阅对应选定引擎的API文档，以及`<REPO_PATH>/agent_skills/engine_context/browser_serving_api.md` |
-| 构建完整的游戏片段 | 先阅读本文档，再查阅`<REPO_PATH>/agent_skills/engine_context/engine_overview.md` | 需根据文档指引，调用对应的资产制作技能、代码生成技能，并选用匹配的引擎上下文 |
 
 ## 仅能选定一种引擎上下文
 
-针对游戏玩法机制、UI开发或完整的引擎集成工作，在阅读`<REPO_PATH>/agent_skills/engine_context/engine_overview.md`之前，切勿直接从此表中选取API。该路由文档会先确定适用的代码生成技能，随后再匹配唯一对应的API上下文：| 引擎标识符 | 必需的API上下文 | 参考代码 |
+针对资源的引擎集成工作，在阅读`<REPO_PATH>/agent_skills/engine_context/engine_overview.md`之前，切勿直接从此表中选取API。该路由文档会先确定适用的引擎，再匹配唯一对应的API上下文：| 引擎标识符 | 必需的API上下文 | 参考代码 |
 |---|---|---|
 | `ue5` | `<REPO_PATH>/agent_skills/engine_context/ue5_api.md` | `<REPO_PATH>/engine_adapters/ue5/` |
 | `blender` | `<REPO_PATH>/agent_skills/engine_context/blender_api.md` | `<REPO_PATH>/engine_adapters/blender/` |

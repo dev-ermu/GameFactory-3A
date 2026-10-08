@@ -43,11 +43,8 @@ from engine_adapters.blender import BlenderClient
 
 BlenderClient(
     project_path="engine_adapters/blender/examples/FPSExample",
-).playtest.record(
-    output_dir="/tmp/blender_playtest",
     duration=8,
     no_render=True,
 )
 ```
 
-可选操作：在`Game`子类中设置`playtest_actions`参数；否则会采用默认的类型专属按键绑定。

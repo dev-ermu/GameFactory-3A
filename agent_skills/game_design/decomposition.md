@@ -78,7 +78,6 @@ asset and page needs from the coarse plan.
 Produce explicit requirement, chapter, asset, screen and task lists. For each row,
 record `item_id`, `chapter_id`, `check`, `status`, `reference` and `issue`.
 Use `confirmed`, `missing` or `not_applicable`; require a reason for not_applicable.
-Treat design confirmation as distinct from implementation or playtest completion.
 
 - [ ] Map each required requirement/script beat to a chapter and acceptance check.
 - [ ] Confirm each chapter's time window, story time, goal and ordered beats.

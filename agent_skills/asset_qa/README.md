@@ -30,24 +30,6 @@ Read the selected engine contract from `<REPO_PATH>/agent_skills/engine_context/
 importing an approved asset or scene. The engine documents define formats,
 coordinate conventions, public APIs, project structure, and runtime validation.
 
-## Relationship to `agent_skills/code_gen/`
-
-Asset QA and code generation are separate but connected stages:
-
-- `<REPO_PATH>/agent_skills/asset_qa/` decides whether planned assets are visually and
-  structurally suitable for integration.
-- `<REPO_PATH>/agent_skills/code_gen/` tells the agent how to turn approved assets into
-  gameplay mechanics and UI. Use
-  `<REPO_PATH>/agent_skills/code_gen/mechanic/game_generation.md` for game behavior and
-  `<REPO_PATH>/agent_skills/code_gen/ui/game_ui_generation.md` for HUD, menus, and player
-  interaction surfaces.
-- The selected document under `<REPO_PATH>/agent_skills/engine_context/` connects both
-  stages to UE5, Blender, Unity, Godot, or three.js.
-
-Do not fix an asset's orientation or scale by scattering compensating rotations
-inside gameplay code. Record validated asset metadata in the engine’s documented
-asset flow, then let the runtime apply it consistently.
-
 ## Environment setup map
 
 Use the task-specific installer below before the relevant generation route. All

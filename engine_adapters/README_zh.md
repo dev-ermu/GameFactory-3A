@@ -9,14 +9,11 @@
 | `ue5/`     | UE5蓝图模板、C++模块、Python远程脚本、导入辅助工具         |
 | `unity3d/` | Unity3D C#模板、编辑器脚本、PackageManager清单文件         |
 | `godot/`   | Godot 4公共客户端、完整的GDScript运行时插件、导入/导出/测试辅助工具、原生游戏玩法参考 |
-| `blender/` | Blender Python（`bpy`）导入器、无头渲染工具、`game/`工具包、`examples/`分类玩法示例、`playtest/`录制功能 |
 | `three_js/`| Web运行时：`ThreeClient` Python API、`A3GamePlayable` JS框架、glTF加载器、场景脚手架、HUD覆盖层 |
 
 `ue5/`、`unity3d/`、`godot/`和`three_js/`实现了完整版本化的客户端协议。每个目录都仅暴露一个公共Python入口点——分别是`UEClient`、`UnityClient`、`GodotClient`或`ThreeClient`——它们拥有相同的11个命名空间以及一致的`{ok, operation, artifacts, diagnostics, warnings, errors, payload}`结果结构，因此流水线代码无需通过分支判断即可切换引擎。
 
-每个目录还附带一个由适配器专属的运行时框架，生成的游戏玩法代码会基于该框架扩展但不会修改它：
 
-| 适配器       | 框架                          | 生成的游戏玩法代码存放位置               |
 |------------|-------------------------------|------------------------------------------|
 | `ue5/`     | `A3GamePlayable` UE插件（C++协议） | 项目本地的游戏玩法插件中                 |
 | `unity3d/` | `A3GameRuntime` Unity包（C#协议） | 项目本地的游戏玩法脚本和程序集里         |
@@ -24,7 +21,6 @@
 | `three_js/`| `A3GamePlayable` npm包`@a3game/playable` | 项目本地`packages/`下的游戏玩法包中     |
 | `blender/` | `engine_adapters/blender/game`（Python工具包） | 项目本地的`game.py`；参考副本存放在`blender/examples/`中 |
 
-`three_js/`暴露`ThreeClient`；`blender/`同样以类似方式暴露`BlenderClient`。两种引擎的玩法录制功能均通过`client.playtest.record(...)`实现。
 
 关于为何three.js框架还要负责Unreal引擎原生提供的渲染器、帧循环、输入、动画和碰撞相关基础架构，可查阅`three_js/MIGRATION_INVENTORY.md`了解详情。
 

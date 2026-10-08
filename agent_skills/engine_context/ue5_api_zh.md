@@ -183,14 +183,6 @@ A3GamePlayable仅提供运行时接口，不提供具体的角色、Pawn、控�
 
 生成的项目负责实现具体的游戏玩法逻辑。可选的Preview、Arena Fighter、FPS及Racing插件仅为只读引用，既不属于依赖项，也不作为项目成功的标准。这个原生C++合约特意与上述的宿主端`UEClient`合约分开。`UEClient`负责准备并执行项目；它并非生成后的Unreal模块内的依赖项。
 
-## 试玩录制
-
-- `ue.playtest.record(...)`会启动一个专用的游戏进程并在引擎内录制内容：编译后的`A3GamePlayable`插件中的`UA3GamePlaytestRecorderSubsystem`会读取`-A3Playtest*`命令行参数，在游戏开始（`HasBegunPlay`）后通过引擎截图管道捕获PNG帧，写入`play_started.json`输入标记，录制结束后便退出游戏。相关参数包括：`output_dir`、`map_path`、`scenario`或`action_plan`、`duration`、`fps`、`warmup`、`timeout`、`ffmpeg`以及`dry_run`。
-- 对于已打包的项目（包含`Binaries/Win64/<Project>.exe`和`Content/Paks`），可直接运行打包后的游戏；未打包的项目则会启动`UnrealEditor.exe <project> <map> -game`。若插件源代码有改动，需在录制前重新构建对应的目标。
-- 支持的动作名称包括`move`、`look`、`jump`、`attack`、`interact`、`dash`、`pause`、`restart`和`wait`。每个动作都对应一个正整数`duration_ms`；场景计划必须非空且能在指定的`duration`内完成。在Windows平台上，客户端会在`play_started.json`标记之后，通过`SendInput`将时间线作为真实的键盘事件注入；其他平台仅会记录轨迹。
-- 输出目录结构与其他适配器一致：`frames/`文件夹、`actions.jsonl`文件、`report.json`文件、可选的`video.mp4`文件（需PATH环境变量中包含FFmpeg或指定`ffmpeg=`参数），此外还有`play_started.json`和`_editor_report.json`（即游戏内录制器生成的报告，以`native_report`形式呈现）。该报告的架构为`gamefactory3a.ue5.playtest_report.v1`，包含`status`、`frames`、`recorded_seconds`、`executed_actions`、`video`和`warnings`字段。
-- 即使缺少FFmpeg也不会导致致命错误：即便没有视频，帧数据、动作轨迹和报告仍会被保留。
-
 ## UE5 Media Director：音频、视频CG、动画CG及VFX
 
 在生成的原生游戏代码中使用公开的`UA3GameMediaSubsystem`类；它相当于Unity/Godot中的`A3GameMediaDirector`。跨引擎的逻辑组件名称为`media_director`，而UE端的源码则遵循引擎的类文件命名规范：

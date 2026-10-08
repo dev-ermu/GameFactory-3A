@@ -23,8 +23,6 @@ testable game logic.
 - **All gameplay scripts are MonoBehaviours** with complete, working logic.
 - **Gameplay examples ship with NUnit EditMode tests** that create real
   `GameObject`s and verify behavioral invariants (damage, death, lap counting).
-- **Each gameplay example includes a `mechanic_contract.json`** using the
-  `gamefactory3a.mechanic_contract.v1` schema, documenting the behavioral
   invariants the implementation must satisfy.
 
 Arena Fighter and Racing now follow the same mechanic/UI assembly boundary as
@@ -51,7 +49,6 @@ examples/
 │   │   ├── ArenaFighterCombat.cs
 │   │   ├── ArenaFighterAI.cs
 │   │   └── ArenaFighterGameMode.cs
-│   ├── mechanic_contract.json
 │   └── Tests/
 │       ├── ArenaFighterExample.Tests.asmdef
 │       └── ArenaFighterTests.cs
@@ -61,7 +58,6 @@ examples/
 │   ├── Scripts/
 │   │   ├── FightHUD.cs
 │   │   └── FighterHealthBar.cs
-│   └── ui_binding_manifest.json
 ├── FPSExample/
 │   ├── package.json
 │   ├── FPSExample.asmdef
@@ -73,7 +69,6 @@ examples/
 │   │   ├── FPSEnemySpawner.cs
 │   │   ├── FPSWeapon.cs
 │   │   └── FPSDoor.cs
-│   ├── mechanic_contract.json
 │   └── Tests/
 │       ├── FPSExample.Tests.asmdef
 │       └── FPSTests.cs
@@ -82,11 +77,9 @@ examples/
 │   ├── FPSUIExample.asmdef
 │   ├── Scripts/
 │   │   └── FPSArenaHUD.cs
-│   ├── ui_binding_manifest.json
 │   └── Tests/
 │       ├── FPSUIExample.Tests.asmdef
 │       ├── FPSArenaHUDTests.cs
-│       └── fixtures/mechanic_contract_fixture.json
 ├── RacingExample/
 │   ├── package.json
 │   ├── RacingExample.asmdef
@@ -95,7 +88,6 @@ examples/
 │   │   ├── RacingCheckpoint.cs
 │   │   ├── RacingLapCounter.cs
 │   │   └── RacingGameMode.cs
-│   ├── mechanic_contract.json
 │   └── Tests/
 │       ├── RacingExample.Tests.asmdef
 │       └── RacingTests.cs
@@ -103,7 +95,6 @@ examples/
     ├── package.json
     ├── RacingUIExample.asmdef
     ├── Scripts/RacingHUD.cs
-    ├── ui_binding_manifest.json
     └── Tests/
         ├── RacingUIExample.Tests.asmdef
         └── RacingHUDTests.cs

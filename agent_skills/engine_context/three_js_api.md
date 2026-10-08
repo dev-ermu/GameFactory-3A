@@ -180,7 +180,6 @@ Use `import_asset(source, 'environment')` or `import_asset(source, 'static_mesh'
 
 `testing.run_automation_tests(*, runner='vitest', test_filter='', script='', report_path='', timeout=None, dry_run=False)`.
 
-`playtest.record(*, output_dir, url='', action_plan=None, hold=None, warmup=None, look=None,
 playwright_root=None, browser_executable=None, browsers_path=None, library_path=None, ffmpeg=None,
 duration=14.0, fps=20, width=1280, height=720, timeout=900.0, dry_run=False,
 mode='gameplay', preview=False, allow_partial_plan=False, source_hash=None)`.
@@ -1090,10 +1089,8 @@ Require successful execution, actual passes, and expected coverage; screenshots,
 ### Declared gameplay plans
 
 Expose `globalThis.__A3GAME_GAME__ = game` with host, input, getState; return serializable gameplay state, not a THREE graph.
-Expose `__A3GAME_PLAYTEST__` (or game.playtestActions) to avoid irrelevant generic actions.
 
 ```js
-window.__A3GAME_PLAYTEST__ = {
   warmup: 1, look: 'off',
   actions: [
     { id: 'approach', keys: ['KeyW'], duration: 2 },
@@ -1121,7 +1118,6 @@ Demonstrate real input, not teleports, collision bypasses, or fabricated state.
 
 ### CLI, Python wrapper, modes, and media
 
-CLI entry: `engine_adapters/three_js/playtest/record.mjs`; required --url and --output-dir.
 Defaults:1280×720,20fps,14seconds. Set --duration/--fps/--width/--height; use positive even integer dimensions.
 For consistent Python/CLI use, choose a positive integer fps; the CLI validates positive finite fps while Python also enforces integrality.
 Other flags: --action-plan/--hold/--warmup/--look/--playwright-root/--browser-executable/--source-hash/--self-test.
@@ -1162,10 +1158,8 @@ Limits: depth8, budget2048,128 entries/object or array,512 characters/string; no
 
 ### Pipeline integration boundaries
 
-`pipeline.code_gen.playtest.run.record_playtest` differs from the adapter: defaults12s/640×360/warmup0/look auto;
 not all mode, preview, source_hash options are forwarded. Use the adapter for declared-plan defaults.
 recorder_root maps to Playwright root, root/browsers, root/deps/lib.
-`pipeline.code_gen.playtest.eval.evaluate_report` validates report/action/browser structure only, not media/hash/gameplay or preview/overview; authoritative_validation=False.
 
 UI viewports are positive-size objects/pairs, not automatic captures. `gamefactory3a.ui_screenshot_plan.v1` validates declared screens, not rendered viewport coverage.
 Mechanic requires schema_version, positive contract_version, matching gameplay_module, non-empty state/events/commands and workspace-contained public_api_paths.
@@ -1210,7 +1204,6 @@ Keep generated imports at `@a3game/playable`; packaged subpaths are not needed f
 | `engine_adapters/three_js/runtime/sessions.py`, `engine_adapters/three_js/observe/client.py` | Python session delivery and readiness checks |
 | `engine_adapters/three_js/assets/client.py`, `engine_adapters/three_js/bindings/client.py`, `engine_adapters/three_js/animation/client.py`, `engine_adapters/three_js/reflection/client.py`, `engine_adapters/three_js/preview/client.py` | Source import, bindings, compatibility, metadata, CPU preview |
 | `engine_adapters/three_js/world/client.py` | Draft/build/validation/publication facade; read its schema implementation for serialized-field limits, not as a public import |
-| `engine_adapters/three_js/testing/client.py`, `engine_adapters/three_js/playtest/client.py`, `engine_adapters/three_js/playtest/record.mjs` | Test execution, unique-take wrapper, recorder and self-tests |
 | `engine_adapters/three_js/plugin/A3GamePlayable/src/index.js`, `engine_adapters/three_js/plugin/A3GamePlayable/package.json` | Runtime exports, boot, supported package/version contract |
 | `engine_adapters/three_js/plugin/A3GamePlayable/src/data-types/runtime-types.js`, `engine_adapters/three_js/plugin/A3GamePlayable/src/interfaces/contracts.js` | Wire records and duck-typed contracts |
 | `engine_adapters/three_js/plugin/A3GamePlayable/src/components/`, `engine_adapters/three_js/plugin/A3GamePlayable/src/subsystems/` | Identity, input-state component, entity/session lifecycle |

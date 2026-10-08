@@ -112,7 +112,6 @@ cd engine_adapters/three_js/plugin/A3GamePlayable && npm test
 ```
 
 They cover gameplay logic against the real session/runtime contracts using
-synthetic DOM events, and validate neither WebGL output nor a browser playtest.
 
 `rts-example` scope: real-time and continuous-position, using open terrain and
 direct steering — **not** a pathfinder or crowd-avoidance solver, and grid

@@ -132,7 +132,6 @@ because it stops the next pass from checking.
 - **A model facing a diagonal**: no cardinal axis fits. Record
   `yaw_offset_degrees` measured from the nearest axis instead of
   `forward_axis`, and note that it was estimated.
-- **Genuinely unreadable views**: report that the artifact needs
   regenerating rather than annotating. A mesh nobody can recognise from
   five angles will not read any better in play.
 

@@ -19,14 +19,6 @@
 
 导入已审核通过的资产或场景前，请先阅读`<REPO_PATH>/agent_skills/engine_context/`中的对应引擎规范文档。这些文档规定了格式要求、坐标约定、公共API、项目结构以及运行时验证规则。
 
-## 与`agent_skills/code_gen/`的关系
-
-资产质量检查与代码生成虽属不同阶段，但相互关联：
-
-- `<REPO_PATH>/agent_skills/asset_qa/`负责判定规划中的资产在视觉和结构层面是否适合集成到项目中。
-- `<REPO_PATH>/agent_skills/code_gen/`则指导智能体如何将审核通过的资产转化为游戏机制与用户界面。其中，`<REPO_PATH>/agent_skills/code_gen/mechanic/game_generation.md`用于定义游戏行为，`<REPO_PATH>/agent_skills/code_gen/ui/game_ui_generation.md`用于设计HUD、菜单及玩家交互界面。
-- `<REPO_PATH>/agent_skills/engine_context/`下的对应文档会将上述两个阶段与UE5、Blender、Unity、Godot或three.js等引擎衔接起来。切勿在游戏逻辑代码中通过添加补偿性旋转来修正资产的方向或缩放问题。应将经过验证的资产元数据记录在引擎规定的资产流程中，再由运行时环境统一应用这些设置。
-
 ## 环境配置指南
 
 在执行相关生成任务前，请先使用下方的特定任务安装脚本。所有路径均相对于仓库根目录`<REPO_PATH>/`。位于`<REPO_PATH>/scripts/asset_env_setup/`目录下的`cloud_api_install.sh`为通用实现脚本；新的代理工作流应调用特定任务的入口点，而非直接调用该共享脚本。

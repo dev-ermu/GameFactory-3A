@@ -4480,42 +4480,28 @@ class GodotRealEngineTests(EngineTestBase):
         self.assert_result(linked, ok=False)
 
 
-    def test_reference_examples_cover_requested_camera_genres_and_real_import(self) -> None:
+    def test_reference_examples_ship_assets_and_a_runnable_scene(self) -> None:
+        """示例工程自带资源、场景与 smoke 脚本，可直接被引擎导入并运行。"""
         examples_root = Path("engine_adapters/godot/examples")
-        expected = {
-            "FpsArena3D": ("first_person", "fps", "game404"),
-            "ArenaDuel3D": (
-                "second_person_match_owned",
-                "arena_fighter",
-                "game505",
-            ),
-            "RpgExplorer3D": (
-                "third_person_orbit_follow",
-                "rpg_exploration",
-                "game606",
-            ),
-        }
-        for project_name, (camera, genre, output_id) in expected.items():
+        projects = ("FpsArena3D", "ArenaDuel3D", "RpgExplorer3D")
+        for project_name in projects:
             with self.subTest(project=project_name):
                 project = examples_root / project_name
                 for relative_path in (
                     "README.md",
                     "project.godot",
                     "main.tscn",
-                    "mechanic_contract.json",
                     "scripts/main.gd",
                     "scripts/smoke.gd",
                 ):
                     self.assertTrue((project / relative_path).is_file())
-                contract = json.loads(
-                    (project / "mechanic_contract.json").read_text(encoding="utf-8")
+                # 每个示例都必须带一份可导入的 glTF 资产
+                assets = list((project / "assets").glob("*.gltf"))
+                self.assertTrue(assets, f"{project_name} 没有可导入的 glTF 资产")
+                self.assertIn(
+                    "A3GAME_SMOKE_OK",
+                    (project / "scripts/smoke.gd").read_text(encoding="utf-8"),
                 )
-                self.assertEqual(
-                    "gamefactory3a.godot.example.v1", contract["schema_version"]
-                )
-                self.assertEqual(camera, contract["camera"])
-                self.assertEqual(genre, contract["genre"])
-                self.assertIn(output_id, contract["generated_output"])
                 self.assertIn(
                     "A3GAME_SMOKE_OK",
                     (project / "scripts/smoke.gd").read_text(encoding="utf-8"),

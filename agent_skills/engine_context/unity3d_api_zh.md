@@ -123,12 +123,6 @@ Agent、生成代码、Pipeline代码以及平台Serving代码不得执行以下
 
 运行时会话与具体游戏类型无关，不定义格斗类、FPS类或赛车类指令。原生编辑器和Player会话使用运行时桥接；Unity WebGL会话则通过浏览器画布接收键盘和指针输入。
 
-## 试玩录制- `unity.playtest.record(...)`会启动一个专用的GUI编辑器，并调用`-executeMethod GameFactory3APlayTestRecorder.Enter`：编辑器端的录制器会进入Play模式，按照指定帧率捕获游戏视图的画面，将运行时适配器通过`GetStateSnapshot()`生成的每帧状态快照写入`diagnostics.jsonl`，录制结束后便退出编辑器。相关参数包括：`output_dir`、`scene`、`scenario`或`action_plan`、`duration`、`fps`、`warmup`、`timeout`、`ffmpeg`以及`dry_run`。
-- 该录制功能不允许在同一项目中运行实时GUI编辑器（必须使用专用实例），它会根据`scene`参数确定要播放的场景，若未指定则选用`EditorBuildSettings`中的第一个条目。复用录制目录前会先清理其中的旧数据，从而避免旧帧混入新视频中。
-- 支持的动作名称包括`move`、`look`、`jump`、`attack`、`interact`、`dash`、`pause`、`restart`和`wait`。每个动作都对应一个正整数`duration_ms`；场景计划必须非空且时长不超过指定的`duration`。macOS平台实现了输入注入功能（借助`System Events`），会在`play_started.json`标记后发送真实的键盘事件；在其他平台上，若无法注入输入，录制任务会直接失败，而非在不包含玩家输入的情况下继续录制。
-- 输出文件的存放结构与其他适配器一致：`frames/`文件夹、`actions.jsonl`文件、`report.json`文件、可选的`diagnostics.jsonl`文件（引擎端的状态快照，权限较高），以及启用FFmpeg时生成的`video.mp4`文件。报告采用的架构为`gamefactory3a.unity3d.playtest_report.v1`；由于Play模式在空闲时会受到限制，`recorded_seconds`字段的取值来自编辑器的捕获日志。
-- 缺少FFmpeg并不会导致录制失败：即便没有视频文件，帧数据、动作轨迹和报告仍会被保留。
-
 ## Unity Media Director：音频、视频CG、动画CG及VFX
 
 对于由游戏玩法触发的媒体内容，可使用引擎原生的`A3GameMediaDirector`组件。跨引擎的逻辑组件名称为`media_director`，而在Unity/C#环境中，对应的文件名和公共类型如下：

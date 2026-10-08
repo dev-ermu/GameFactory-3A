@@ -8,7 +8,6 @@ the engine-neutral Mechanic Operator, and the generation-only Pipeline runner
 are implemented. A real Codex FPS artifact has compiled Editor/Game targets,
 passed generated Automation Tests, and launched with imported assets through
 separately executed UEClient validation. The earlier automatic-import
-implementation was removed from `GenMechanicOperator` because engine execution
 does not belong in Agent orchestration. A conforming existing-artifact
 Evaluator, UE execution migration, bounded repair coordinator, live
 trace/evidence capture, and platform serving remain.
@@ -115,7 +114,6 @@ Completed on August 3, 2026:
 - tracked created, modified, and deleted Agent files separately;
 - added 16 focused cross-engine Prompt, request/result, sandbox, repair,
   Duck-Typing, and Stub contract tests.
-- implemented `GenMechanicOperator(model, output_dir, run_id,
   default_game_id)`, `run()`, and `run_batch()`;
 - implemented task/requirement loading, stable project/module naming, Prompt
   rendering, validated `model.run(request)`, Agent file ownership checks,
@@ -146,7 +144,6 @@ Completed on August 4, 2026:
 - launched the prison map and retained logs proving imported player/rifle
   loading, right-hand attachment, three enemy spawns, pursuit/attack state, and
   player damage;
-- added automatic Layer A import to `GenMechanicOperator`: Editor preparation,
   controlled Editor lifecycle, native scene import, avatar/weapon import,
   Skeleton-role motion import, per-item results, and import manifest;
 - added runner `--ue-root` support through `AAAGAME_UE_ROOT`;
@@ -159,7 +156,6 @@ Architecture correction completed on August 4, 2026:
   existing UEClient implementation and validation evidence;
 - removed all Engine Adapter imports, UE project/plugin synchronization,
   descriptor import, Editor lifecycle, and execution metadata from
-  `GenMechanicOperator`;
 - reduced the Operator to Skill/Prompt/context assembly, generate/repair
   `model.run(request)`, workspace-change validation, and Agent evidence;
 - removed project/plugin/launch completeness checks from generation;
@@ -169,7 +165,6 @@ Architecture correction completed on August 4, 2026:
 - reserved `pipeline/mechanic/eval.py` for existing-artifact evaluation;
 - passed all 31 focused Mechanic Agent/Operator/runner tests and confirmed no
   `engine_adapters` or `UEClient` references remain under
-  `operators/gen_mechanic`.
 
 Still pending:
 
@@ -195,7 +190,6 @@ The current implemented generation milestone is:
 test_samples
     |
     v
-GenMechanicOperator
     |
     v
 CodexAgent
@@ -225,7 +219,6 @@ P1  Mechanic contract stabilization
     task-defined state/input/event/observation/UI schemas
 
 P2  UI Agent
-    GenUIOperator -> HUD/menu/end states -> screenshots and metadata
 
 P3  Full Game Pipeline
     Layer A assets -> Mechanic -> UI -> packaging/evaluation
@@ -295,12 +288,9 @@ Completed through August 4, 2026:
   tests_passed = 1
   tests_failed = 0
   ```
-- `python -m unittest test.test_gen_mechanic_agent_contract -v`
   passes all 17 Mechanic Agent context/contract tests;
 - a custom non-UE API Reference file passes the same request contract,
   confirming the Agent protocol does not depend on UE-specific calls.
-- `python -m unittest test.test_gen_mechanic_agent_contract
-  test.test_gen_mechanic_operator -v` passes all 31 focused Mechanic tests,
   including generate/repair persistence, Operator purity, thin generation
   runner behavior, and explicit Engine API Reference handling;
 - `pipeline/mechanic/run.py --backend stub --game
@@ -403,7 +393,6 @@ working. The next work proceeds in this order.
 1. [complete] Add one engine-neutral Skill:
 
    ```text
-   operators/gen_mechanic/skills/game_generation.md
    ```
 
 2. [complete] The Skill reads the task requirement, acceptance criteria,
@@ -429,10 +418,8 @@ working. The next work proceeds in this order.
 
 ### Phase D - Implement The Mechanic Operator [Agent orchestration complete]
 
-`GenMechanicOperator` must match the existing Operator management surface:
 
 ```python
-GenMechanicOperator(
     model,
     output_dir=None,
     run_id="default",
@@ -531,7 +518,6 @@ After the FPS Mechanic artifact is reproducible:
 
 After Phase G is complete:
 
-1. implement `GenUIOperator`, the UI Agent backend integration, prompts,
    Skills, runner, screenshots, and metadata;
 2. generate `fps_hud_001` against the stabilized Mechanic binding contract;
 3. implement the required HUD, pause, victory, and failure states;
@@ -579,9 +565,7 @@ layers, task kinds, Operators, or output directories.
 - Complete `agent_skills/engine_context/z_other_serve_func.md` after the public
   `z_other_serving` API exists. Do not document proposed APIs as implemented
   APIs.
-- Mechanic Agent skills under `operators/gen_mechanic/skills` must treat
   `ue5_api.md` as required reference context.
-- UI Agent skills under `operators/gen_ui/skills` must treat
   `z_other_serve_func.md` as required reference context for browser/platform
   frontend work. UE runtime HUD work may also use `ue5_api.md`.
 - The reference files describe callable APIs and boundaries. Per-game behavior
@@ -634,9 +618,7 @@ inside the separate Gameplay Plugin according to the user's requirement.
 ### Pipeline Placement
 
 - `pipeline/mechanic/run.py` selects tasks, loads the Agent-backed `model`,
-  injects it into `GenMechanicOperator`, batch-drives generation, and writes
   summaries.
-- `GenMechanicOperator` assembles the requirement, engine reference, Skill,
   prompts, Example context, output workspace, generate/repair Agent request,
   and Agent metadata.
 - The Agent request stays Mechanic-specific but engine-neutral. The selected
@@ -644,7 +626,6 @@ inside the separate Gameplay Plugin according to the user's requirement.
 - `pipeline/mechanic/eval.py` must read existing Mechanic artifacts and use
   public Engine Adapter APIs without importing the generation runner.
 - `pipeline/ui/run.py` performs the corresponding UI/frontend generation
-  through `GenUIOperator`.
 - Mechanic and UI outputs remain separate standard artifacts.
 - `pipeline/full_pipeline/run.py` integrates existing asset, Mechanic, and UI
   artifacts into the final playable vertical slice. It does not construct

@@ -18,7 +18,6 @@
 - **游戏玩法与界面展示相互分离**。游戏玩法示例引用`A3GameRuntime`；可选的UI示例则引用公开的游戏玩法程序集。
 - **所有游戏玩法脚本均为MonoBehaviour**，具备完整且可运行的逻辑。
 - **游戏玩法示例附带NUnit编辑模式测试**，这些测试会创建真实的`GameObject`并验证行为规则（如伤害计算、角色死亡判定、圈数计数等）。
-- **每个游戏玩法示例都包含`mechanic_contract.json`文件**，该文件采用`gamefactory3a.mechanic_contract.v1`模式，用于记录实现必须满足的行为规则。
 
 如今，竞技场格斗和赛车类示例遵循与第一人称射击示例相同的“玩法逻辑/UI”组件边界：它们的玩法逻辑模块接受通用的运行时输入，而可选的UI组件仅调用公开的玩法状态、事件和指令。
 
@@ -35,7 +34,6 @@
 │   │   ├── ArenaFighterCombat.cs
 │   │   ├── ArenaFighterAI.cs
 │   │   └── ArenaFighterGameMode.cs
-│   ├── mechanic_contract.json
 │   └── Tests/
 │       ├── ArenaFighterExample.Tests.asmdef
 │       └── ArenaFighterTests.cs
@@ -45,7 +43,6 @@
 │   ├── Scripts/
 │   │   ├── FightHUD.cs
 │   │   └── FighterHealthBar.cs
-│   └── ui_binding_manifest.json
 ├── FPSExample/
 │   ├── package.json
 │   ├── FPSExample.asmdef
@@ -57,7 +54,6 @@
 │   │   ├── FPSEnemySpawner.cs
 │   │   ├── FPSWeapon.cs
 │   │   └── FPSDoor.cs
-│   ├── mechanic_contract.json
 │   └── Tests/
 │       ├── FPSExample.Tests.asmdef
 │       └── FPSTests.cs
@@ -66,11 +62,9 @@
 │   ├── FPSUIExample.asmdef
 │   ├── Scripts/
 │   │   └── FPSArenaHUD.cs
-│   ├── ui_binding_manifest.json
 │   └── Tests/
 │       ├── FPSUIExample.Tests.asmdef
 │       ├── FPSArenaHUDTests.cs
-│       └── fixtures/mechanic_contract_fixture.json
 ├── RacingExample/
 │   ├── package.json
 │   ├── RacingExample.asmdef
@@ -79,7 +73,6 @@
 │   │   ├── RacingCheckpoint.cs
 │   │   ├── RacingLapCounter.cs
 │   │   └── RacingGameMode.cs
-│   ├── mechanic_contract.json
 │   └── Tests/
 │       ├── RacingExample.Tests.asmdef
 │       └── RacingTests.cs
@@ -87,7 +80,6 @@
     ├── package.json
     ├── RacingUIExample.asmdef
     ├── Scripts/RacingHUD.cs
-    ├── ui_binding_manifest.json
     └── Tests/
         ├── RacingUIExample.Tests.asmdef
         └── RacingHUDTests.cs

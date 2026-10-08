@@ -121,7 +121,6 @@ alone.
 When adding a second backend for an existing slot:
 
 1. match the existing signature and return type exactly;
-2. if semantics genuinely differ (mask vs. depth), the **operator's `funcs/`**
    absorbs the difference — never the model;
 3. add it to the candidate table in `<REPO_PATH>/models/README.md`.
 

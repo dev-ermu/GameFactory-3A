@@ -1,4 +1,9 @@
-"""Task-neutral helpers for outer-Agent code-generation pipelines."""
+"""Task-neutral helpers for outer-Agent pipelines.
+
+These map engines to their API reference documents and to the example projects
+that ship with each adapter. They carry no task type of their own, so they
+serve the asset pipelines as well.
+"""
 
 import re
 import importlib
@@ -21,8 +26,6 @@ EXAMPLE_REFERENCE_PURPOSES = (
     "build_configuration",
     "runtime_adapter",
     "native_test",
-    "ui_binding",
-    "engine_native_ui",
     "browser_session",
     "stream_presentation",
     "launcher_contract",
@@ -51,7 +54,6 @@ BROWSER_PLAY_EXAMPLE_PATH = (
 )
 _EXAMPLE_ROLES = (
     "mechanic_example",
-    "ui_example",
     "browser_play_example",
 )
 _ENGINE_DEFINITIONS = (
@@ -66,9 +68,6 @@ _ENGINE_DEFINITIONS = (
         },
         "primary_api": "ue5_api.md",
         "mechanic_example_roots": (
-            "engine_adapters/ue5/examples",
-        ),
-        "ui_example_roots": (
             "engine_adapters/ue5/examples",
         ),
         "browser_backend_example_roots": (
@@ -103,9 +102,6 @@ _ENGINE_DEFINITIONS = (
         "aliases": {"unity"},
         "primary_api": "unity3d_api.md",
         "mechanic_example_roots": (
-            "engine_adapters/unity3d/examples",
-        ),
-        "ui_example_roots": (
             "engine_adapters/unity3d/examples",
         ),
         "browser_backend_example_roots": (
@@ -143,9 +139,6 @@ _ENGINE_DEFINITIONS = (
         "aliases": {"godot4", "godot_engine"},
         "primary_api": "godot_api.md",
         "mechanic_example_roots": (
-            "engine_adapters/godot/examples",
-        ),
-        "ui_example_roots": (
             "engine_adapters/godot/examples",
         ),
     },
@@ -587,12 +580,6 @@ def _legacy_examples_for_role(
         if (
             role == "mechanic_example"
             and "ui" not in name
-            and "browser" not in name
-        ):
-            result.append(item)
-        elif (
-            role == "ui_example"
-            and "ui" in name
             and "browser" not in name
         ):
             result.append(item)

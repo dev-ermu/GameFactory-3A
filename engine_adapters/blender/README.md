@@ -18,7 +18,6 @@ playable session.
 | `render_preview.py` | a `bpy` interpreter | turntable / still render of an asset, headless |
 | `game/` | a `bpy` interpreter | the gameplay kit a generated mechanic is written against |
 | `examples/` | a `bpy` interpreter | genre mechanics (FPS / racing / fighting / RPG) owned by this adapter |
-| `playtest/` | host Python + a `bpy` interpreter | discover actions, drive `Controls`, write `frames/` / `video.mp4` / `report.json` |
 | `runtime/` | a `bpy` interpreter | a live session driven by JSON over UDP — spawn, move, effects, snapshot |
 | `../../scripts/import_generated_asset.py` | host Python | finds Blender, launches the importer, reads the report |
 | `../../scripts/prepare_world_asset.py` | host Python | world export → one continuous `.glb` (needs no Blender) |
@@ -42,7 +41,6 @@ implementation: it is the same `tick()` at the same fixed timestep, and a played
 session records its input so it can be re-rendered offline into the same run. See
 the two sections below.
 
-`playtest/` is unattended `--play`: discovered keys, then `report.json` + clip.
 
 ## Running
 
@@ -148,24 +146,6 @@ A run writes `gameplay.mp4`, `thumbnail.png`, `session.blend`,
 metrics and a pass/fail verdict the game computes about itself, and **the report
 is the result** — `blender --background --python x.py` exits 0 whatever the
 script did, so a missing report is a failure, not a silent success.
-
-## Playtest
-
-Discovered keys through `Controls`, not the unattended policy:
-
-```python
-from engine_adapters.blender import BlenderClient
-
-BlenderClient(
-    project_path="engine_adapters/blender/examples/FPSExample",
-).playtest.record(
-    output_dir="/tmp/blender_playtest",
-    duration=8,
-    no_render=True,
-)
-```
-
-`no_render=True` skips the Cycles clip. See `blender_api.md` § Playtest.
 
 ## Playing one (`--play`)
 

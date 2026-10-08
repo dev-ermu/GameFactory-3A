@@ -193,34 +193,6 @@ Runtime sessions are game-neutral and do not define Fighter, FPS, or Racing
 commands. Native Editor and Player sessions use the runtime bridge; Unity WebGL
 sessions receive keyboard and pointer input through the browser canvas.
 
-## Playtest Recording
-
-- `unity.playtest.record(...)` launches one dedicated GUI Editor with
-  `-executeMethod GameFactory3APlayTestRecorder.Enter`: the editor-side
-  recorder enters Play Mode, captures Game-view frames at the requested
-  rate, writes per-frame state snapshots from `GetStateSnapshot()` runtime
-  adapters into `diagnostics.jsonl`, and exits the Editor when the take
-  ends. Parameters: `output_dir`, `scene`, `scenario` or `action_plan`,
-  `duration`, `fps`, `warmup`, `timeout`, `ffmpeg`, and `dry_run`.
-- The recording refuses a live GUI Editor on the same project (a dedicated
-  instance is required) and resolves the play scene from `scene`, else the
-  first `EditorBuildSettings` entry. Take directories are cleaned before
-  reuse so stale frames never mix into a new video.
-- Supported action names are `move`, `look`, `jump`, `attack`, `interact`,
-  `dash`, `pause`, `restart`, and `wait`. Every action has a positive integer
-  `duration_ms`; scenario plans must be non-empty and fit within `duration`.
-  Input injection is implemented for macOS (`System Events`) and posts real
-  keyboard events after the `play_started.json` marker; on other platforms
-  the client fails the take rather than record without player input.
-- The output layout is shared with the other adapters: `frames/`,
-  `actions.jsonl`, `report.json`, optional `diagnostics.jsonl`
-  (engine-side state snapshots, privileged), and `video.mp4` when FFmpeg is
-  available. The report schema is
-  `gamefactory3a.unity3d.playtest_report.v1`; `recorded_seconds` uses the
-  editor capture log because Play Mode is throttled when idle.
-- Missing FFmpeg is non-fatal: frames, the action trace, and the report are
-  retained without the video.
-
 ## Unity Media Director: audio, video CG, animation CG, and VFX
 
 Use the engine-native `A3GameMediaDirector` component for media that is
@@ -276,7 +248,6 @@ the combat-only pause lock; `IsGameplayPaused` exposes the current lock state.
   game's explicit error/fallback cleanup path, then raises
   `GameplayPauseChanged(false)`.
 - The director cannot infer the correct hit window, projectile release, or
-  animation transition; those remain game-owned and require native playtest
   verification.
 
 ### Runtime evidence
@@ -299,7 +270,6 @@ Every trigger returns a `MediaEvent` with schema
 
 The record distinguishes the requested event, trigger source, native playback
 call, monotonic runtime ordering, and the registered clip/video/effect
-identity. Keep the event log with the native playtest trace; visual/audio
 success still requires observing the running Unity project. Unity game code
 should depend only on this public component surface, never on adapter-private
 registries, transports, editor scripts, or generated-output paths.

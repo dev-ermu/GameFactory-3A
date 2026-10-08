@@ -171,7 +171,6 @@ Vite会单独读取环境变量`A3GAME_DEV_HOST`和`A3GAME_DEV_PORT`；Python启
 
 `testing.run_automation_tests(*, runner='vitest', test_filter='', script='', report_path='', timeout=None, dry_run=False)`。
 
-`playtest.record(*, output_dir, url='', action_plan=None, hold=None, warmup=None, look=None,
 playwright_root=None, browser_executable=None, browsers_path=None, library_path=None, ffmpeg=None,
 duration=14.0, fps=20, width=1280, height=720, timeout=900.0, dry_run=False,
 mode='gameplay', preview=False, allow_partial_plan=False, source_hash=None)`。
@@ -991,10 +990,8 @@ after和fade参数必须为有限的非负秒数。setVisible会取消淡出效�
 ### 声明的游戏玩法计划
 
 通过`globalThis.__A3GAME_GAME__ = game`暴露宿主、输入设备及getState接口；返回可序列化的游戏玩法状态，而非THREE图形对象。
-暴露`__A3GAME_PLAYTEST__`（或game.playtestActions）以避免引入无关的通用操作。
 
 ```js
-window.__A3GAME_PLAYTEST__ = {
   warmup: 1, look: 'off',
   actions: [
     { id: 'approach', keys: ['KeyW'], duration: 2 },
@@ -1020,7 +1017,6 @@ window.__A3GAME_PLAYTEST__ = {
 
 ### 命令行工具、Python封装、模式与媒体相关说明
 
-命令行入口：`engine_adapters/three_js/playtest/record.mjs`；使用时需指定--url和--output-dir参数。
 默认分辨率为1280×720，帧率为20fps，录制时长为14秒。可通过--duration/--fps/--width/--height参数设置参数；建议使用正的偶数维度值。
 为保证Python环境与命令行工具的使用一致性，建议选择正整数作为帧率；命令行工具会验证帧率是否为正有限值，Python环境也会强制要求帧率为整数。
 其他可选参数包括：--action-plan/--hold/--warmup/--look/--playwright-root/--browser-executable/--source-hash/--self-test。
@@ -1059,10 +1055,8 @@ playwright_root目录下必须包含node_modules/playwright；其他可覆盖的
 
 ### 流水线集成边界
 
-`pipeline.code_gen.playtest.run.record_playtest`与适配器有所不同：默认参数为12秒/640×360/预热时间为0/自动调整视角；
 并非所有mode、preview、source_hash选项都会被传递。如需使用声明的计划默认值，请选用适配器。
 recorder_root对应Playwright根目录、root/browsers、root/deps/lib。
-`pipeline.code_gen.playtest.eval.evaluate_report`仅验证报告/动作/浏览器的结构，不验证媒体/哈希值/游戏玩法或预览/概览内容；authoritative_validation=False。
 
 UI视口是尺寸为正的对象/键值对，并非自动捕获。`gamefactory3a.ui_screenshot_plan.v1`会验证声明的屏幕，而非渲染后的视口覆盖范围。
 该机制要求具备schema_version、正的contract_version、匹配的游戏模块、非空的state/events/commands，以及包含public_api_paths的工作区。
@@ -1103,7 +1097,6 @@ UI视口是尺寸为正的对象/键值对，并非自动捕获。`gamefactory3a
 | `engine_adapters/three_js/runtime/sessions.py`、`engine_adapters/three_js/observe/client.py` | Python会话传递与就绪状态检查 |
 | `engine_adapters/three_js/assets/client.py`、`engine_adapters/three_js/bindings/client.py`、`engine_adapters/three_js/animation/client.py`、`engine_adapters/three_js/reflection/client.py`、`engine_adapters/three_js/preview/client.py` | 源文件导入、绑定处理、兼容性适配、元数据管理、CPU预览功能 |
 | `engine_adapters/three_js/world/client.py` | 草稿/构建/验证/发布流程的接口层；需参考其内部的模式实现来了解序列化字段的限制，不可作为公共导入项使用 |
-| `engine_adapters/three_js/testing/client.py`、`engine_adapters/three_js/playtest/client.py`、`engine_adapters/three_js/playtest/record.mjs` | 测试执行、特殊用例封装、录制功能及自测逻辑 |
 | `engine_adapters/three_js/plugin/A3GamePlayable/src/index.js`、`engine_adapters/three_js/plugin/A3GamePlayable/package.json` | 运行时导出、初始化引导、支持的包/版本协议定义 |
 | `engine_adapters/three_js/plugin/A3GamePlayable/src/data-types/runtime-types.js`、`engine_adapters/three_js/plugin/A3GamePlayable/src/interfaces/contracts.js` | 数据记录结构与动态类型协议定义 |
 | `engine_adapters/three_js/plugin/A3GamePlayable/src/components/`、`engine_adapters/three_js/plugin/A3GamePlayable/src/subsystems/` | 身份标识、输入状态组件、实体/会话生命周期管理 |
