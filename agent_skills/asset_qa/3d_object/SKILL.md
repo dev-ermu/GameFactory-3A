@@ -1,22 +1,17 @@
 # Generated Asset Review
 
-Judge whether a generated mesh is fit to ship in a browser game, from the
-same rendered sheet the orientation review uses.
+根据与方向审核相同的渲染图纸，判断生成的网格是否适合在浏览器游戏中使用。
 
-A generation model optimises for resemblance to one image. A game needs
-several other things that no image-to-3D metric measures, and every one
-of them is visible in five orthographic views. Run this immediately after
-`Gen3DObjectOperator.run_art_plan`, on the sheet at
-`result["preview_sheet"]`.
+生成模型旨在优化与某张图像的相似度。但游戏还需要其他许多图像转3D指标无法衡量的要素，而这些要素在五个正交视图中都能看到。请在`Gen3DObjectOperator.run_art_plan`执行完毕后，立即在`result["preview_sheet"]`对应的图纸上运行此流程。
 
 ## Choose The Route First
 
-Three routes produce a 3D asset. The cheapest applicable one wins:
+共有三条路径用于生成3D资产，成本最低的路径将被采用：
 
 | Route | Use when | Cost |
 |---|---|---|
-| **Spec** (`funcs/code_asset.py`) | the object is exactly describable — a crate, sign, wheel, rifle, railing | seconds, no GPU, no API key |
-| **Asset pack** (`funcs/asset_pack.py`) | a CC0 model of it already exists | seconds, one download |
+| **Spec** (`operators/gen_3d_object/funcs/code_asset.py`) | 物体可被精确描述——如箱子、标识牌、车轮、步枪、栏杆 | 仅需数秒，无需GPU，无需调用API服务 |
+| **Asset pack** (`operators/gen_3d_object/funcs/asset_pack.py`) | a CC0 model of it already exists | seconds, one download |
 | **Generate** (Tripo / Meshy / TRELLIS.2) | the surface is the point — a face, creature, tree, cloth | paid or GPU-bound, minutes |
 
 `suits_code_asset(subject)` returns `code`, `generate` or `ambiguous`. It

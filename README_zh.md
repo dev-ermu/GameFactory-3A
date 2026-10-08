@@ -1,223 +1,64 @@
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/104f765d-44aa-4880-8748-f6c02381e11d" alt="3AGameFactory" width="256" />
-</p>
-
-<p align="center">
-  <a href="https://github.com/OpenDCAI/GameFactory-3A/stargazers"><img src="https://img.shields.io/github/stars/OpenDCAI/GameFactory-3A?style=flat-square&logo=github&color=ffca28" alt="GitHub stars" /></a>
-  <a href="https://github.com/OpenDCAI/GameFactory-3A/network/members"><img src="https://img.shields.io/github/forks/OpenDCAI/GameFactory-3A?style=flat-square&logo=github&color=90a4ae" alt="GitHub forks" /></a>
-  <a href="https://github.com/OpenDCAI/GameFactory-3A/issues"><img src="https://img.shields.io/github/issues/OpenDCAI/GameFactory-3A?style=flat-square&logo=github" alt="GitHub issues" /></a>
-  <a href="https://github.com/OpenDCAI/GameFactory-3A/pulls"><img src="https://img.shields.io/github/issues-pr/OpenDCAI/GameFactory-3A?style=flat-square&logo=github" alt="Pull requests" /></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg?style=flat-square" alt="License: Apache 2.0" /></a>
-  <img src="https://img.shields.io/badge/Engines-UE5%20%7C%20Blender%20%7C%20Unity%20%7C%20Godot%20%7C%20three.js-6a4cff?style=flat-square" alt="支持的引擎" />
-  <img src="https://img.shields.io/badge/Assets-Image%20%7C%203D%20%7C%20Motion%20%7C%20Audio%20%7C%20CG%20Video-00897b?style=flat-square" alt="资产能力覆盖" />
-</p>
-
 # 3AGameFactory
 
-**3AGameFactory 让 Coding Agent 根据游戏需求生成可用于游戏构建的资产与引擎代码。**
+**3AGameFactory让Coding Agent根据游戏需求生成可用于游戏构建的资产与引擎代码。**
 
-> **3AGameFactory 是一个全面的开源 3A 游戏生成 Skill 与资产框架。** 它覆盖图片、3D 资产、动作、音频与 CG 视频生成，并支持使用 **UE5、Blender、Unity、Godot 4 和 three.js** 构建游戏。
+全面开源，包含游戏生成Skill与资产框架。**它覆盖图片、3D 资产、动作、音频与 CG 视频生成**，并支持使用UE5、Blender、Unity、Godot 4 和 three.js构建游戏。
 
-<p align="center">
-  <b><a href="#quick-start">快速开始</a></b>
-  ·
-  <a href="README.md">English</a>
-</p>
+本项目原地址：<https://github.com/OpenDCAI/GameFactory-3A>
 
 ---
 
-## 游戏演示
+## 一、游戏演示
 
-以下是 3AGameFactory 生成的不同美术风格、不同视角游戏的实机操作录屏。
+原项目连接有使用AI生成的游戏演示，可参考原链接。
 
-### Unity
+## 二、快速开始
 
-对战、FPS 与赛车游戏：对战人物全部由 Meshy 生成，并使用我们自己的 Puppeteer + MoMask 完成绑骨与动作；FPS 的枪械与赛车游戏的车辆由 Hunyuan3D 生成，其人物与动作来自 Mixamo，场景则取自 Unity 资产库。
+3AGameFactory由Coding Agent驱动，它读取本项目的Skills并调用相应Pipeline，例如：
 
-<table>
-  <tr>
-    <td width="33%">
-      <video src="https://github.com/user-attachments/assets/5a090980-1b88-4913-a92d-1e7fb6745a91" width="100%" controls muted playsinline>
-      </video>
-    </td>
-    <td width="33%">
-      <video src="https://github.com/user-attachments/assets/79e33a78-79e0-4373-bec9-853d55a4a38c" width="100%" controls muted playsinline>
-      </video>
-    </td>
-    <td width="33%">
-      <video src="https://github.com/user-attachments/assets/4c6b7937-2e3d-4609-b4d2-5f9109a1f9a8" width="100%" controls muted playsinline>
-      </video>
-    </td>
-  </tr>
-</table>
+* [Codex](https://github.com/openai/codex)
+* [Claude Code](https://github.com/anthropics/claude-code) 
+* [Gemini CLI](https://github.com/google-gemini/gemini-cli)
 
-### UE5
+给出的3个例子都是终端形式。
 
-对战、RPG 与 FPS 游戏：对战中我方操控人物，以及 RPG 中的人物、石碑与宝箱由 Meshy 生成，FPS 的枪械由 Hunyuan3D 生成；其余人物与全部动作来自 Mixamo 等开源资产，场景均为开源资产。
+### 2.1 使用方法
 
-<table>
-  <tr>
-    <td width="33%"><video src="https://github.com/user-attachments/assets/c7c0fbfe-cfbc-4a10-b279-c666ae1364da" width="100%" controls muted playsinline></video></td>
-    <td width="33%"><video src="https://github.com/user-attachments/assets/810ced06-7c0e-4e74-a0f5-588c9cad8d1e" width="100%" controls muted playsinline></video></td>
-    <td width="33%"><video src="https://github.com/user-attachments/assets/8f90cc59-548a-4cd9-a3a8-7d8c4e2e412b" width="100%" controls muted playsinline></video></td>
-  </tr>
-</table>
-
-### Godot 4
-
-下方演示由 Meshy 生成的物体与 Godot 原有资产结合构建。
-
-<table>
-  <tr>
-    <td width="33%">
-      <video src="https://github.com/user-attachments/assets/b02e9b45-aedb-4b62-9e5e-ec5c6534bc6a" width="100%" controls muted playsinline></video>
-    </td>
-    <td width="33%">
-      <video src="https://github.com/user-attachments/assets/532c117c-b5b7-4c14-9af2-e198786b93ea" width="100%" controls muted playsinline></video>
-    </td>
-    <td width="33%">
-      <video src="https://github.com/user-attachments/assets/c31aeb50-f306-47bf-8cf4-04d1bfab57cf" width="100%" controls muted playsinline></video>
-    </td>
-  </tr>
-</table>
-
-### Blender
-
-对战与赛车游戏均使用下载的简单资产；探索游戏与 FPS 游戏则由下载的场景贴图与 Meshy 生成的物体实现。
-
-<table>
-  <tr>
-    <td width="33%">
-      <video src="https://github.com/user-attachments/assets/f2341548-e484-40fa-9b03-a63ff9f4eee8" width="100%" controls muted playsinline></video>
-    </td>
-    <td width="33%">
-      <video src="https://github.com/user-attachments/assets/0c686db2-2ae4-4d3e-9aeb-311bf8616267" width="100%" controls muted playsinline></video>
-    </td>
-    <td width="33%">
-      <video src="https://github.com/user-attachments/assets/0ae06144-28f1-459c-b418-10ef1dc59ae4" width="100%" controls muted playsinline></video>
-    </td>
-  </tr>
-</table>
-
-### three.js
-
-下方演示依次展示对战游戏、RPG 探索游戏和赛车游戏：先由 **Claude5-Ops**
-生成可运行版本，再由 **GPT6-Astra** 在其基础上进行更新，以下为更新后的效果。
-
-<table>
-  <tr>
-    <td width="33%">
-      <video src="https://github.com/user-attachments/assets/aa6375a2-dc32-4fb9-a74b-115b7086e3c3" width="100%" controls muted playsinline></video>
-    </td>
-    <td width="33%">
-      <video src="https://github.com/user-attachments/assets/3660a593-d739-4faf-ae70-5b855b74ff1f" width="100%" controls muted playsinline></video>
-    </td>
-    <td width="33%">
-      <video src="https://github.com/user-attachments/assets/9c30ceb3-dc56-4f80-b747-ea2d1daaa317" width="100%" controls muted playsinline></video>
-    </td>
-  </tr>
-</table>
-
-## CG 视频演示
-
-下方演示包括 F1 赛车游戏开场、奇幻探索 RPG 中段剧情、反恐战术 FPS 宣传片，
-以及双人对战游戏的大招演出。
-
-> 演示使用 [MiniMax H3](https://huggingface.co/Comfy-Org/MiniMax-H3)
-> 以 720P 本地生成。如有需要，可选用更高本地分辨率或 Seedance 等云端 API
-> 模型，可能获得更优效果，但成本也更高。
-
-<table>
-  <tr>
-    <td width="50%"><video src="https://github.com/user-attachments/assets/02bfe9fe-f5bf-46f2-81ab-371c57120b42" width="100%" controls muted playsinline></video></td>
-    <td width="50%"><video src="https://github.com/user-attachments/assets/4408ca34-016b-4291-a282-2219abd42192" width="100%" controls muted playsinline></video></td>
-  </tr>
-  <tr>
-    <td width="50%"><video src="https://github.com/user-attachments/assets/3ea93ea3-050a-44a4-a326-868943d2950e" width="100%" controls muted playsinline></video></td>
-    <td width="50%"><video src="https://github.com/user-attachments/assets/1e6d59a1-d0f2-4bf5-bfb6-70679e253760" width="100%" controls muted playsinline></video></td>
-  </tr>
-</table>
-
----
-
-<a id="quick-start"></a>
-
-## 快速开始：让 Coding Agent 生成游戏
-
-3AGameFactory 由 Coding Agent 驱动，它读取本项目的 Skills 并调用相应 Pipeline，
-例如 [Codex](https://github.com/openai/codex)、
-[Claude Code](https://github.com/anthropics/claude-code) 或
-[Gemini CLI](https://github.com/google-gemini/gemini-cli)。
-
-```text
-1. 打开 Coding Agent，例如 Codex、Claude Code（CC）或其他兼容 Agent。
+1. 打开Coding Agent，例如Codex、Claude Code或其它兼容Agent。
 2. cd GameFactory-3A
-3. 告诉 Agent 你的游戏需求，并要求它先阅读 agent_skills/setting_overview.md。
-```
+3. 告诉Agent你的游戏需求，并要求它先阅读agent_skills/setting_overview.md。
 
-<p><strong><span style="color: #d1242f;">重要提示</span></strong><br>
-`agent_skills/setting_overview.md` 是使用 3AGameFactory 生成资产、玩法、UI
-和特定引擎游戏时的入口文档。它会将 Agent 路由到对应的资产 Skill 和引擎
-API 上下文。
+### 2.2 <strong><span style="color: #d1242f;">重要提示</span></strong>
 
-### 配置：只有一个地方
+`agent_skills/setting_overview.md`是使用3AGameFactory生成资产、玩法、UI和特定引擎游戏时的入口文档。它会将Agent路由到对应的资产Skill和引擎API上下文。
 
-所有配置项——云端凭证、API 根地址、各任务用哪个后端、缓存与输出目录——都从
-**项目根目录的 `.env`** 读取，由根目录的 `config.py` 统一加载。
+### 2.3 配置项
 
-```text
-1. cp .env.example .env
-2. 编辑 .env，填写你要用的服务商：
-     TRIPO_API_BASE / TRIPO_API_KEY          3D 物体（Tripo）
-     MESHY_API_BASE / MESHY_API_KEY          3D 物体（Meshy，可出 FBX）
-     ARK_API_BASE   / ARK_API_KEY            图像 Seedream + 视频 Seedance
-     SEED_AUDIO_API_BASE / SEED_AUDIO_API_KEY  对白 + 音效
-     MINIMAX_API_BASE    / MINIMAX_API_KEY   视频 Hailuo
-     TOKENHUB_API_BASE   / TOKENHUB_API_KEY  云端绑骨 / 动画
-3. 在 .env 里把要用的槽位切到云端（默认是本地路线）：
-     AAAGF_3D_BACKEND=tripo
-     TPOSE_GEN_BACKEND=seedream
-     AAAGF_DIALOGUE_BACKEND=seed_audio
-     AAAGF_SOUND_EFFECT_BACKEND=seed_audio
-     GAMEFACTORY3A_VIDEO_BACKEND=seedance
-```
+我们所有的配置项都在`.env`文件中进行配置，也可以通过环境变量。由于配置项过多，通过`.env`文件配置更加方便管理。
 
-**API 根地址是必填项，没有默认值。** 公开端点并非在所有网络下都可访问，
-静默回退只会在第一次计费调用时才失败，所以缺失时直接报错并给出 `.env` 写法。
-Pipeline 的 runner 会在加载任何模型之前调用 `require_cloud_or_exit()`，凭证缺失
-时立刻中断（退出码 2），而不是等到任务跑到一半才失败。
+#### 云端环境
 
-本地路线仍需要 CUDA GPU、数十 GB 显存与磁盘。本机不满足条件时请改走云端：
-把对应槽位开关切到云端后端，并按上面的要求把该服务商的三项配齐。
+将原项目进行了改造，原项目会优先考虑在本地运行大模型服务，然后调用。但是大部分人的机器是没有GPU，20G显存的，所以我们考虑将原项目本地运行大模型的逻辑全部删除。调用服务商的大模型服务。
 
-### 为 3AGameFactory 框架贡献代码
-
-这与“使用框架生成游戏”是两条独立路径。若要新增或修改模型封装、Operator
-或 Pipeline Runner，请从
-[`agent_skills/develop_harness/README.md`](agent_skills/develop_harness/README.md)
-开始，并先运行其中定义的 CPU smoke harness，再使用模型权重或 GPU。
+**API根地址，API key是必填项，自行找到对应服务商进行申请**。
 
 ---
 
-<a id="capabilities"></a>
-
-## 3AGameFactory 能做什么
+## 三、3AGameFactory能做什么？
 
 | 能力 | 产物 | 主要 Pipeline 位置 |
 |---|---|---|
 | 图片与 T-pose 预处理 | 源图像、角色可用输入 | `pipeline/assets_gen/gen_tpose_image/` |
-| 3D 物体生成 | 道具、角色、武器与可复用网格 | `pipeline/assets_gen/gen_3d_object/` |
-| 3D 场景生成 | 重建的室内场景或组合式环境 | `pipeline/assets_gen/gen_3d_scene/` |
+| 3D物体生成 | 道具、角色、武器与可复用网格 | `pipeline/assets_gen/gen_3d_object/` |
+| 3D场景生成 | 重建的室内场景或组合式环境 | `pipeline/assets_gen/gen_3d_scene/` |
 | 动作生成 | 骨骼、生成动作、重定向动画片段 | `pipeline/assets_gen/gen_motion/` |
 | 音频生成 | 对话、音效、环境声与 WAV 资产 | `pipeline/assets_gen/gen_audio/` |
-| CG 视频生成 | 文本、首帧、首尾帧、参考图驱动的 MP4 | `pipeline/assets_gen/gen_cg_video/` |
+| CG视频生成 | 文本、首帧、首尾帧、参考图驱动的 MP4 | `pipeline/assets_gen/gen_cg_video/` |
 | 玩法生成 | 引擎原生的机制与运行时行为 | `pipeline/code_gen/gen_mechanic/` |
 | UI 生成 | HUD、菜单、界面与交互流程 | `pipeline/code_gen/gen_ui/` |
 | 完整游戏切片 | 资产、玩法、UI 与评测的协同结果 | 由 Agent 依据 `agent_skills/setting_overview.md` 编排 |
 
-<a id="engines"></a>
-
-### 支持的游戏构建引擎
+### 3.1 支持的游戏构建引擎
 
 | 引擎 | Agent 上下文 | 参考实现 |
 |---|---|---|
@@ -229,9 +70,7 @@ Pipeline 的 runner 会在加载任何模型之前调用 `require_cloud_or_exit(
 
 ---
 
-<a id="layout"></a>
-
-## 项目目录
+## 四、项目结构
 
 ```text
 GameFactory-3A/
@@ -256,38 +95,8 @@ GameFactory-3A/
 └── third_party/                # 检出的外部仓库，例如 trimesh 与引擎材质/资产库
 ```
 
-生成产物位于 `test_data/outputs/`，并按照游戏、运行、任务类别和任务 ID
+生成产物位于`test_data/outputs/`，并按照游戏、运行、任务类别和任务 ID
 组织。Agent 与贡献者应使用 `pipeline/common/paths.py`，不要手工拼接输出路径。
-
-## 加入我们的社区
-
-欢迎加入我们的微信群，与我们交流项目使用、开发相关问题以及反馈建议。
-
-<p align="center">
-  <img width="396" height="396" alt="微信群二维码" src="https://github.com/user-attachments/assets/dffb9c54-cd72-449a-872d-27ecca0fa1c9" />
-</p>
-
-<p align="center">
-  扫描二维码加入微信群
-</p>
-
-> 如果二维码失效，请在 GitHub Issues 中留言，我们会及时更新。
-
----
-
-<a id="citation"></a>
-
-## 引用
-
-```bibtex
-@misc{gamefactory3a,
-  title        = {3AGameFactory: Open-Source 3A Game Generation Skills and Asset Framework},
-  author       = {OpenDCAI},
-  year         = {2026},
-  howpublished = {\url{https://github.com/OpenDCAI/GameFactory-3A}},
-  note         = {Open-source software repository}
-}
-```
 
 ---
 
