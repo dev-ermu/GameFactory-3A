@@ -65,9 +65,8 @@ class SkySegmentationModel(BaseToolModel):
         """
         Args:
             model_path: Path to `skyseg.onnx`. Downloaded from the Hub when None.
-            device: "cuda" selects the ONNX Runtime CUDA provider and silently
-                falls back to CPU if it is unavailable. The network is small
-                enough that CPU is usually fine.
+            device: 保留以维持接口一致。推理固定走 ONNX Runtime 的 CPU
+                provider——这个网络足够小，引入 CUDA provider 不划算。
             input_size: (width, height) the image is resized to for inference.
             lazy: Defer loading until the first call.
         """
@@ -87,13 +86,9 @@ class SkySegmentationModel(BaseToolModel):
             path = hf_hub_download(HF_REPO, HF_FILENAME)
             self.model_path = path
 
-        providers = ["CPUExecutionProvider"]
-        if self.device.startswith("cuda"):
-            available = onnxruntime.get_available_providers()
-            if "CUDAExecutionProvider" in available:
-                providers.insert(0, "CUDAExecutionProvider")
-
-        self.model = onnxruntime.InferenceSession(path, providers=providers)
+        self.model = onnxruntime.InferenceSession(
+            path, providers=["CPUExecutionProvider"]
+        )
         self._input_name = self.model.get_inputs()[0].name
         # The network is U2Net-shaped and emits one map per decoder stage; the
         # first is the fused prediction and the rest are deep-supervision heads.

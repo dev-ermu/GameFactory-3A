@@ -19,8 +19,7 @@ Full output tree::
             ├── assets/
             │   ├── 3d_object/<task_id>/       # model.glb        + meta.json
             │   ├── tpose/<task_id>/           # tpose_fg.png     + meta.json
-            │   ├── 3d_scene/<task_id>/
-            │   ├── motion/<task_id>/
+                        │   ├── motion/<task_id>/
             │   ├── cg_video/<task_id>/
             │   └── audio/<task_id>/            # dialogue / sound-effect audio + meta.json
             ├── mechanic/<task_id>/            # engine project + demo_outputs/ + launch.sh
@@ -86,7 +85,6 @@ TASK_LAYER: dict[str, str] = {
     # Layer A — asset generation
     "3d_object": "assets",
     "tpose": "assets",
-    "3d_scene": "assets",
     "motion": "assets",
     "cg_video": "assets",
     "audio": "assets",
@@ -101,7 +99,6 @@ TASK_LAYER: dict[str, str] = {
 TASK_INPUT_DIR: dict[str, str] = {
     "3d_object": "3D_object",
     "tpose": "tpose",
-    "3d_scene": "3D_scene",
     "motion": "motion",
     "cg_video": "cg_video",
     "audio": "audio",
@@ -114,7 +111,6 @@ TASK_INPUT_DIR: dict[str, str] = {
 TASK_JSONL: dict[str, str] = {
     "3d_object": "object_tasks.jsonl",
     "tpose": "tpose_tasks.jsonl",
-    "3d_scene": "scene_tasks.jsonl",
     "motion": "motion_tasks.jsonl",
     "cg_video": "cg_tasks.jsonl",
     "audio": "audio_tasks.jsonl",
@@ -127,7 +123,6 @@ TASK_JSONL: dict[str, str] = {
 TASK_COLLECT_JSONL: dict[str, str] = {
     "3d_object": "3D_object_gen_collect.jsonl",
     "tpose": "tpose_gen_collect.jsonl",
-    "3d_scene": "3D_scene_gen_collect.jsonl",
     "motion": "motion_gen_collect.jsonl",
     "cg_video": "cg_video_collect.jsonl",
     "audio": "audio_gen_collect.jsonl",

@@ -61,13 +61,12 @@ class Settings(BaseSettings):
     output_root: Path = Field(REPO_ROOT / "test_data" / "outputs", validation_alias="AAAGF_OUTPUT_ROOT")
     api_cache: str | None = Field(None, validation_alias=_a("AAAGF_API_CACHE", "GAMEFACTORY3A_API_CACHE"))
 
-    # 任务槽位的后端开关
-    backend_3d_object: str = Field("trellis2", validation_alias="AAAGF_3D_BACKEND")
-    backend_tpose: str = Field("qwen_edit", validation_alias="TPOSE_GEN_BACKEND")
-    backend_audio_dialogue: str = Field("qwen3_tts", validation_alias="AAAGF_DIALOGUE_BACKEND")
-    backend_audio_sound_effect: str = Field("woosh", validation_alias="AAAGF_SOUND_EFFECT_BACKEND")
+    # 任务槽位的后端开关。**只支持云端 API**——本地权重后端已全部移除。
+    backend_3d_object: str = Field("tripo", validation_alias="AAAGF_3D_BACKEND")
+    backend_tpose: str = Field("seedream", validation_alias="TPOSE_GEN_BACKEND")
+    backend_audio_dialogue: str = Field("seed_audio", validation_alias="AAAGF_DIALOGUE_BACKEND")
+    backend_audio_sound_effect: str = Field("seed_audio", validation_alias="AAAGF_SOUND_EFFECT_BACKEND")
     backend_cg_video: str = Field("seedance", validation_alias="GAMEFACTORY3A_VIDEO_BACKEND")
-    backend_3d_scene: str = Field("worldmirror", validation_alias="AAAGF_SCENE_BACKEND")
 
     # 云服务商凭证与模型名称
     tripo_api_base: str = ""

@@ -405,32 +405,6 @@ class GodotProjectClient:
             payload=payload,
         ).to_dict()
 
-    def assemble_modules(
-        self,
-        mechanic_artifact: str | Path,
-        ui_artifact: str | Path,
-        output_project: str | Path,
-        *,
-        overwrite: bool = False,
-        dry_run: bool = False,
-    ) -> dict[str, Any]:
-        """Assemble independent Mechanic and UI artifacts into a product project."""
-        from .assembly import assemble_godot_modules
-
-        try:
-            return assemble_godot_modules(
-                mechanic_artifact,
-                ui_artifact,
-                output_project,
-                overwrite=overwrite,
-                dry_run=dry_run,
-            )
-        except Exception as exc:
-            return GodotOperationResult.failure(
-                "project.assemble_modules",
-                f"{type(exc).__name__}: {exc}",
-            ).to_dict()
-
     def validate(self, *, check_engine: bool = True) -> dict[str, Any]:
         project_dir = self._config.project_dir
         project_file = self._config.project_file

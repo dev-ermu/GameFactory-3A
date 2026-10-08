@@ -18,7 +18,6 @@ from .plugin import UEPluginClient
 from .reflection import UEReflectionClient
 from .runtime import UERuntimeClient
 from .testing import UETestingClient
-from .playtest import UEPlaytestClient
 from .world import UEWorldClient
 
 
@@ -66,7 +65,6 @@ class UEClient:
         self.project = UEProjectClient(self._config)
         self.build = UEBuildClient(self._config)
         self.testing = UETestingClient(self._config)
-        self.playtest = UEPlaytestClient(self._config)
         self.plugin = UEPluginClient(self._config)
         self.assets = UEAssetsClient(
             self._config,

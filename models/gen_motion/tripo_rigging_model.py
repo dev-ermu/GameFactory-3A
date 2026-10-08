@@ -160,7 +160,7 @@ class _TripoCloudBase:
     def __init__(
         self,
         model_path: str = "",      # [CONTRACT-DEVIATION C1]
-        device: str = "cuda",      # [CONTRACT-DEVIATION C2]
+        device: str = "cpu",      # [CONTRACT-DEVIATION C2]
         *,
         api_key: Optional[str] = None,
         timeout: int = 1800,

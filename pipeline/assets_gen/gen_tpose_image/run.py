@@ -3,7 +3,7 @@ pipeline/assets_gen/gen_tpose_image/run.py
 
 T-pose image generation demo runner.
 
-Loads QwenEditModel + RMBGModel (or DepthAnythingModel), injects them into
+Loads SeedreamModel (cloud API) + DepthAnythingModel, injects them into
 GenTPoseImageOperator, reads tasks from
 test_data/test_samples/tpose_gen_collect.jsonl (or a single game's
 tpose_tasks.jsonl), and writes PNG outputs grouped per game project:
@@ -20,10 +20,6 @@ Usage:
     # Fresh timestamped run dir instead of overwriting <game>/default/
     python pipeline/assets_gen/gen_tpose_image/run.py --run-id auto
 
-    # Override model checkpoints
-    python pipeline/assets_gen/gen_tpose_image/run.py \
-        --gen-ckpt Qwen/Qwen-Image-Edit-2511 \
-        --mask-ckpt briaai/RMBG-1.4
 
     # Legacy flat output (bypasses the per-game layout; debugging only)
     python pipeline/assets_gen/gen_tpose_image/run.py --out-dir outputs/tpose
@@ -52,23 +48,18 @@ TASK_KIND = "tpose"
 
 # Default model identifiers. The selected backend decides which one is used
 # when --gen-ckpt is omitted.
-DEFAULT_GEN_CKPT = "Qwen/Qwen-Image-Edit-2511"
 DEFAULT_SEEDREAM_MODEL = "doubao-seedream-5-0-260128"
-DEFAULT_MASK_CKPT = "briaai/RMBG-1.4"
+DEFAULT_MASK_CKPT = "depth-anything/Depth-Anything-V2-Small-hf"
 DEFAULT_TASKS = paths.collect_jsonl(TASK_KIND)
 
 
 def load_gen_model(
     ckpt: str | None = None,
-    device: str = "cuda",
-    backend: str = "qwen_edit",
+    device: str = "cpu",
+    backend: str = "seedream",
     **model_kwargs,
 ):
-    """Load the selected image-generation backend.
-
-    ``ckpt=None`` chooses a backend-specific default, preventing a Seedream run
-    from accidentally sending the Qwen HuggingFace repo id to the Ark API.
-    """
+    """Load the selected image-generation backend."""
     if backend == "seedream":
         from models.gen_image.seedream_model import SeedreamModel
         model_id = ckpt or DEFAULT_SEEDREAM_MODEL
@@ -78,30 +69,17 @@ def load_gen_model(
             device=device,
             **model_kwargs,
         )
-    if backend == "qwen_edit":
-        from models.gen_image.qwen_edit_model import QwenEditModel
-        model_id = ckpt or DEFAULT_GEN_CKPT
-        print(f"[run] Loading QwenEditModel from: {model_id}")
-        return QwenEditModel(
-            model_path=model_id,
-            device=device,
-            **model_kwargs,
-        )
     raise ValueError(
-        f"unsupported image generation backend {backend!r}; "
-        "expected 'qwen_edit' or 'seedream'"
+        f"unsupported image generation backend {backend!r}; expected 'seedream'"
     )
 
 
-def load_mask_model(ckpt: str, device: str = "cuda", model_type: str = "rmbg"):
-    """Load the foreground / matting model. `model_type` ∈ {"rmbg", "depth"}."""
-    if model_type == "depth":
-        from models.tools.image_matting.depth_anything_model import DepthAnythingModel
-        print(f"[run] Loading DepthAnythingModel from: {ckpt}")
-        return DepthAnythingModel(model_path=ckpt, device=device)
-    from models.tools.image_matting.rmbg_model import RMBGModel
-    print(f"[run] Loading RMBGModel from: {ckpt}")
-    return RMBGModel(model_path=ckpt, device=device)
+def load_mask_model(ckpt: str, device: str = "cpu"):
+    """Load the foreground / matting model (DepthAnything)."""
+    from models.tools.image_matting.depth_anything_model import DepthAnythingModel
+
+    print(f"[run] Loading DepthAnythingModel from: {ckpt}")
+    return DepthAnythingModel(model_path=ckpt, device=device)
 
 
 def make_operator(
@@ -150,17 +128,15 @@ def main():
     parser = argparse.ArgumentParser(description="Run T-pose generation.")
     parser.add_argument(
         "--gen-backend",
-        default=os.environ.get("TPOSE_GEN_BACKEND", "qwen_edit"),
-        choices=["qwen_edit", "seedream"],
-        help="Image-gen backend: 'qwen_edit' (local) or 'seedream' (cloud API)",
+        default=os.environ.get("TPOSE_GEN_BACKEND", "seedream"),
+        choices=["seedream"],
+        help="Image-gen backend. Only the Seedream cloud API is available.",
     )
     parser.add_argument(
         "--gen-ckpt",
         default=None,
         help="Model checkpoint/version; omitted selects the backend-specific env/default",
     )
-    parser.add_argument("--mask-ckpt", default=os.environ.get("RMBG_CKPT",       DEFAULT_MASK_CKPT))
-    parser.add_argument("--mask-type", default="rmbg", choices=["rmbg", "depth"])
     parser.add_argument("--game",      default=None,
                         help=f"Game project id. Known: {paths.list_games() or '<none>'}")
     parser.add_argument("--tasks",     default=None,
@@ -169,7 +145,8 @@ def main():
                         help="Run directory name; 'auto' for a timestamp")
     parser.add_argument("--out-dir",   default=None,
                         help="Legacy flat output dir; bypasses the per-game layout")
-    parser.add_argument("--device",    default="cuda")
+    parser.add_argument("--device",    default="cpu",
+                        help="推理设备。生成走云端 API，此值只作用于本地掩码模型")
     # Single-demo mode
     parser.add_argument("--image",       default=None, help="Path to a single image (demo mode)")
     parser.add_argument("--task-id",     default="demo")
@@ -181,15 +158,7 @@ def main():
 
     run_id = paths.new_run_id() if args.run_id == "auto" else args.run_id
 
-    gen_ckpt = args.gen_ckpt
-    if gen_ckpt is None:
-        # 只有云端 seedream 后端的模型 id 可由 `.env` 覆盖；本地 qwen_edit 后端
-        # 固定用模块常量 `DEFAULT_GEN_CKPT`（本场景不接受环境变量传入权重路径）。
-        gen_ckpt = (
-            config.settings.seedream_model
-            if args.gen_backend == "seedream"
-            else None
-        )
+    gen_ckpt = args.gen_ckpt or config.settings.seedream_model
 
     # 在加载任何东西之前先失败：云端生成后端需要 `.env` 里的凭证。
     if args.gen_backend == "seedream":
@@ -201,7 +170,7 @@ def main():
         device=args.device,
         backend=args.gen_backend,
     )
-    mask_model = load_mask_model(args.mask_ckpt, device=args.device, model_type=args.mask_type)
+    mask_model = load_mask_model(DEFAULT_MASK_CKPT, device=args.device)
     operator = make_operator(gen_model, mask_model, output_dir=args.out_dir,
                              run_id=run_id, default_game_id=args.game)
 

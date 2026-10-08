@@ -52,16 +52,6 @@ def build_parser() -> argparse.ArgumentParser:
     validate = commands.add_parser("validate-project")
     validate.add_argument("--no-engine", action="store_true")
 
-    assemble = commands.add_parser(
-        "assemble-modules",
-        help="Compose independent Mechanic and UI artifacts into a Godot product project",
-    )
-    assemble.add_argument("--mechanic-artifact", required=True)
-    assemble.add_argument("--ui-artifact", required=True)
-    assemble.add_argument("--output-project", required=True)
-    assemble.add_argument("--overwrite", action="store_true")
-    assemble.add_argument("--dry-run", action="store_true")
-
     import_asset = commands.add_parser("import-asset")
     import_asset.add_argument("--source-json", default="")
     import_asset.add_argument("--game-id", default="")
@@ -105,16 +95,6 @@ def build_parser() -> argparse.ArgumentParser:
     game.add_argument("--headless", action="store_true")
     game.add_argument("--dry-run", action="store_true")
 
-    playtest = commands.add_parser("playtest")
-    playtest.add_argument("--output-dir", required=True)
-    playtest.add_argument("--scenario", default=None)
-    playtest.add_argument("--duration", type=float, default=12.0)
-    playtest.add_argument("--fps", type=int, default=20)
-    playtest.add_argument("--width", type=int, default=640)
-    playtest.add_argument("--height", type=int, default=360)
-    playtest.add_argument("--timeout", type=float, default=120.0)
-    playtest.add_argument("--no-headless", action="store_true")
-    playtest.add_argument("--dry-run", action="store_true")
     return parser
 
 
@@ -140,14 +120,6 @@ def main(argv: list[str] | None = None) -> int:
             )
         elif args.command == "validate-project":
             result = client.project.validate(check_engine=not args.no_engine)
-        elif args.command == "assemble-modules":
-            result = client.project.assemble_modules(
-                args.mechanic_artifact,
-                args.ui_artifact,
-                args.output_project,
-                overwrite=args.overwrite,
-                dry_run=args.dry_run,
-            )
         elif args.command == "import-asset":
             result = client.assets.import_asset(
                 _source(args),
@@ -186,18 +158,6 @@ def main(argv: list[str] | None = None) -> int:
         elif args.command == "launch-editor":
             result = client.runtime.launch_editor(
                 scene_path=args.scene, dry_run=args.dry_run
-            )
-        elif args.command == "playtest":
-            result = client.playtest.record(
-                output_dir=args.output_dir,
-                scenario=args.scenario,
-                duration=args.duration,
-                fps=args.fps,
-                width=args.width,
-                height=args.height,
-                timeout=args.timeout,
-                headless=not args.no_headless,
-                dry_run=args.dry_run,
             )
         else:
             result = client.runtime.launch_game(

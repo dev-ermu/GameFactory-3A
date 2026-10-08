@@ -23,11 +23,11 @@ from PIL import Image
 class BaseToolModel(ABC):
     """Abstract base class for tool / utility models."""
 
-    def __init__(self, model_path: str, device: str = "cuda", lazy: bool = False):
+    def __init__(self, model_path: str, device: str = "cpu", lazy: bool = False):
         """
         Args:
             model_path: Local path or HuggingFace hub id of the model.
-            device:     Inference device, e.g. "cuda" / "cpu".
+            device:     Inference device. This project runs on CPU.
             lazy:       If True, defer weight loading until first `infer` call.
         """
         self.model_path = model_path
@@ -63,7 +63,7 @@ class BaseToolModel(ABC):
         return self.infer(image, **kwargs)
 
     def unload(self) -> None:
-        """Release model references and cached device memory. Safe to call repeatedly."""
+        """Release model references. Safe to call repeatedly."""
         model = getattr(self, "model", None)
         if model is not None:
             try:
@@ -77,9 +77,3 @@ class BaseToolModel(ABC):
 
         self._loaded = False
         gc.collect()
-        try:
-            import torch
-        except ImportError:
-            return
-        if torch.cuda.is_available():
-            torch.cuda.empty_cache()

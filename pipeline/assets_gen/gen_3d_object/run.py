@@ -3,23 +3,22 @@ pipeline/assets_gen/gen_3d_object/run.py
 
 3D object generation demo runner.
 
-Loads Trellis2Model, injects it into Gen3DObjectOperator, reads tasks from
+Loads a cloud backend, injects it into Gen3DObjectOperator, reads tasks from
 test_data/test_samples/3D_object_gen_collect.jsonl (or a single game's
 object_tasks.jsonl), and writes GLB outputs grouped per game project:
 
     test_data/outputs/<game_id>/<run_id>/assets/3d_object/<task_id>/model.glb
 
-Three interchangeable backends fill the model slot (model_require.md R6):
+Two interchangeable cloud backends fill the model slot (model_require.md R6):
 
-    --backend trellis2   local TRELLIS.2 weights, needs a GPU        (default)
-    --backend tripo      Tripo3D cloud API,  needs $TRIPO_API_KEY
+    --backend tripo      Tripo3D cloud API,  needs $TRIPO_API_KEY  (default)
     --backend meshy      Meshy cloud API,    needs $MESHY_API_KEY
 
 Usage:
     # Run all tasks in the default jsonl
     python pipeline/assets_gen/gen_3d_object/run.py
 
-    # Cloud API instead of local weights (no GPU required)
+    # Tripo instead of the default Meshy
     export TRIPO_API_KEY=...
     python pipeline/assets_gen/gen_3d_object/run.py --backend tripo \
         --game gameA_cyberpunk_shooter --run-id auto \
@@ -63,23 +62,18 @@ from pipeline.common import config, paths  # noqa: E402
 #: Registered task kind — keys into paths.TASK_* tables.
 TASK_KIND = "3d_object"
 
-# Local weight path (highest priority), falls back to HuggingFace download.
-# Override via env var:  export TRELLIS2_CKPT=/your/local/path
-DEFAULT_CKPT = "microsoft/TRELLIS-image-large"   # HF repo id — downloads weights on first run
 DEFAULT_TASKS = paths.collect_jsonl(TASK_KIND)
 
 #: backend -> (default "ckpt", env var holding an override).
-#: For the cloud backends the "ckpt" is a model **version id**, not a weight
-#: location (api_model_require.md R9.1) — the flag stays `--ckpt` so the operator
+#: The "ckpt" is a model **version id**, not a weight location
+#: (api_model_require.md R9.1) — the flag stays `--ckpt` so the operator
 #: and every caller keep one vocabulary.
 BACKENDS: dict[str, tuple[str, str]] = {
-    "trellis2": (DEFAULT_CKPT, "TRELLIS2_CKPT"),
     "tripo": ("v3.1-20260211", "TRIPO_MODEL"),
     "meshy": ("meshy-6", "MESHY_MODEL"),
 }
 
-#: 属于闭源云 API 的后端。它们需要在 `.env` 里配置对应服务商；其余后端加载本地
-#: 权重，需要一台跑得动的机器。
+#: 全部后端都是闭源云 API，都需要在 `.env` 里配置对应服务商。
 CLOUD_BACKENDS = ("tripo", "meshy")
 
 
@@ -93,20 +87,17 @@ def resolve_ckpt(backend: str, cli_value: str | None) -> str:
 
 def load_model(
     ckpt: str,
-    device: str = "cuda",
-    pipeline_type: str = "1024_cascade",
-    backend: str = "trellis2",
+    device: str = "cpu",
+    backend: str = "tripo",
     **backend_kwargs,
 ):
     """
     Load the 3D-object backend named by `backend` (R2.1).
 
     Args:
-        ckpt: Weight path / HF repo id for `trellis2`; model version id for the
-              cloud backends.
-        device: Honoured by `trellis2`; accepted and ignored by the cloud
-              backends (api_model_require.md R9.2).
-        pipeline_type: `trellis2` only.
+        ckpt: Model version id.
+        device: Accepted and ignored — the cloud backends run server-side
+              (api_model_require.md R9.2).
         backend: One of `BACKENDS`.
         **backend_kwargs: Passed to the wrapper — `cache_dir`, `low_poly`,
               `output_format`, `timeout`, … for the cloud backends.
@@ -115,12 +106,6 @@ def load_model(
         A model exposing `infer_and_save(image, output_path, seed,
         decimation_target, texture_size)`.
     """
-    if backend == "trellis2":
-        from models.gen_3d_object.trellis_2_model import Trellis2Model
-        print(f"[run] Loading Trellis2Model from: {ckpt}")
-        return Trellis2Model(model_path=ckpt, device=device,
-                             pipeline_type=pipeline_type)
-
     if backend == "tripo":
         from models.gen_3d_object.tripo_model import TripoModel
         print(f"[run] Using TripoModel (cloud API), model={ckpt}")
@@ -197,11 +182,11 @@ def main():
     import os
 
     parser = argparse.ArgumentParser(description="Run 3D object generation.")
-    parser.add_argument("--backend",   default=os.environ.get("AAAGF_3D_BACKEND", "trellis2"),
+    parser.add_argument("--backend",   default=os.environ.get("AAAGF_3D_BACKEND", "tripo"),
                         choices=sorted(BACKENDS),
-                        help="Model slot backend: local weights or a cloud API")
+                        help="Model slot backend: a cloud API")
     parser.add_argument("--ckpt",      default=None,
-                        help="Weights (trellis2) or model version id (cloud). "
+                        help="Model version id. "
                              "Precedence: this flag > env var > backend default")
     parser.add_argument("--cache-dir", default=config.api_cache_dir(),
                         help="Cloud backends: reuse identical requests instead of "
@@ -221,9 +206,7 @@ def main():
                         help="Run directory name; 'auto' for a timestamp")
     parser.add_argument("--out-dir",   default=None,
                         help="Legacy flat output dir; bypasses the per-game layout")
-    parser.add_argument("--device",    default="cuda")
-    parser.add_argument("--pipeline-type", default="1024_cascade",
-                        choices=["512", "1024", "1024_cascade", "1536_cascade"])
+    parser.add_argument("--device",    default="cpu")
     # Single-demo mode
     parser.add_argument("--image",     default=None, help="Path to a single image (demo mode)")
     parser.add_argument("--task-id",   default="demo")
@@ -278,7 +261,7 @@ def main():
                 "timeout": args.timeout,
                 "verbose": True,
             }
-        model = load_model(ckpt, device=args.device, pipeline_type=args.pipeline_type,
+        model = load_model(ckpt, device=args.device,
                            backend=args.backend, **backend_kwargs)
 
     operator = make_operator(model, output_dir=args.out_dir,

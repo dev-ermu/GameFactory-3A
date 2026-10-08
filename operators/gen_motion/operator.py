@@ -80,8 +80,6 @@ class GenMotionOperator:
         run_id: str = "default",
         default_game_id: Optional[str] = None,
         *,
-        puppeteer_model: Any | None = None,
-        momask_model: Any | None = None,
         # Cloud backend slots. Injected the same way the local ones are, so the
         # operator never learns which provider is behind them (R6 swappability).
         rig_check_model: Any | None = None,
@@ -93,8 +91,6 @@ class GenMotionOperator:
         retarget_fn: Callable[..., dict] | None = None,
     ):
         self.bpy_python = str(bpy_python) if bpy_python else None
-        self.puppeteer_model = puppeteer_model
-        self.momask_model = momask_model
         self.rig_check_model = rig_check_model
         self.cloud_rig_model = cloud_rig_model
         self.cloud_animation_model = cloud_animation_model
@@ -203,32 +199,11 @@ class GenMotionOperator:
         inp: dict,
         seed: int,
     ) -> dict[str, Any]:
-        if self.puppeteer_model is None:
-            raise RuntimeError(
-                "task_type='rig' and 'humanoid' require PuppeteerModel. "
-                "Configure --puppeteer-model-path and --puppeteer-python."
-            )
-        from .funcs.rig_character import rig_character
-
-        artifacts = rig_character(
-            target_mesh.read_bytes(),
-            self.puppeteer_model,
-            mesh_format=target_mesh.suffix,
-            seed=seed,
-            post_filter=bool(inp.get("post_filter", True)),
+        raise RuntimeError(
+            "task_type='rig' and 'humanoid' needed the local PuppeteerModel, "
+            "which has been removed. Use task_type='cloud_rig' or "
+            "'cloud_humanoid' to rig through the TokenHub API."
         )
-        _write_text(outputs["rig_path"], artifacts.get("rig_text"), "rig")
-        _write_text(
-            outputs["skeleton_path"],
-            artifacts.get("skeleton_text"),
-            "skeleton",
-        )
-        _write_bytes(
-            outputs["mesh_obj_path"],
-            artifacts.get("mesh_obj_bytes"),
-            "mesh OBJ",
-        )
-        return artifacts
 
     def _generate_motion(
         self,
@@ -237,54 +212,11 @@ class GenMotionOperator:
         inp: dict,
         seed: int,
     ) -> dict[str, Any]:
-        if self.momask_model is None:
-            raise RuntimeError(
-                "task_type='text_to_motion' and 'humanoid' require "
-                "MoMaskModel. Configure --momask-model-path and "
-                "--momask-python."
-            )
-        from .funcs.generate_motion import generate_motion
-
-        artifacts = generate_motion(
-            prompt,
-            self.momask_model,
-            seed=seed,
-            motion_length=int(inp.get("motion_length", 0)),
-            repeat_times=int(inp.get("repeat_times", 1)),
-            cond_scale=float(inp.get("cond_scale", 4.0)),
-            time_steps=int(inp.get("time_steps", 18)),
-            temperature=float(inp.get("temperature", 1.0)),
-            use_ik=bool(inp.get("use_ik", True)),
-            in_place=bool(inp.get("in_place", False)),
-            in_place_lock_height=bool(
-                inp.get("in_place_lock_height", False)
-            ),
+        raise RuntimeError(
+            "task_type='text_to_motion' and 'humanoid' needed the local "
+            "MoMaskModel, which has been removed. Use task_type='cloud_rig' "
+            "or 'cloud_humanoid' to generate animation through the TokenHub API."
         )
-        _write_bytes(
-            outputs["motion_bvh_path"],
-            artifacts.get("bvh_bytes"),
-            "selected motion BVH",
-        )
-        optional = (
-            ("raw_motion_bvh_path", "raw_bvh_bytes"),
-            ("ik_motion_bvh_path", "ik_bvh_bytes"),
-            ("preview_mp4_path", "preview_mp4_bytes"),
-        )
-        for output_key, artifact_key in optional:
-            value = artifacts.get(artifact_key)
-            if value:
-                _write_bytes(outputs[output_key], value, artifact_key)
-
-        joints = artifacts.get("joints")
-        if joints is not None:
-            import numpy as np
-
-            outputs["joints_npy_path"].parent.mkdir(
-                parents=True,
-                exist_ok=True,
-            )
-            np.save(outputs["joints_npy_path"], joints, allow_pickle=False)
-        return artifacts
 
     @staticmethod
     def _resolve_mapping(inp: dict) -> Path | None:
@@ -830,12 +762,6 @@ class GenMotionOperator:
                             if motion_artifacts else int(inp.get("fps", 30))
                         )
                     ),
-                    "puppeteer_joint_count": (
-                        (rig_artifacts or {}).get("joint_count")
-                    ),
-                    "puppeteer_skin_vertex_count": (
-                        (rig_artifacts or {}).get("skin_vertex_count")
-                    ),
                     "retarget_runtime": self.bpy_python,
                 },
             )
@@ -870,7 +796,7 @@ def _load_mesh_arrays(path: Path) -> tuple[Any, Any]:
 
 def _write_text(path: Path, value: Any, label: str) -> None:
     if not isinstance(value, str) or not value:
-        raise RuntimeError(f"Puppeteer returned no usable {label} text.")
+        raise RuntimeError(f"Rigging backend returned no usable {label} text.")
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(value, encoding="utf-8")
 

@@ -63,7 +63,7 @@ class SeedanceModel:
     def __init__(
         self,
         model_path: str = DEFAULT_MODEL,
-        device: str = "cuda",
+        device: str = "cpu",
         *,
         api_key: Optional[str] = None,
         timeout: int = 1800,

@@ -20,7 +20,6 @@ ASSET_TYPE_TASK_KIND = {
     "static_mesh": "3d_object",
     "texture": "3d_object",
     "weapon": "3d_object",
-    "scene": "3d_scene",
     "motion": "motion",
     "audio": "audio",
 }

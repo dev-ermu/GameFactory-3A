@@ -13,8 +13,6 @@ from pipeline.common.artifacts import (
 )
 
 
-PACKET_SCHEMA = "gamefactory3a.code_gen.packet.v1"
-SNAPSHOT_SCHEMA = "gamefactory3a.code_gen.workspace_snapshot.v1"
 DEFAULT_RESERVED_ROOTS = (
     "meta.json",
     "demo_outputs",
@@ -57,23 +55,6 @@ def resolve_task_workspace(
             run_id=run_id,
         ).resolve(strict=False),
         True,
-    )
-
-
-def code_gen_stage_dir(
-    workspace: str | Path,
-    *,
-    mode: str,
-    repair_attempt: int,
-) -> Path:
-    root = Path(workspace)
-    if mode == "generate":
-        return root / "demo_outputs" / "code_gen"
-    return (
-        root
-        / "demo_outputs"
-        / "repairs"
-        / f"attempt_{repair_attempt:02d}"
     )
 
 

@@ -122,7 +122,7 @@ class TripoModel:
     def __init__(
         self,
         model_path: str = DEFAULT_MODEL,
-        device: str = "cuda",
+        device: str = "cpu",
         *,
         api_key: Optional[str] = None,
         # Measured: image-to-3D with smart_low_poly took **601 s**, i.e. it would

@@ -110,7 +110,7 @@ class MeshyModel:
     def __init__(
         self,
         model_path: str = DEFAULT_MODEL,
-        device: str = "cuda",
+        device: str = "cpu",
         *,
         api_key: Optional[str] = None,
         # Measured: one image-to-3D with PBR textures took 283 s here, and the

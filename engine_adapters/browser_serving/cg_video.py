@@ -706,7 +706,7 @@ class CgVideoGateway:
         from pipeline.assets_gen.gen_cg_video.run import load_model, resolve_ckpt
 
         opts = dict(options)
-        device = str(opts.get("device") or "cuda")
+        device = str(opts.get("device") or "cpu")
         if backend == "seedance":
             ckpt = resolve_ckpt(
                 backend,

@@ -1204,8 +1204,6 @@ OPERATOR_LOCATION: dict[str, tuple[str, str]] = {
     "motion": ("operators.gen_motion.operator", "GenMotionOperator"),
     "cg_video": ("operators.gen_cg_video.operator", "GenCGVideoOperator"),
     "audio": ("operators.gen_audio.operator", "GenAudioOperator"),
-    "mechanic": ("operators.gen_mechanic.operator", "GenMechanicOperator"),
-    "ui": ("operators.gen_ui.operator", "GenUIOperator"),
 }
 
 

@@ -24,15 +24,12 @@ _TASK_KIND_BY_ASSET_TYPE = {
     "weapon": "3d_object",
     "motion": "motion",
     "animation": "motion",
-    "scene": "3d_scene",
-    "world": "3d_scene",
     "audio": "audio",
 }
 
 _ARTIFACT_KEY_BY_TASK_KIND = {
     "3d_object": "model_path",
     "motion": "motion_path",
-    "3d_scene": "scene_path",
     "audio": "audio_path",
 }
 

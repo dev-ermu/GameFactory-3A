@@ -1,17 +1,28 @@
 """
 `models.tools.image_matting` — foreground / background separation models.
 
-These are auxiliary "matting" style models used by generation pipelines
-(e.g. `gen_tpose_image`) to isolate a character from its background:
+Used by generation pipelines (e.g. `gen_tpose_image`) to isolate a character
+from its background:
 
-- `RMBGModel`         : direct alpha-mask segmentation (BRIA RMBG-1.4).
 - `DepthAnythingModel`: depth estimation, combined with white-bg
                         suppression to derive a foreground mask.
 
-All of them inherit from `BaseToolModel` (see `models/tools/base.py`).
+Inherits from `BaseToolModel` (see `models/tools/base.py`).
+
+The wrapper is re-exported lazily (PEP 562) because it imports `torch` at module
+level: a caller that only wants `SkySegmentationModel` should not be made to
+install a deep-learning runtime.
 """
 
-from models.tools.image_matting.depth_anything_model import DepthAnythingModel
-from models.tools.image_matting.rmbg_model import RMBGModel
+from typing import Any
 
-__all__ = ["DepthAnythingModel", "RMBGModel"]
+__all__ = ["DepthAnythingModel"]
+
+
+def __getattr__(name: str) -> Any:
+    """Lazy re-export of the matting wrappers (PEP 562)."""
+    if name == "DepthAnythingModel":
+        from models.tools.image_matting.depth_anything_model import DepthAnythingModel
+
+        return DepthAnythingModel
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

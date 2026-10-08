@@ -11,7 +11,6 @@ from .build import ThreeBuildClient
 from .config import DEFAULT_API_VERSION, ThreeClientConfig
 from .observe import ThreeObserveClient
 from .plugin import ThreePluginClient
-from .playtest import ThreePlaytestClient
 from .preview import ThreePreviewClient
 from .project import ThreeProjectClient
 from .reflection import ThreeReflectionClient
@@ -64,7 +63,6 @@ class ThreeClient:
         self.project = ThreeProjectClient(self._config)
         self.build = ThreeBuildClient(self._config)
         self.testing = ThreeTestingClient(self._config)
-        self.playtest = ThreePlaytestClient(self._config)
         self.plugin = ThreePluginClient(self._config)
         self.assets = ThreeAssetsClient(self._config)
         self.animation = ThreeAnimationClient(self.assets)

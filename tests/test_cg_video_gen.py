@@ -341,7 +341,7 @@ class TestGenCGVideoPipeline(unittest.TestCase):
 
         cls.model = load_model(
             ckpt,
-            device=os.environ.get("CG_VIDEO_DEVICE", "cuda"),
+            device=os.environ.get("CG_VIDEO_DEVICE", "cpu"),
             backend=BACKEND,
             **backend_kwargs,
         )

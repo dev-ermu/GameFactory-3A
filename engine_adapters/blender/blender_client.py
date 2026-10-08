@@ -6,7 +6,6 @@ from pathlib import Path
 from typing import Any
 
 from .config import DEFAULT_API_VERSION, BlenderClientConfig
-from .playtest import BlenderPlaytestClient
 
 
 class BlenderClient:
@@ -23,7 +22,6 @@ class BlenderClient:
             blender_root=blender_root,
             api_version=api_version,
         )
-        self.playtest = BlenderPlaytestClient(self._config)
 
     @property
     def api_version(self) -> str:

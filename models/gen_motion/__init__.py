@@ -1,6 +1,7 @@
-"""Motion-generation and rigging model wrappers."""
+"""Motion-generation and rigging model wrappers.
 
-from .momask_model import MoMaskModel
-from .puppeteer_model import PuppeteerModel
+The local-weight backends (`MoMaskModel`, `PuppeteerModel`) were removed. The
+cloud rigging backend `TripoRiggingModel` is imported directly from its module:
 
-__all__ = ["MoMaskModel", "PuppeteerModel"]
+    from models.gen_motion.tripo_rigging_model import TripoRiggingModel
+"""

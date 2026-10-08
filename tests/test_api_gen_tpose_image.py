@@ -71,7 +71,7 @@ class TestAPIGenTPoseImagePipeline(unittest.TestCase):
         )
         cls.mask_model = load_mask_model(
             MASK_CKPT,
-            device=os.environ.get("MASK_DEVICE", "cuda"),
+            device=os.environ.get("MASK_DEVICE", "cpu"),
             model_type=MASK_TYPE,
         )
         cls.operator = make_operator(

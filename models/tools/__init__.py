@@ -4,9 +4,7 @@ support the main generation pipelines but are not themselves the primary
 content generator. Examples:
 
 - depth estimation (DepthAnything)
-- foreground segmentation / background removal (RMBG-1.4, SAM, ...)
-- matting / alpha refinement
-- keypoint / pose detection helpers
+- sky / non-sky segmentation
 
 All tool models inherit from `BaseToolModel` (see `base.py`) so they share a
 consistent constructor, device handling, and `__call__` / `infer` API.
@@ -21,11 +19,10 @@ from typing import Any
 
 from models.tools.base import BaseToolModel
 
-__all__ = ["BaseToolModel", "DepthAnythingModel", "RMBGModel", "SkySegmentationModel"]
+__all__ = ["BaseToolModel", "DepthAnythingModel", "SkySegmentationModel"]
 
 _LAZY = {
     "DepthAnythingModel": "models.tools.image_matting",
-    "RMBGModel": "models.tools.image_matting",
     "SkySegmentationModel": "models.tools.segmentation",
 }
 

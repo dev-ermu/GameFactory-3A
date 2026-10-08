@@ -1,4 +1,9 @@
-"""Run unified rigging, text-to-motion and retarget tasks."""
+"""Run unified rigging and retarget tasks.
+
+Rigging and animation go through the TokenHub cloud models; retargeting runs
+locally through bpy. The former local-weight backends (Puppeteer for rigging,
+MoMask for text-to-motion) have been removed.
+"""
 
 import argparse
 import json
@@ -46,69 +51,6 @@ def load_retarget_runtime(
     return ensure_retarget_runtime(bpy_python, device=device)
 
 
-def load_puppeteer_model(
-    model_path: str,
-    *,
-    python_bin: str | None = None,
-    device: str = "cuda",
-    gpu: int = 0,
-    skeleton_ckpt: str | None = None,
-    skinning_ckpt: str | None = None,
-    verbose: bool = False,
-):
-    """Construct and validate the Puppeteer wrapper lazily."""
-    from models.gen_motion.puppeteer_model import (
-        DEFAULT_SKELETON_CKPT,
-        DEFAULT_SKINNING_CKPT,
-        PuppeteerModel,
-    )
-
-    print(f"[run] Loading Puppeteer runtime from: {model_path}")
-    model = PuppeteerModel(
-        model_path,
-        device=device,
-        python_bin=python_bin,
-        skeleton_ckpt=skeleton_ckpt or DEFAULT_SKELETON_CKPT,
-        skinning_ckpt=skinning_ckpt or DEFAULT_SKINNING_CKPT,
-        gpu=gpu,
-        verbose=verbose,
-    )
-    model.load()
-    return model
-
-
-def load_momask_model(
-    model_path: str,
-    *,
-    python_bin: str | None = None,
-    device: str = "cuda",
-    gpu: int = 0,
-    name: str | None = None,
-    res_name: str | None = None,
-    vq_name: str | None = None,
-    verbose: bool = False,
-):
-    """Construct and validate the MoMask wrapper lazily."""
-    from models.gen_motion.momask_model import (
-        DEFAULT_RES_NAME,
-        DEFAULT_T2M_NAME,
-        DEFAULT_VQ_NAME,
-        MoMaskModel,
-    )
-
-    print(f"[run] Loading MoMask runtime from: {model_path}")
-    model = MoMaskModel(
-        model_path,
-        device=device,
-        python_bin=python_bin,
-        gpu=gpu,
-        name=name or DEFAULT_T2M_NAME,
-        res_name=res_name or DEFAULT_RES_NAME,
-        vq_name=vq_name or DEFAULT_VQ_NAME,
-        verbose=verbose,
-    )
-    model.load()
-    return model
 
 
 def load_cloud_rig_models(
@@ -157,8 +99,6 @@ def make_operator(
     run_id: str = paths.DEFAULT_RUN_ID,
     default_game_id: str | None = None,
     *,
-    puppeteer_model: Any | None = None,
-    momask_model: Any | None = None,
     rig_check_model: Any | None = None,
     cloud_rig_model: Any | None = None,
     cloud_animation_model: Any | None = None,
@@ -171,8 +111,6 @@ def make_operator(
 
     return GenMotionOperator(
         bpy_python=bpy_python,
-        puppeteer_model=puppeteer_model,
-        momask_model=momask_model,
         rig_check_model=rig_check_model,
         cloud_rig_model=cloud_rig_model,
         cloud_animation_model=cloud_animation_model,
@@ -232,44 +170,10 @@ def _build_operator_for_types(
     task_types: set[str],
     run_id: str,
 ):
-    needs_rig = bool(task_types & {"rig", "humanoid"})
-    needs_motion = bool(task_types & {"text_to_motion", "humanoid"})
+    needs_rig = bool(task_types & CLOUD_TASK_TYPES)
     needs_retarget = bool(task_types & {"retarget", "humanoid", "vibe_retarget"})
 
-    puppeteer = None
-    if needs_rig:
-        if not args.puppeteer_model_path:
-            raise RuntimeError(
-                "This task needs Puppeteer. Pass --puppeteer-model-path or "
-                "set A3GF_PUPPETEER_MODEL_PATH."
-            )
-        puppeteer = load_puppeteer_model(
-            args.puppeteer_model_path,
-            python_bin=args.puppeteer_python,
-            device=args.model_device,
-            gpu=args.gpu,
-            skeleton_ckpt=args.skeleton_ckpt,
-            skinning_ckpt=args.skinning_ckpt,
-            verbose=args.verbose,
-        )
 
-    momask = None
-    if needs_motion:
-        if not args.momask_model_path:
-            raise RuntimeError(
-                "This task needs MoMask. Pass --momask-model-path or set "
-                "A3GF_MOMASK_MODEL_PATH."
-            )
-        momask = load_momask_model(
-            args.momask_model_path,
-            python_bin=args.momask_python,
-            device=args.model_device,
-            gpu=args.gpu,
-            name=args.momask_name,
-            res_name=args.momask_res_name,
-            vq_name=args.momask_vq_name,
-            verbose=args.verbose,
-        )
 
     bpy_python = None
     if needs_retarget:
@@ -285,8 +189,6 @@ def _build_operator_for_types(
 
     return make_operator(
         bpy_python,
-        puppeteer_model=puppeteer,
-        momask_model=momask,
         output_dir=args.out_dir,
         run_id=run_id,
         default_game_id=args.game,
@@ -368,14 +270,14 @@ def _demo_task(args: argparse.Namespace, parser: argparse.ArgumentParser) -> dic
 def main() -> None:
     parser = argparse.ArgumentParser(
         description=(
-            "Run gen_motion tasks: Puppeteer rigging, MoMask text-to-motion, "
+            "Run gen_motion tasks: TokenHub cloud rigging / animation, "
             "world-delta retargeting, or the complete humanoid chain."
         )
     )
     parser.add_argument(
         "--task-type",
         default="retarget",
-        choices=["retarget", "rig", "text_to_motion", "humanoid"],
+        choices=["retarget", "rig", "humanoid", "cloud_rig", "cloud_humanoid"],
     )
     parser.add_argument(
         "--bpy-python",
@@ -383,38 +285,16 @@ def main() -> None:
         help="Python 3.11 executable that can import bpy, numpy and trimesh.",
     )
     parser.add_argument(
-        "--puppeteer-model-path",
-        default=os.environ.get("A3GF_PUPPETEER_MODEL_PATH"),
-    )
-    parser.add_argument(
-        "--puppeteer-python",
-        default=os.environ.get("A3GF_PUPPETEER_PYTHON"),
-    )
-    parser.add_argument("--skeleton-ckpt", default=None)
-    parser.add_argument("--skinning-ckpt", default=None)
-    parser.add_argument(
-        "--momask-model-path",
-        default=os.environ.get("A3GF_MOMASK_MODEL_PATH"),
-    )
-    parser.add_argument(
-        "--momask-python",
-        default=os.environ.get("A3GF_MOMASK_PYTHON"),
-    )
-    parser.add_argument("--momask-name", default=None)
-    parser.add_argument("--momask-res-name", default=None)
-    parser.add_argument("--momask-vq-name", default=None)
-    parser.add_argument("--gpu", type=int, default=0)
-    parser.add_argument(
         "--model-device",
-        default="cuda",
-        choices=["cpu", "cuda"],
+        default="cpu",
+        choices=["cpu"],
     )
     parser.add_argument(
         "--retarget-device",
         "--device",
         dest="retarget_device",
         default="cpu",
-        choices=["cpu", "cuda"],
+        choices=["cpu"],
     )
     parser.add_argument(
         "--game",
