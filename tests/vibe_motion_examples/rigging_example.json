@@ -1,5 +1,5 @@
 {
-  "source": {"url": "https://threejs.org/examples/models/obj/male02/male02.obj", "normalization": {"height": 1.8, "weld_tolerance_ratio": 0.00001}},
+  "source": {"url": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/Xbot/glTF-Binary/Xbot.glb", "normalization": {"height": 1.8, "weld_tolerance_ratio": 0.00001}},
   "projection": {
     "width": 1024, "height": 1024, "padding_ratio": 0.06,
     "views": {

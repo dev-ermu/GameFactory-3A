@@ -48,7 +48,6 @@ Engine Context:
 | `ue5` | `<REPO_PATH>/agent_skills/engine_context/ue5_api.md` | `from engine_adapters.ue5 import UEClient` |
 | `unity3d` | `<REPO_PATH>/agent_skills/engine_context/unity3d_api.md` | `from engine_adapters.unity3d import UnityClient` |
 | `godot` | `<REPO_PATH>/agent_skills/engine_context/godot_api.md` | `from engine_adapters.godot import GodotClient` |
-| `three_js` | `<REPO_PATH>/agent_skills/engine_context/three_js_api.md` | `from engine_adapters.three_js import ThreeClient` |
 | `blender` | `<REPO_PATH>/agent_skills/engine_context/blender_api.md` | documented `bpy` interpreter boundary |
 
 When `blender` is selected, it is a neutral asset-processing context rather than
@@ -58,8 +57,8 @@ them.
 
 For Mechanic and UI packet preparation,
 `<REPO_PATH>/pipeline/common/code_mapping.py` is the registration gate: `ue5`,
-`unity3d`, and `godot` are enabled, while `blender` and `three_js` are
-registered but disabled — `run.py prepare` rejects a disabled Engine with
+`unity3d`, and `godot` are enabled, while `blender` is registered but
+disabled — `run.py prepare` rejects a disabled Engine with
 `Engine is registered but disabled`.
 
 ## Engine Version Compatibility

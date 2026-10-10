@@ -142,11 +142,6 @@ _ENGINE_DEFINITIONS = (
             "engine_adapters/godot/examples",
         ),
     },
-    {
-        "engine_id": "three_js",
-        "enabled": False,
-        "aliases": {"three", "threejs"},
-    },
 )
 
 

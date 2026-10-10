@@ -1,6 +1,6 @@
 # RPG Explorer 3D
 
-A third-person exploration reference matching Three.js `explorer-example`:
+A third-person exploration reference in which
 movement is camera-relative, the camera follows with lag, stamina gates sprint,
 and a quest loop tracks three world pickups. The player visual is a real,
 self-contained glTF 2.0 asset with a skinned mesh, one-bone skeleton, and `Walk`

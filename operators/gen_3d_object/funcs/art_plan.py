@@ -1,6 +1,6 @@
 """What each game needs generated, and how big it is in metres.
 
-A generated three.js game looks like programmer art for two reasons, and
+A generated game looks like programmer art for two reasons, and
 only one is about lighting. The other is that its world is built from
 capsules and boxes because nothing else was available. TRELLIS.2 removes
 that constraint, but only if somebody says *which* props — and that list

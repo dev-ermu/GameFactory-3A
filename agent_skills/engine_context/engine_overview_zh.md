@@ -33,12 +33,11 @@
 | `ue5` | `<REPO_PATH>/agent_skills/engine_context/ue5_api.md` | `from engine_adapters.ue5 import UEClient` |
 | `unity3d` | `<REPO_PATH>/agent_skills/engine_context/unity3d_api.md` | `from engine_adapters.unity3d import UnityClient` |
 | `godot` | `<REPO_PATH>/agent_skills/engine_context/godot_api.md` | `from engine_adapters.godot import GodotClient` |
-| `three_js` | `<REPO_PATH>/agent_skills/engine_context/three_js_api.md` | `from engine_adapters.three_js import ThreeClient` |
 | `blender` | `<REPO_PATH>/agent_skills/engine_context/blender_api.md` | 文档中提及的 `bpy` 解释器边界 |
 
 当选中 `blender` 时，它属于中立的资产处理上下文，而非已发布的游戏运行时环境。请勿将其与核心引擎API或示例混用。浏览器渲染和VFX属于补充性上下文，仅在任务有相关需求时才会被选用。
 
-在准备机械逻辑与UI数据包时，`<REPO_PATH>/pipeline/common/code_mapping.py` 是注册入口：`ue5`、`unity3d` 和 `godot` 会被启用，而 `blender` 和 `three_js` 虽已注册但处于禁用状态——执行 `run.py prepare` 命令时，若遇到已禁用的引擎，会提示“引擎已注册但处于禁用状态”。
+在准备机械逻辑与UI数据包时，`<REPO_PATH>/pipeline/common/code_mapping.py` 是注册入口：`ue5`、`unity3d` 和 `godot` 会被启用，而 `blender` 虽已注册但处于禁用状态——执行 `run.py prepare` 命令时，若遇到已禁用的引擎，会提示“引擎已注册但处于禁用状态”。
 
 ## 引擎版本兼容性
 

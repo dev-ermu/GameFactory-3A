@@ -1,10 +1,10 @@
 # 3AGameFactory游戏生成代理指南
 
-当被要求使用3AGameFactory创建或优化游戏时，请先阅读本文档。它会引导你找到最基础的、针对特定任务的技能模块以及引擎API相关资料。本文档适用于**游戏生成工作**：包括生成游戏资源、玩法逻辑、用户界面、场景以及可直接用于引擎的项目。它并非源代码级别的API参考文档。
+当被要求使用3AGameFactory创建或优化游戏时，请先阅读本文档。它会引导你找到最基础的、针对特定任务的技能模块以及引擎API相关资料。本文档适用于**游戏资源生成工作**：包括生成美术资源、玩法逻辑、用户界面、场景。它并非源代码级别的API参考文档。
 
 ## 项目目标
 
-3AGameFactory能够帮助编程代理将游戏需求转化为可玩的游戏片段。它支持图像与T型姿势模型制作、3D物体建模、3D场景搭建、动画制作、音频处理、CG视频生成、玩法机制设计、用户界面开发，以及面向UE5、Blender、Unity、Godot 4和three.js的全流程组装。
+3AGameFactory能够帮助AI agent将游戏需求转化为正确的游戏资源。它支持图像生成，T型姿势模型制作、3D物体建模、3D场景搭建、动画制作、音频处理、CG视频生成、玩法机制设计、用户界面开发，以及面向UE5、Blender、Unity、Godot 4全流程组装。
 
 ## 路径约定
 
@@ -37,7 +37,7 @@
 
 ## 从任务要求开始
 
-在编写或运行任何内容前，请先明确以下内容：1. **目标引擎** — `ue5`、`Blender`、`Unity3D`、`Godot` 或 `Three.js`。
+在编写或运行任何内容前，请先明确以下内容：1. **目标引擎** — `ue5`、`Blender`、`Unity3D` 或 `Godot`。
 2. **所需交付物** — 资产、动画、音频、CG视频、游戏玩法、UI、场景，或是可完整游玩的游戏片段。
 3. **验收标准** — 视觉风格、玩家交互方式、支持的平台、性能限制，以及判定成果合格所需的佐证材料。
 4. **现有输入资料** — 需求文档、概念图、参考视频、已生成的产物，以及选定的引擎项目。
@@ -63,7 +63,6 @@
 | `blender` | `<REPO_PATH>/agent_skills/engine_context/blender_api.md` | `<REPO_PATH>/engine_adapters/blender/` |
 | `unity3d` | `<REPO_PATH>/agent_skills/engine_context/unity3d_api.md` | `<REPO_PATH>/engine_adapters/unity3d/` |
 | `godot` | `<REPO_PATH>/agent_skills/engine_context/godot_api.md` | `<REPO_PATH>/engine_adapters/godot/` |
-| `three_js` | `<REPO_PATH>/agent_skills/engine_context/three_js_api.md` | `<REPO_PATH>/engine_adapters/three_js/` |
 
 仅可使用公开的客户端API以及文档中说明的调用路径。除非任务明确允许编辑，否则需将引擎参考项目视为只读的实现参考。
 

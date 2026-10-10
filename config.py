@@ -132,23 +132,6 @@ class Settings(BaseSettings):
     blender_project: Path | None = Field(None, validation_alias="A3GAME_BLENDER_PROJECT")
     blender_root: Path | None = Field(None, validation_alias=_a("A3GAME_BLENDER_ROOT", "AAAGF_BLENDER"))
 
-    # ── three.js ──────────────────────────────────────────────────────────────
-    # 端口与 transport 镜像 `engine_adapters/three_js/config.py`；合法 transport
-    # 是 `http` / `websocket`（`SUPPORTED_RUNTIME_TRANSPORTS`），不是 `ws`。
-    three_project: Path | None = Field(None, validation_alias="A3GAME_THREE_PROJECT")
-    three_root: Path | None = Field(None, validation_alias="A3GAME_THREE_ROOT")
-    three_node_root: Path | None = Field(None, validation_alias="A3GAME_NODE_ROOT")
-    three_package_manager: str = Field("npm", validation_alias="A3GAME_THREE_PACKAGE_MANAGER")
-    three_host: str = Field("127.0.0.1", validation_alias=_a("A3GAME_THREE_HOST", "THREE_HOST"))
-    three_port: int = Field(5173, validation_alias=_a("A3GAME_THREE_PORT", "THREE_PORT"))
-    three_runtime_host: str = Field("127.0.0.1", validation_alias="A3GAME_THREE_RUNTIME_HOST")
-    three_runtime_port: int = Field(30040, validation_alias="A3GAME_THREE_RUNTIME_PORT")
-    three_runtime_transport: str = Field("http", validation_alias="A3GAME_THREE_RUNTIME_TRANSPORT")
-    three_preview_root: Path | None = Field(None, validation_alias="A3GAME_THREE_PREVIEW_ROOT")
-    three_data_root: Path | None = Field(None, validation_alias=_a("A3GAME_THREE_DATA_ROOT", "A3GAME_DATA_ROOT"))
-    three_artifact_registry: Path | None = Field(None, validation_alias=_a("A3GAME_THREE_ARTIFACT_REGISTRY", "A3GAME_ARTIFACT_REGISTRY"))
-    three_world_registry_root: Path | None = Field(None, validation_alias=_a("A3GAME_THREE_WORLD_REGISTRY_ROOT", "A3GAME_WORLD_REGISTRY_ROOT"))
-
     # ── 浏览器服务 ─────────────────────────────────────────────────────────────
     browser_engine: str = Field("godot", validation_alias="A3GAME_BROWSER_ENGINE")
     browser_admin_host: str = Field("127.0.0.1", validation_alias="A3GAME_BROWSER_ADMIN_HOST")
@@ -276,7 +259,7 @@ def load(*, override: bool = False, verbose: bool | None = None) -> bool:
     published = 0
     # 只发布**显式配置过**的项（`model_fields_set`），不发布字段默认值。
     # 否则本文件里的默认值会变成对适配器自身默认值的强制覆盖——适配器没被用户配置
-    # 时应当沿用它自己的默认（例如 three.js 的 transport=http）。
+    # 时应当沿用它自己的默认（例如 Unity 的 runtime transport）。
     for field_name in settings.model_fields_set:
         name = FIELD_ENV_OF.get(field_name)
         if name is None:

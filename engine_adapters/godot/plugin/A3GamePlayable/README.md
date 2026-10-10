@@ -23,7 +23,7 @@ the add-on and `project.godot`.
 
 ## Capability matrix
 
-This matrix was derived from the repository's UE, Unity, and Three.js runtime
+This matrix was derived from the repository's UE and Unity runtime
 plugins. “Native” means Godot already provides the capability directly and a
 second adapter abstraction would only weaken its contract.
 

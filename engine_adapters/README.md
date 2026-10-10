@@ -10,11 +10,10 @@ mechanic / UI code, and used at runtime for RPC-style asset delivery.
 | `ue5/`      | UE5 Blueprint templates, C++ modules, Python-remote scripts, importer helpers |
 | `unity3d/`  | Unity3D C# templates, Editor scripts, PackageManager manifests |
 | `godot/`    | Godot 4 public Client, full GDScript runtime plugin, import/export/test helpers, native gameplay references |
-| `three_js/` | Web runtime: `ThreeClient` Python API, `A3GamePlayable` JS framework, glTF loaders, scene scaffolds, HUD overlays |
 
-`ue5/`, `unity3d/`, `godot/`, and `three_js/` implement the full versioned
+`ue5/`, `unity3d/`, and `godot/` implement the full versioned
 Client contract. Each exposes exactly one public Python entry point —
-`UEClient`, `UnityClient`, `GodotClient`, or `ThreeClient` — with the same eleven namespaces and the
+`UEClient`, `UnityClient`, or `GodotClient` — with the same eleven namespaces and the
 same `{ok, operation, artifacts, diagnostics, warnings, errors, payload}`
 result shape, so Pipeline code can switch engines without branching.
 
@@ -26,14 +25,7 @@ gameplay extends but never edits:
 | `ue5/` | `A3GamePlayable` UE plugin (C++ contracts) | a project-local Gameplay Plugin |
 | `unity3d/` | `A3GameRuntime` Unity package (C# contracts) | project-local gameplay scripts and assemblies |
 | `godot/` | `A3GamePlayable` Godot addon (GDScript contracts and UDP session bridge) | a project-local addon or game script tree |
-| `three_js/` | `A3GamePlayable` npm package `@a3game/playable` | a project-local Gameplay Package under `packages/` |
 | `blender/` | `engine_adapters/blender/game` (Python kit) | a project-local `game.py`; reference copies in `blender/examples/` |
-
-`three_js/` exposes `ThreeClient`; `blender/` exposes `BlenderClient` the
-
-See `three_js/MIGRATION_INVENTORY.md` for why the three.js framework also
-owns renderer, frame loop, input, animation, and collision scaffolding
-that Unreal supplies natively.
 
 Genre mechanics for Blender live under `blender/examples/`, next to
 `ue5/examples/` and `unity3d/examples/`. That keeps engine-owned samples
@@ -54,7 +46,6 @@ does X", the other is "how our artifacts get in".
 | `ue5/import_generated/import_mesh.py` | Unreal's Python |
 | `unity3d/import_generated/ImportGeneratedMesh.cs` | Unity Editor (`Assets/Editor/`) |
 | `godot/` public `GodotClient.assets` API | host Python launches Godot 4 `--headless --import` after safe staging |
-| `three_js/import_generated/import_mesh.mjs` | host Node, with the project's `three` installed |
 | `blender/import_generated/import_mesh.py` | a `bpy` interpreter (Blender app or the pip wheel) |
 | `scripts/import_generated_asset.py` | host Python — finds the editor, launches any importer, reads its JSON report |
 
@@ -113,4 +104,4 @@ The server needs `bpy`; the sender needs nothing, so a session on a render box
 can be driven from anywhere.
 
 Per-engine API notes that go straight into the agent's context live separately in
-`agent_skills/engine_context/{ue5,unity3d,godot,blender,three_js}_api.md`.
+`agent_skills/engine_context/{ue5,unity3d,godot,blender}_api.md`.

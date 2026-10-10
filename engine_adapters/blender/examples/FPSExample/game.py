@@ -360,7 +360,7 @@ class FpsArena(kernel.Game):
     def _place_scene(self, size: float) -> bool:
         """Drop in a complete environment GLB. Colliders stay the hull we built.
 
-        Skip collision-only meshes (three.js `collision-world`): they do not
+        Skip collision-only meshes (the `collision-world` group): they do not
         match the cover layout, so walking the rules-legal path clips through
         the imported geometry.
         """

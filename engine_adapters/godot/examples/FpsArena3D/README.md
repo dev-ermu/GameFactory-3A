@@ -1,7 +1,7 @@
 # FPS Arena 3D
 
-A complete first-person shooter reference matching the repository's Three.js
-`fps-example`: the camera belongs to the player, movement is resolved from its
+A complete first-person shooter reference in which the camera belongs to the
+player, movement is resolved from its
 yaw, and shots are physics rays from the camera rather than projectiles spawned
 from a third-person character. It includes live targets, magazine/reload state,
 health, hit accounting, a crosshair HUD, deterministic demo play, and manual

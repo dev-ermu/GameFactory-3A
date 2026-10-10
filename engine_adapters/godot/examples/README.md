@@ -1,7 +1,7 @@
 # Godot core gameplay references
 
-These are complete, independent Godot 4 projects, organized like the repository's
-Three.js examples: choose a reference by camera and mechanic, copy the relevant
+These are complete, independent Godot 4 projects: choose a reference by
+camera and mechanic, copy the relevant
 pattern into generated code, and never depend on the example directory at
 runtime.
 

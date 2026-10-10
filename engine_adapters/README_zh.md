@@ -8,21 +8,18 @@
 |------------|--------------------------------------------------------------|
 | `ue5/`     | UE5蓝图模板、C++模块、Python远程脚本、导入辅助工具         |
 | `unity3d/` | Unity3D C#模板、编辑器脚本、PackageManager清单文件         |
-| `godot/`   | Godot 4公共客户端、完整的GDScript运行时插件、导入/导出/测试辅助工具、原生游戏玩法参考 |
-| `three_js/`| Web运行时：`ThreeClient` Python API、`A3GamePlayable` JS框架、glTF加载器、场景脚手架、HUD覆盖层 |
+| `godot/`   | Godot 4公共客户端、`A3GamePlayable` GDScript运行时插件、导入/导出/测试辅助工具、原生游戏玩法参考 |
 
-`ue5/`、`unity3d/`、`godot/`和`three_js/`实现了完整版本化的客户端协议。每个目录都仅暴露一个公共Python入口点——分别是`UEClient`、`UnityClient`、`GodotClient`或`ThreeClient`——它们拥有相同的11个命名空间以及一致的`{ok, operation, artifacts, diagnostics, warnings, errors, payload}`结果结构，因此流水线代码无需通过分支判断即可切换引擎。
+`ue5/`、`unity3d/`和`godot/`实现了完整版本化的客户端协议。每个目录都仅暴露一个公共Python入口点——分别是`UEClient`、`UnityClient`或`GodotClient`——它们拥有相同的11个命名空间以及一致的`{ok, operation, artifacts, diagnostics, warnings, errors, payload}`结果结构，因此流水线代码无需通过分支判断即可切换引擎。
 
 
+| 适配器      | 框架                          | 生成的游戏玩法存放位置                 |
 |------------|-------------------------------|------------------------------------------|
 | `ue5/`     | `A3GamePlayable` UE插件（C++协议） | 项目本地的游戏玩法插件中                 |
 | `unity3d/` | `A3GameRuntime` Unity包（C#协议） | 项目本地的游戏玩法脚本和程序集里         |
 | `godot/`   | `A3GamePlayable` Godot插件（GDScript协议及UDP会话桥接） | 项目本地的插件或游戏脚本树中             |
-| `three_js/`| `A3GamePlayable` npm包`@a3game/playable` | 项目本地`packages/`下的游戏玩法包中     |
 | `blender/` | `engine_adapters/blender/game`（Python工具包） | 项目本地的`game.py`；参考副本存放在`blender/examples/`中 |
 
-
-关于为何three.js框架还要负责Unreal引擎原生提供的渲染器、帧循环、输入、动画和碰撞相关基础架构，可查阅`three_js/MIGRATION_INVENTORY.md`了解详情。
 
 Blender的分类玩法示例存放在`blender/examples/`下，与`ue5/examples/`和`unity3d/examples/`并列。这样能避免引擎专属示例混入共享的`test_data/test_samples/`目录，直到后续合并时再处理。
 
@@ -35,7 +32,6 @@ Blender的分类玩法示例存放在`blender/examples/`下，与`ue5/examples/`
 | `ue5/import_generated/import_mesh.py` | Unreal的Python环境 |
 | `unity3d/import_generated/ImportGeneratedMesh.cs` | Unity编辑器（`Assets/Editor/`目录下） |
 | `godot/`公共`GodotClient.assets` API | 主机Python在安全暂存完成后启动Godot 4，并添加`--headless --import`参数 |
-| `three_js/import_generated/import_mesh.mjs` | 主机Node环境，需安装项目所需的`three`库 |
 | `blender/import_generated/import_mesh.py` | `bpy`解释器（Blender应用程序或pip安装的模块） |
 | `scripts/import_generated_asset.py` | 主机Python——它会定位编辑器，启动相应的导入器，读取其生成的JSON报告 |
 
@@ -67,4 +63,4 @@ python -m engine_adapters.blender.runtime.send_command \
 
 该服务器需要依赖`bpy`库；而发送端无需任何额外依赖，因此可以从任意位置操控渲染节点上的进程。
 
-各引擎的API说明文档会直接嵌入智能体的上下文，单独存放在`agent_skills/engine_context/{ue5,unity3d,godot,blender,three_js}_api.md`路径下。
+各引擎的API说明文档会直接嵌入智能体的上下文，单独存放在`agent_skills/engine_context/{ue5,unity3d,godot,blender}_api.md`路径下。

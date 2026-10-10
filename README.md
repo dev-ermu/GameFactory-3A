@@ -2,7 +2,7 @@
 
 **3AGameFactory让Coding Agent根据游戏需求生成可用于游戏构建的资产与引擎代码。**
 
-全面开源，包含游戏生成Skill与资产框架。**它覆盖图片、3D 资产、动作、音频与 CG 视频生成**，并支持使用UE5、Blender、Unity、Godot 4 和 three.js构建游戏。
+全面开源，包含游戏生成Skill与资产框架。**它覆盖图片、3D 资产、动作、音频与 CG 视频生成**，并支持使用UE5、Blender、Unity、Godot 4 构建游戏。
 
 本项目原地址：<https://github.com/OpenDCAI/GameFactory-3A>
 
@@ -64,7 +64,6 @@
 | Blender | `agent_skills/engine_context/blender_api.md` | `engine_adapters/blender/` |
 | Unity | `agent_skills/engine_context/unity3d_api.md` | `engine_adapters/unity3d/` |
 | Godot 4 | `agent_skills/engine_context/godot_api.md` | `engine_adapters/godot/` |
-| three.js | `agent_skills/engine_context/three_js_api.md` | `engine_adapters/three_js/` |
 
 ---
 
@@ -76,7 +75,7 @@ GameFactory-3A/
 │   ├── setting_overview.md     # 游戏生成 Agent 从这里开始
 │   ├── asset_qa/               # 资产生成与视觉 QA Skill
 │   ├── develop_harness/        # models → operators → pipeline 的贡献者契约
-│   └── engine_context/         # UE5、Blender、Unity、Godot、three.js 与浏览器 API 上下文
+│   └── engine_context/         # UE5、Blender、Unity、Godot 与浏览器 API 上下文
 ├── engine_adapters/            # 引擎参考代码与公开 Adapter API
 ├── models/                     # 本地模型与云模型封装
 ├── operators/                  # 组合已加载模型的任务逻辑
@@ -85,7 +84,7 @@ GameFactory-3A/
 │   └── common/                 # 共享辅助模块；paths.py 是所有输入输出路径的唯一来源
 ├── scripts/                    # 环境配置、引擎启动器与导入工具
 │   ├── asset_env_setup/        # 按资产任务组织的环境配置，含 gen_motion 运行时与权重安装
-│   └── engine_install/         # UE5、Blender、Unity、Godot、three.js 的安装与启动脚本
+│   └── engine_install/         # UE5、Blender、Unity、Godot 的安装与启动脚本
 ├── test/                       # 用于验证流程实际可运行的契约、集成与 smoke 脚本
 ├── test_data/                  # 示例需求；生成的游戏结果位于 outputs/
 └── third_party/                # 检出的外部仓库，例如 trimesh 与引擎材质/资产库

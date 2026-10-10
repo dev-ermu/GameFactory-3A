@@ -15,7 +15,7 @@ importer, the formats accepted are:
     UE5        fbx glb gltf obj usd usda usdz
     Blender    abc fbx glb gltf obj ply usd usda usdc usdz
     Unity      fbx glb gltf obj
-    three.js   glb gltf
+    Godot      gltf glb fbx obj collada
 
 glTF is the intersection, so one writer serves every engine and the spec
 route needs no per-engine emitter to be useful on day one.

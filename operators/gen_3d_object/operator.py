@@ -40,17 +40,12 @@ Usage:
     })
     print(result["glb_path"])
 
-Two optional extras, both additive and off unless asked for:
+One optional extra, additive and off unless asked for:
 
-  * naming an ``asset_id`` in the task hands the finished mesh to the
-    three.js adapter — staged, oriented, manifest rewritten;
   * ``run_art_plan(game_id, image_model)`` generates a whole game's
-    recorded art plan (``funcs/art_plan.py``) that way in one call.
+    recorded art plan (``funcs/art_plan.py``) in one call.
 
-``funcs/asset_pack.py`` covers the other case: three CC0 models,
-downloaded and imported in seconds, for when generating is overkill.
-
-A third route skips inference entirely. Passing ``spec`` instead of an
+A second route skips inference entirely. Passing ``spec`` instead of an
 image builds the mesh from a declarative part list
 (``funcs/code_asset.py``), which suits anything exactly describable — a
 crate, a sign, a wheel, a rifle. It needs no model and no GPU, states its
@@ -302,27 +297,6 @@ class Gen3DObjectOperator:
                 meta["model_call"] = dict(call_info)
             paths.write_task_meta(task_dir, meta)
 
-        # Optional handover to the engine adapter, active only when the task
-        # names an asset. A generated mesh is not part of a game until the
-        # adapter has staged it and recorded which way it faces.
-        if inp.get("asset_id") and self.output_dir is None:
-            from .funcs.asset_import import import_asset
-            result.update(
-                import_asset(
-                    game_id,
-                    task_id,
-                    asset_id=str(inp["asset_id"]),
-                    asset_type=str(inp.get("asset_type") or "prop"),
-                    run_id=self.run_id,
-                    forward_axis=str(inp.get("forward_axis") or ""),
-                    scale_hint_metres=inp.get("scale_hint_metres"),
-                    verified_by=str(inp.get("verified_by") or "heuristic"),
-                    notes=str(inp.get("notes") or ""),
-                    project_hint=str(inp.get("project_hint") or ""),
-                    preview=bool(inp.get("preview", True)),
-                )
-            )
-
         return result
 
     # --------------------------------------------------------------------------
@@ -362,10 +336,10 @@ class Gen3DObjectOperator:
         Three things come out of the spec that the generated path can only
         guess at, which is the reason to prefer it wherever it applies:
 
-          * ``forward_axis`` is *stated*, so the import is recorded as
-            ``verified_by="spec"`` rather than ``"heuristic"``. Facing is
-            the one property `orientation_review` exists to establish, and
-            here there is nothing to establish.
+          * ``forward_axis`` is *stated* in the task output, so a consumer
+            can read the facing off the record instead of inferring it from
+            a view. Facing is the one property `orientation_review` exists
+            to establish, and here there is nothing to establish.
           * ``scale_hint_metres`` is stated, so the mesh has a real size
             instead of a unit box someone has to scale by eye.
           * parts keep their ids as glTF node names, so a wheel can be spun
@@ -378,11 +352,10 @@ class Gen3DObjectOperator:
         A spec may also carry ``mesh`` parts, which read a GLB off disk —
         typically one component from a cloud model, composed in where no
         formula states the shape. Those change one thing here and nothing
-        else: ``verified_by`` drops to ``"spec+generated"``, because a
-        generated part's facing was *asserted* by whoever placed it and not
-        established by anything. Claiming ``"spec"`` for a composition that
-        is largely fetched geometry would put an unverified facing behind the
-        one label that is supposed to mean it was not guessed.
+        else: the result reports them under ``generated_parts``, because a
+        fetched part's facing was *asserted* by whoever placed it and not
+        established by anything. A reviewer needs to know that editing the
+        placement does not change the geometry underneath it.
         """
         from .funcs.code_asset import MESH_KIND, build_code_asset
 
@@ -461,47 +434,6 @@ class Gen3DObjectOperator:
                     meta[key] = inp[key]
             paths.write_task_meta(task_dir, meta)
 
-        # A failed spec is not handed to the engine. An asset that exists
-        # gets used, so a gate failure has to stop it becoming an asset.
-        if inp.get("asset_id") and self.output_dir is None and report["ok"]:
-            from .funcs.asset_import import import_asset
-
-            result.update(
-                import_asset(
-                    game_id,
-                    task_id,
-                    asset_id=str(inp["asset_id"]),
-                    asset_type=str(
-                        inp.get("asset_type")
-                        or report["spec"].get("asset_type")
-                        or "prop"
-                    ),
-                    run_id=self.run_id,
-                    # Stated by the spec, not inferred from a view.
-                    forward_axis=report["forward_axis"],
-                    scale_hint_metres=report["scale_hint_metres"],
-                    # "spec" means the facing was stated rather than guessed.
-                    # With generated parts in the composition that is only
-                    # half true: the *placement* is stated, but the mesh
-                    # inside it came from a generator with no facing of its
-                    # own, and whoever wrote the rotation asserted one. Said
-                    # distinctly so a reviewer knows an orientation check is
-                    # still worth a look, instead of trusting a label that
-                    # was earned by a different route.
-                    verified_by="spec+generated" if generated_parts else "spec",
-                    notes=str(inp.get("notes") or "")
-                    or (
-                        f"Built from a spec: {report['subject']}."
-                        + (
-                            f" {len(generated_parts)} generated part(s): "
-                            f"{', '.join(part['id'] for part in generated_parts)}."
-                            if generated_parts else ""
-                        )
-                    ),
-                    project_hint=str(inp.get("project_hint") or ""),
-                    preview=bool(inp.get("preview", True)),
-                )
-            )
         return result
 
     # --------------------------------------------------------------------------

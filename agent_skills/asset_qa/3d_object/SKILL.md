@@ -183,9 +183,9 @@ result = op.run({
 })
 ```
 
-`units` and `forward` have no defaults, because an assumed facing is the
-defect `orientation_review.md` exists to catch: it reads as correct until
-the asset is in a scene walking backwards.
+`units` and `forward` have no defaults, because an assumed facing is a
+defect nothing errors on: it reads as correct until the asset is in a scene
+walking backwards.
 
 Part kinds: `box`, `cylinder`, `cone`, `sphere`, `torus`, `lathe`,
 `extrude`, `mesh`. `lathe` revolves a `(radius, height)` profile — bottles,
@@ -389,12 +389,10 @@ Read from each adapter's own importer, so this is what will actually load:
 | UE5 | `fbx` `glb` `gltf` `obj` `usd` `usda` `usdz` |
 | Blender | `abc` `fbx` `glb` `gltf` `obj` `ply` `usd` `usda` `usdc` `usdz` |
 | Unity | `fbx` `glb` `gltf` `obj` |
-| three.js | `glb` `gltf` |
+| Godot | `gltf` `glb` `fbx` `obj` `collada` |
 
 **glTF is the intersection, so target `.glb`.** Every route here already
-does. The one consequence worth knowing: three.js accepts *only* glTF, so an
-FBX from a cloud backend needs converting before it reaches a browser game,
-while the same file imports into UE5 or Unity untouched.
+does, and it is the one format no engine in the table needs converting for.
 
 Prefer `.glb` over `.gltf` — a single binary file cannot arrive with its
 `.bin` or its textures missing.
@@ -461,11 +459,10 @@ the two failures that make a scene read as a toy.
 
 ## Recording The Outcome
 
-- **Accept**: run the orientation review
-  (`<REPO_PATH>/agent_skills/asset_qa/3d_object/orientation_review.md`) and
-  record the facing axis. An accepted asset with an unverified facing is not
-  finished. A spec-built asset carries its facing as data, so the review
-  confirms rather than establishes it.
+- **Accept**: record the facing axis against the task output. An accepted
+  asset with an unverified facing is not finished. A spec-built asset
+  carries its facing as data, so the check confirms rather than establishes
+  it.
 - **Regenerate**: change the plan entry — prompt, seed, `role`,
   `triangles`, `texture` — and say which, so the next run is a different
   attempt rather than the same one.
@@ -475,23 +472,13 @@ the two failures that make a scene read as a toy.
   generation.
 - **Reject**: keep the primitive fallback. This is a real answer. A
   bevelled primitive with honest materials and a fitted shadow looks
-  better than a melted mesh, and `assets.instantiateOrBuild` already
-  falls back to it with no code change.
+  better than a melted mesh, and a spec-built asset can fall back to it
+  with no code change.
 
 ## What Generation Does Not Fix
-
-Reach for the framework before reaching for the GPU. In descending order
-of visible effect per line of code, a generated three.js scene is decided
-by `host.setEnvironment({ preset })`, filmic tone mapping, a fitted
-shadow camera, bevelled edges, honest materials, and contact shadows —
-all of them documented in
-`<REPO_PATH>/agent_skills/engine_context/three_js_api.md`. An unlit scene full of
-generated art still looks like an unlit scene; a lit scene full of
-primitives does not.
 
 Generation is also the wrong tool for anything that must **articulate**.
 A generated mesh is one fused body: a car's wheels cannot spin, a chest's
 lid cannot open, a character cannot be skinned. Either generate the shell
-and keep the moving parts as primitives driven by gameplay — which is what
-`entity.visual` is for — or build the whole thing from a spec, where every
-part is already a named node.
+and keep the moving parts as primitives driven by gameplay, or build the
+whole thing from a spec, where every part is already a named node.
