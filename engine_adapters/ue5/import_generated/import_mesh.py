@@ -1,7 +1,7 @@
 """
 engine_adapters/ue5/import_generated/import_mesh.py
 
-Imports a mesh produced by `models/gen_3d_object` (Trellis2 / Tripo / Meshy)
+Imports a mesh produced by `models/gen_3d_object` (Tripo / Meshy)
 into an Unreal Engine 5 project and validates what landed.
 
 **This module runs inside Unreal's Python**, where `import unreal` exists. It is

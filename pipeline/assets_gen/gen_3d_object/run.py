@@ -30,9 +30,9 @@ Usage:
     # Fresh timestamped run dir instead of overwriting <game>/default/
     python pipeline/assets_gen/gen_3d_object/run.py --run-id auto
 
-    # Override model checkpoint path
+    # Override the model version id (Tripo version / Meshy model id)
     python pipeline/assets_gen/gen_3d_object/run.py \
-        --ckpt /path/to/TRELLIS.2-4B
+        --ckpt v3.1-20260211
 
     # Run from a different jsonl
     python pipeline/assets_gen/gen_3d_object/run.py \
@@ -219,9 +219,9 @@ def main():
 
     run_id = paths.new_run_id() if args.run_id == "auto" else args.run_id
 
-    # A task file of specs needs no model at all, and loading TRELLIS.2 to
-    # build a crate would demand a GPU the job does not use — on a CPU box it
-    # would fail before reaching the first task. Decided from the tasks
+    # A task file of specs needs no model at all, and calling a cloud
+    # backend to build a crate would bill for work the job does not need.
+    # Decided from the tasks
     # themselves rather than from a flag, so the caller cannot get it wrong.
     tasks_path = (
         None if args.image
@@ -252,15 +252,13 @@ def main():
             )
 
         ckpt = resolve_ckpt(args.backend, args.ckpt)
-        backend_kwargs = {}
-        if args.backend != "trellis2":
-            backend_kwargs = {
-                "cache_dir": args.cache_dir,
-                "low_poly": args.low_poly,
-                "output_format": args.output_format,
-                "timeout": args.timeout,
-                "verbose": True,
-            }
+        backend_kwargs = {
+            "cache_dir": args.cache_dir,
+            "low_poly": args.low_poly,
+            "output_format": args.output_format,
+            "timeout": args.timeout,
+            "verbose": True,
+        }
         model = load_model(ckpt, device=args.device,
                            backend=args.backend, **backend_kwargs)
 

@@ -2,7 +2,7 @@
  3D Object Generation Requirements — gameC_fps_tactical_unity
 ================================================================================
 
-生成方式: 参考图 → 3D 模型 (TRELLIS.2 / Hunyuan3D-2.1 / TripoSG)
+生成方式: 参考图 → 3D 模型 (Tripo / Meshy)
 输出格式: GLB (含 PBR 纹理)
 
 所有路径相对仓库根目录。image_path 指向 ref_images/ 下的概念参考图。
@@ -66,4 +66,4 @@
 - 恐怖分子角色为 T-pose 全身模型，便于后续骨骼绑定和动作 retarget
 - 所有模型使用 PBR 材质 (albedo, normal, metallic, roughness)
 - 模型需 game-ready，无多余几何体
-- decimation_target 为网格抽取前的目标面数 (TRELLIS 输出密度较高)
+- decimation_target 为网格抽取前的目标面数 (云端输出密度较高)

@@ -7,7 +7,7 @@ already-rigged FBX under the 3D-object task contract. The benchmark therefore
 does not generate an additional T-pose reference image.
 
 The T-pose pipeline (QwenEdit image generation → RMBG matting → 3D model
-via TRELLIS.2) is therefore **skipped** for this game.
+via Seedream) is therefore **skipped** for this game.
 
 ## What is used instead
 

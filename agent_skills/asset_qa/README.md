@@ -40,11 +40,10 @@ rather than the shared script directly.
 
 | Asset task | Canonical setup command | Additional setup |
 |---|---|---|
-| Image / T-pose | No repository-wide installer currently required | See `<REPO_PATH>/scripts/asset_env_setup/image/` (`cloud_api_install.sh`, `qwen_image_install.sh`) and `<REPO_PATH>/agent_skills/asset_qa/image/SKILL.md` |
-| 3D object | `bash scripts/asset_env_setup/3d_object/cloud_api_install.sh` | Local TRELLIS.2: `bash scripts/asset_env_setup/3d_object/trellis2_install.sh` |
-| 3D scene | No repository-wide installer currently required | See `<REPO_PATH>/scripts/asset_env_setup/3d_scene/README.md` and use the selected engine asset library where appropriate |
-| Motion | `bash scripts/asset_env_setup/gen_motion/install.sh` | Then `source scripts/asset_env_setup/gen_motion/runtime_env.sh` |
-| Audio | `bash scripts/asset_env_setup/audio/cloud_api_install.sh` | Local checkpoints follow `<REPO_PATH>/agent_skills/asset_qa/audio/SKILL.md` |
+| Image / T-pose | No repository-wide installer currently required | See `<REPO_PATH>/scripts/asset_env_setup/image/cloud_api_install.sh` and `<REPO_PATH>/agent_skills/asset_qa/image/SKILL.md` |
+| 3D object | `bash scripts/asset_env_setup/3d_object/cloud_api_install.sh` | — |
+| Motion | No repository-wide installer currently required | See `<REPO_PATH>/agent_skills/asset_qa/motion/SKILL.md` |
+| Audio | `bash scripts/asset_env_setup/audio/cloud_api_install.sh` | See `<REPO_PATH>/agent_skills/asset_qa/audio/SKILL.md` |
 | CG video | `bash scripts/asset_env_setup/cg_video/cloud_api_install.sh` | Local MiniMax H3: `bash scripts/asset_env_setup/cg_video/minimax_h3_install.sh` |
 
 ## Paid cloud backend: ask the user before spending

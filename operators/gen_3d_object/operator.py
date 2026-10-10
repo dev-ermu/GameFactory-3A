@@ -5,7 +5,7 @@ Gen3DObjectOperator — accepts a loaded model and processes an input dict into 
 3D output (GLB file on disk).
 
 The operator is intentionally model-agnostic: you inject any object that
-implements the same interface as Trellis2Model.  New model wrappers can be
+implements the same interface as `TripoModel`.  New model wrappers can be
 swapped in without touching this file.
 
 Output layout — two modes, chosen by whether `output_dir` is given:
@@ -21,10 +21,10 @@ Output layout — two modes, chosen by whether `output_dir` is given:
     byte-for-byte the historical behaviour. Existing callers are unaffected.
 
 Usage:
-    from models.gen_3d_object.trellis_2_model import Trellis2Model
+    from models.gen_3d_object.tripo_model import TripoModel
     from operators.gen_3d_object.operator import Gen3DObjectOperator
 
-    model = Trellis2Model(model_path="...")
+    model = TripoModel(model_path="v3.1-20260211")
 
     # per-game layout
     op = Gen3DObjectOperator(model=model, run_id="20260731_1032")
@@ -117,7 +117,8 @@ class Gen3DObjectOperator:
 
     Args:
         model: A loaded model with an `infer_and_save(image, output_path, ...)` method.
-               Currently supports Trellis2Model; any model with the same interface works.
+               Currently supports TripoModel and MeshyModel; any model with the
+               same interface works.
         output_dir (str, optional): **Legacy flat mode.** When given, every GLB is
                written as `<output_dir>/<task_id>.glb`, exactly as before. When
                omitted (default), the per-game layout under

@@ -1,6 +1,7 @@
 """Remove the ground plate image-to-3D invents under a standing subject.
 
-TRELLIS.2 crops its input to the subject's alpha bounding box with no
+Image-to-3D backends crop their input to the subject's alpha bounding box
+with no
 margin, so a full-body figure touches the top and bottom of the frame it
 reconstructs from. Given a subject standing on the frame edge it
 frequently infers a floor, and emits a flat slab spanning the whole

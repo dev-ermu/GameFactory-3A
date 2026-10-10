@@ -25,11 +25,10 @@
 
 | 资产类型       | 标准配置命令                                                                 | 额外配置说明                                                                 |
 |----------------|------------------------------------------------------------------------------|------------------------------------------------------------------------------|
-| 图像/T-pose    | 目前无需全局安装脚本                                                         | 请参阅`<REPO_PATH>/scripts/asset_env_setup/image/`目录下的`cloud_api_install.sh`、`qwen_image_install.sh`，以及`<REPO_PATH>/agent_skills/asset_qa/image/SKILL.md` |
-| 3D物体         | `bash scripts/asset_env_setup/3d_object/cloud_api_install.sh`                | 本地TRELLIS.2模型：执行`bash scripts/asset_env_setup/3d_object/trellis2_install.sh` |
-| 3D场景         | 目前无需全局安装脚本                                                         | 请参阅`<REPO_PATH>/scripts/asset_env_setup/3d_scene/README.md`，并根据需要选用对应的引擎资产库 |
-| 动作数据       | `bash scripts/asset_env_setup/gen_motion/install.sh`                          | 随后执行`source scripts/asset_env_setup/gen_motion/runtime_env.sh`            |
-| 音频           | `bash scripts/asset_env_setup/audio/cloud_api_install.sh`                     | 本地检查点相关信息请参阅`<REPO_PATH>/agent_skills/asset_qa/audio/SKILL.md`     |
+| 图像/T-pose    | 目前无需全局安装脚本                                                         | 请参阅`<REPO_PATH>/scripts/asset_env_setup/image/cloud_api_install.sh`，以及`<REPO_PATH>/agent_skills/asset_qa/image/SKILL.md` |
+| 3D物体         | `bash scripts/asset_env_setup/3d_object/cloud_api_install.sh`                | — |
+| 动作数据       | 目前无需全局安装脚本                                                         | 请参阅`<REPO_PATH>/agent_skills/asset_qa/motion/SKILL.md` |
+| 音频           | `bash scripts/asset_env_setup/audio/cloud_api_install.sh`                     | 请参阅`<REPO_PATH>/agent_skills/asset_qa/audio/SKILL.md` |
 | CG视频         | `bash scripts/asset_env_setup/cg_video/cloud_api_install.sh`                 | 本地MiniMax H3模型：执行`bash scripts/asset_env_setup/cg_video/minimax_h3_install.sh` |
 
 ## 付费云后端：使用前需征求用户许可

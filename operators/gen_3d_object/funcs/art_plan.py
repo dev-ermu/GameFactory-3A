@@ -2,9 +2,9 @@
 
 A generated game looks like programmer art for two reasons, and
 only one is about lighting. The other is that its world is built from
-capsules and boxes because nothing else was available. TRELLIS.2 removes
-that constraint, but only if somebody says *which* props — and that list
-is content, not code.
+capsules and boxes because nothing else was available. A generative model
+removes that constraint, but only if somebody says *which* props — and
+that list is content, not code.
 
 The height matters as much as the subject. A generated mesh arrives
 normalised into a unit box, so a crate and a water tower come out the
@@ -71,7 +71,7 @@ GENERATED_FORWARD_AXIS = "+z"
 #: a box the player hides behind.
 #:
 #: Triangle counts cannot be fixed afterwards: decimating a textured mesh
-#: outside the generator throws its UVs away, and TRELLIS.2 bakes the
+#: outside the generator throws its UVs away, and the generator bakes the
 #: texture *after* it decimates. The budget has to be right at generation.
 BUDGET_BY_ROLE: dict[str, tuple[int, int]] = {
     #  role         triangles  texture

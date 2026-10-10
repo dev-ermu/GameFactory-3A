@@ -1,6 +1,6 @@
 // engine_adapters/unity3d/import_generated/ImportGeneratedMesh.cs
 //
-// Imports a mesh produced by models/gen_3d_object (Trellis2 / Tripo / Meshy)
+// Imports a mesh produced by models/gen_3d_object (Tripo / Meshy)
 // into a Unity project and turns it into a usable prefab.
 //
 // This is an **Editor** script: copy it to <UnityProject>/Assets/Editor/ (any

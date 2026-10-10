@@ -2,13 +2,13 @@
 
 ## Overview
 Generate game-ready 3D models for the fighting arena game. All character models
-are generated from T-pose reference images using TRELLIS.2 or Hunyuan3D-2.1.
+are generated from T-pose reference images using Tripo or Meshy.
 Weapon, prop, and architectural models are generated from reference images
-using TRELLIS.2, TripoSG, or Meshy.
+using Tripo or Meshy.
 
 ## Model Backend
-- **Characters**: TRELLIS.2 / Hunyuan3D-2.1 (T-pose image → 3D model)
-- **Weapons / Props**: TRELLIS.2 / TripoSG (ref image → 3D model)
+- **Characters**: Tripo / Meshy (T-pose image → 3D model)
+- **Weapons / Props**: Tripo / Meshy (ref image → 3D model)
 - **Architecture**: Meshy image-to-3D (ref image → textured GLB)
 
 ## Quality Requirements

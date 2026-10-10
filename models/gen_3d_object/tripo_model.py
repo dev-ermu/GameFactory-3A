@@ -90,7 +90,7 @@ class TripoModel:
     """
     Cloud image-to-3D / text-to-3D through Tripo3D.
 
-    Interchangeable with `Trellis2Model` in `Gen3DObjectOperator`: the
+    Interchangeable with `MeshyModel` in `Gen3DObjectOperator`: the
     `infer_and_save(image, output_path, seed, decimation_target, texture_size)`
     call signature is positionally identical (model_require.md R6).
 
@@ -269,7 +269,7 @@ class TripoModel:
         """
         Keep `face_limit` inside the range the service accepts.
 
-        `Gen3DObjectOperator` forwards TRELLIS.2's default of 1 000 000, and with
+        `Gen3DObjectOperator` forwards a 1 000 000 default, and with
         `low_poly=True` anything outside 500-20 000 is a terminal 400. Clamping
         (loudly) keeps the backends interchangeable (R6) rather than making the
         caller special-case each provider.
@@ -350,8 +350,8 @@ class TripoModel:
                    is not guaranteed server-side.
             decimation_target: Target face count, forwarded as `face_limit`.
                    None leaves it to the service.
-            texture_size: Accepted for signature parity with `Trellis2Model` and
-                   **ignored** — Tripo exposes `texture_quality`, not a
+            texture_size: Accepted for signature parity with the other cloud
+                   backends and **ignored** — Tripo exposes `texture_quality`, not a
                    resolution. Pass `texture_quality=` to the constructor.
             prompt: Text prompt for text-to-3D. [A4 decision] The operator slot is
                    image-to-3D today; accepting `prompt` here keeps text-to-3D

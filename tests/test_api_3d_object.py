@@ -254,7 +254,7 @@ class TestInference(unittest.TestCase):
 
     def test_meshy_clamps_polycount_the_operator_sends(self):
         """
-        The operator forwards TRELLIS.2's decimation_target=1_000_000, which
+        The operator forwards a decimation_target=1_000_000 default, which
         Meshy rejects with a terminal 400. Clamping keeps R6 true.
         """
         model = make_meshy()

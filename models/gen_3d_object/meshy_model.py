@@ -7,8 +7,8 @@ text-to-3D), producing GLB / FBX / OBJ / USDZ / STL.
 Reference: https://docs.meshy.ai/
 
 Second backend for the `gen_3d_object` slot. Its `infer` / `infer_and_save`
-signatures are identical to `TripoModel`'s and positionally identical to
-`Trellis2Model`'s, so `Gen3DObjectOperator` dispatches on class name alone
+signatures are positionally identical to `TripoModel`'s, so
+`Gen3DObjectOperator` dispatches on class name alone
 (model_require.md R6).
 
 CONTRACT DEVIATIONS (model_require.md targets local-weight models; the rules that
@@ -227,7 +227,7 @@ class MeshyModel:
         """
         Keep `target_polycount` inside the documented range.
 
-        `Gen3DObjectOperator` forwards TRELLIS.2's default of 1_000_000, which
+        `Gen3DObjectOperator` forwards a 1_000_000 default, which
         Meshy rejects with a terminal 400. Clamping (loudly) keeps the operator
         interchangeable (R6) instead of making the caller special-case backends.
         """
@@ -265,7 +265,7 @@ class MeshyModel:
                    parameter. Reproducibility is not guaranteed.
             decimation_target: Target face count → `target_polycount`, clamped to
                    the API's 100-300000 range.
-            texture_size: Accepted for signature parity with `Trellis2Model` and
+            texture_size: Accepted for signature parity with `TripoModel` and
                    **ignored** — Meshy exposes no texture resolution parameter.
             prompt: Text prompt for text-to-3D. [A4 decision] Same rationale as
                    `TripoModel`: keeps text-to-3D reachable without a second slot.

@@ -13,7 +13,7 @@ Pipeline:
                              suppression are applied to derive the mask.
   3. Post-process: validate alpha, tight-crop the foreground bbox, pad to a
      square canvas and resize to a fixed target size (1024 by default) so the
-     result is directly consumable by downstream 3D pipelines (e.g. TRELLIS.2).
+     result is directly consumable by downstream 3D pipelines.
 """
 
 import numpy as np
@@ -140,7 +140,7 @@ def _extract_foreground(image: Image.Image, mask_model) -> Image.Image:
 # Step 3: Post-process for downstream 3D
 # ---------------------------------------------------------------------------
 
-def _postprocess_for_trellis(
+def _postprocess_for_3d(
     rgba: Image.Image,
     size: int = 1024,
     white_thresh: int = 240,
@@ -244,7 +244,7 @@ def gen_tpose_image(
         fg_rgba = tpose_rgb.convert("RGBA")
 
     # Step 3: post-process for downstream 3D
-    fg_rgba = _postprocess_for_trellis(fg_rgba, size=target_size)
+    fg_rgba = _postprocess_for_3d(fg_rgba, size=target_size)
 
     if return_intermediate:
         return {"tpose_rgb": tpose_rgb, "tpose_rgba": fg_rgba}

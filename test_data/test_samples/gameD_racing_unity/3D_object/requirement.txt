@@ -4,13 +4,13 @@
 
 Racing vehicles, one visible rigged driver, and track-side props. A separate
 T-pose generation stage is not required because the driver is supplied as an
-already-rigged FBX. Generated objects use the TRELLIS.2 / TripoSG /
+already-rigged FBX. Generated objects use the Tripo / Meshy
 Hunyuan3D-2.1 pipeline.
 
 ## Generation Pipeline
 
 ```
-ref image → 3D model (TRELLIS.2) → decimate → bake PBR textures → GLB
+ref image → 3D model (Tripo) → decimate → bake PBR textures → GLB
 ```
 
 ## Quality Targets

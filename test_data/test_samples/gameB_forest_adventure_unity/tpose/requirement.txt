@@ -11,8 +11,8 @@ T-pose 参考图是 3D 物体生成的前置步骤，生成的参考图将作为
 
 | 资产类型 | 生成方式 | 模型 | 输出 |
 |---------|---------|------|------|
-| 人物角色 T-pose | text → T-pose image | TRELLIS T-pose 生成 | PNG 1024×1024 |
-| 怪物 T-pose | text → T-pose image | TRELLIS T-pose 生成 | PNG 1024×1024 |
+| 人物角色 T-pose | text → T-pose image | Seedream T-pose 生成 | PNG 1024×1024 |
+| 怪物 T-pose | text → T-pose image | Seedream T-pose 生成 | PNG 1024×1024 |
 
 生成参数:
 - steps: 40 (采样步数)

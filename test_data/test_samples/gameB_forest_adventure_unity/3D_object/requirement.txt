@@ -12,9 +12,9 @@
 
 | 资产类型 | 生成方式 | 模型 | 质量要求 |
 |---------|---------|------|---------|
-| 人物角色 | T-pose image → 3D model | TRELLIS.2 / Hunyuan3D-2.1 | ≤100k tris, PBR 2048 |
-| 怪物 | T-pose image → 3D model | TRELLIS.2 / Hunyuan3D-2.1 | ≤30k tris, PBR 2048 |
-| 道具 | ref image → 3D model | TRELLIS.2 / Hunyuan3D-2.1 | ≤10k tris, PBR 2048 |
+| 人物角色 | T-pose image → 3D model | Tripo / Meshy | ≤100k tris, PBR 2048 |
+| 怪物 | T-pose image → 3D model | Tripo / Meshy | ≤30k tris, PBR 2048 |
+| 道具 | ref image → 3D model | Tripo / Meshy | ≤10k tris, PBR 2048 |
 
 ---
 

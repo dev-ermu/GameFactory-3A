@@ -91,7 +91,7 @@ when thrown, and become pickable again after landing on any playable surface.
 
 ### AI Asset Generation Pipeline
 1. **T-pose Images**: QwenEdit + RMBG → clean T-pose reference images (RGBA PNG)
-2. **3D Objects**: TRELLIS.2 → character/weapon/prop GLB models (≤100k tris, PBR 2048)
+2. **3D Objects**: Tripo → character/weapon/prop GLB models (≤100k tris, PBR 2048)
 3. **Motions**: MoMask -> BVH -> Puppeteer rig + bpy retarget -> animation FBX (7 core body motions per character; 14 total)
 4. **Scene**: Hunyuan-WorldPlay2 → stone arena scene GLB
 5. **Audio**: Qwen3-TTS (dialogue) + Woosh-DFlow (SFX) → WAV files
