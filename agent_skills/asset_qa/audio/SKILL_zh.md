@@ -60,7 +60,7 @@ pip install -r requirements.txt
 python pipeline/assets_gen/gen_audio/run.py --only-audio-type sound_effect --no-auto-download
 ```
 
-## Seed Audio 1.0
+## 五、Seed Audio
 
 云后端Seed Audio无需更改任务JSON文件，即可占用现有的音频插槽：
 
@@ -68,10 +68,8 @@ python pipeline/assets_gen/gen_audio/run.py --only-audio-type sound_effect --no-
 - `audio_type=sound_effect`：一次性音效、拟音和环境音。
 
 它在流水线边界处同步处理，会生成离线的WAV音频资源。
-默认的中国区端点为
-`https://openspeech.bytedance.com/api/v3/tts/create`。
 
-### 凭证与可选配置
+### 5.1 凭证与可选配置
 
 ```bash
 export SEED_AUDIO_API_KEY=<你的火山引擎Seed Audio API密钥>
@@ -85,7 +83,7 @@ export AAAGF_DIALOGUE_BACKEND=seed_audio
 export AAAGF_SOUND_EFFECT_BACKEND=seed_audio
 ```
 
-任务中Qwen风格的`speaker_id`值（例如`Vivian`）不会发送给Seed Audio。若要指定发音人，需使用`SEED_AUDIO_SPEAKER_ID`参数来指定已注册的Seed Audio发音人。如果提供了`reference_audio_path`，则内存中的参考音频会优先于该发音人ID生效。仅在相关授权允许的情况下才可使用参考录音。
+根据具体云端大模型调用参数，发送合适参数内容。比如Qwen风格的`speaker_id`值（例如`Vivian`）不会发送给Seed Audio。若要指定发音人，需使用`SEED_AUDIO_SPEAKER_ID`参数来指定已注册的Seed Audio发音人。仅在相关授权允许的情况下才可使用参考录音。
 
 ### Seed Audio命令
 
