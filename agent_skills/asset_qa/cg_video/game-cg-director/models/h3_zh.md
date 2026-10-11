@@ -1,4 +1,4 @@
-# H3模型简介
+# MiniMax H3模型简介
 
 ```json machine-checks
 {"model":"h3","min_duration_sec":4,"max_duration_sec":15,"max_reference_images":9,"max_reference_videos":3,"max_reference_audio":3,"max_reference_files":12}
@@ -12,7 +12,7 @@
 
 ## 语言与时序语法规则
 
-所有章节均使用英语撰写。仅在对话/歌词标签或带引号的可见文本中保留原文。
+所有章节均使用中文或英文撰写。仅在对话，歌词标签或带引号的可见文本中保留原文。
 
 - 首个镜头以`[Shot 1]`开头，无需标注时间戳。后续每个镜头均以`[Shot N] At MM:SS.mmm,`开头；需使用连续编号，且切割时间必须严格小于`duration_sec`。
 - 语音来源需赋予稳定的`(S1)`、`(S2)`编号。在`<d>[语言] ...</d>`标签内仅填写语言标签和对应文字；说话人描述、编号、动作及表达方式需放在标签外。
@@ -28,9 +28,9 @@ overall_soundscape: ...
 non_diegetic_music: ...
 ```
 
-`overall_soundscape`：用于描述环境音、物理动作及非语言类人声的1–4句英语表述；不得重复对话内容。仅在要求完全静音时使用`N/A`。`non_diegetic_music`：用于描述乐器、节奏、韵律及可听动态变化的1–3句英语表述；当不需要仅面向观众的背景音乐时，使用`N/A`。
-
-T2VA直接以`integrated_multimodal_description:`开头，无需添加引用标签。
+* T2VA直接以`integrated_multimodal_description:`开头，无需添加引用标签。
+* `overall_soundscape`：用于描述环境音、物理动作及非语言类人声的1–4句英语表述；不得重复对话内容。仅在要求完全静音时使用`N/A`。
+* `non_diegetic_music`：用于描述乐器、节奏、韵律及可听动态变化的1–3句英语表述；当不需要仅面向观众的背景音乐时，使用`N/A`。
 
 对于I2VA，需先输入以下行，再空一行：
 
@@ -59,7 +59,9 @@ retention_analysis: ...
 detailed_description: ...
 overall_soundscape: ...
 non_diegetic_music: ...
-```- 标签说明：`<Subject N>`表示可复用的可见内容；`<Picture N>`表示具体的画面/镜头锚点；`<Video N>`表示源视频的编辑、延续、摄像机运动、剪辑、节奏或时序相关内容；`<Audio N>`表示被复制/引用的音频。各类标签的序号需独立且连续编排；所有标签的含义需保持稳定，且每个使用的标签都需明确定义。
+```
+
+- 标签说明：`<Subject N>`表示可复用的可见内容；`<Picture N>`表示具体的画面/镜头锚点；`<Video N>`表示源视频的编辑、延续、摄像机运动、剪辑、节奏或时序相关内容；`<Audio N>`表示被复制/引用的音频。各类标签的序号需独立且连续编排；所有标签的含义需保持稳定，且每个使用的标签都需明确定义。
 - 已启用的参考视频同步音轨可能会被打上`<Audio N>`标签，但不会自动生成新的音频文件。需单独界定该类音轨的作用与来源，区别于普通音频文件。
 - 每个主标签对应一条`subject_definitions`描述行。仅用于提取主体内容的图片可归入对应主体的定义中。
 - `summary`开头需用方括号标注适用的任务类型：`keyframe completion`（关键帧补全）、`reference generation`（参考素材生成）、`video editing`（视频编辑）、`video continuation`（视频延续）、`audio reuse`（音频复用）或`audio reference`（音频引用）；若存在多种任务类型，用` + `连接。

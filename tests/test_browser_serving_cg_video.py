@@ -70,7 +70,7 @@ class BrowserServingCgVideoTests(unittest.TestCase):
                     {
                         "game_id": "game_demo",
                         "task_id": "opening_001",
-                        "model": "h3",
+                        "model": "minimax-h3",
                         "mode": "text_to_video",
                         "scene": "opening",
                         "duration_sec": 6,
@@ -173,7 +173,7 @@ class CgVideoReuseTests(unittest.TestCase):
         row = {
             "game_id": "game_demo",
             "task_id": "opening_001",
-            "model": "h3",
+            "model": "minimax-h3",
             "mode": "text_to_video",
             "scene": "opening",
             "duration_sec": 6,

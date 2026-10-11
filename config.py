@@ -85,7 +85,10 @@ class Settings(BaseSettings):
     seed_audio_speaker_id: str = ""
     minimax_api_base: str = ""
     minimax_api_key: str = ""
-    minimax_video_model: str = "MiniMax-Hailuo-2.3"
+    #: MiniMax 视频模型 ID。此处是 **MiniMax H3**（市场名亦作 Hailuo 3），
+    #: 输出 4-15 秒。上一代 **MiniMax-Hailuo-2.3** 是另一个模型
+    #: （ID ``minimax-video-v2.3``，仅 6 或 10 秒），两者不可混用。
+    minimax_video_model: str = "minimax-video-h3"
     minimax_h3_runtime: str = "api"
     tokenhub_api_base: str = ""
     tokenhub_api_key: str = ""
@@ -196,7 +199,7 @@ CLOUD_LABELS: dict[str, str] = {
     "meshy": "Meshy",
     "ark": "Volcengine Ark (Seedream / Seedance)",
     "seed_audio": "Seed Audio (Volcengine Speech)",
-    "minimax": "MiniMax (Hailuo)",
+    "minimax": "MiniMax H3 (Hailuo 3)",
     "tokenhub": "Tencent Cloud TokenHub (Tripo rigging / animation)",
 }
 

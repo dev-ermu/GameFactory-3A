@@ -39,10 +39,23 @@ SUPPORTED_MODES = frozenset(
         "reference_to_video",
     }
 )
+#: 规范后端名。MiniMax 的视频模型有两个容易混淆的名字：
+#:
+#: * **MiniMax H3**（市场名亦作 Hailuo 3）—— API model id ``minimax-video-h3``，
+#:   输出 4-15 秒，支持文生 / 首帧 / 首尾帧 / 多模态参考生成。
+#: * **MiniMax-Hailuo-2.3** —— 另一代模型，API model id ``minimax-video-v2.3``，
+#:   只支持文生与首帧，时长仅 6 或 10 秒。
+#:
+#: 本仓库使用的始终是前者。二者的时长约束不同，混用会让按 H3 文档写出的
+#: 提示词被按 2.3 的规则拒掉，因此这里统一用全称，不再接受 `h3` 简写。
+MINIMAX_H3_BACKEND = "minimax-h3"
+
+#: MiniMax H3 的输出时长区间（秒）。
+MINIMAX_H3_MIN_DURATION = 4
+MINIMAX_H3_MAX_DURATION = 15
+
 BACKEND_ALIASES = {
-    "h3": "minimax-h3",
-    "minimax": "minimax-h3",
-    "minimax-h3": "minimax-h3",
+    MINIMAX_H3_BACKEND: MINIMAX_H3_BACKEND,
     "seedance": "seedance",
 }
 #: 走云端 API 的后端。本地权重运行时已移除，因此这就是全部后端。
@@ -782,7 +795,7 @@ class CgVideoGateway:
             requested
             or task.get("backend")
             or task.get("model")
-            or "h3"
+            or MINIMAX_H3_BACKEND
         ).strip().lower()
         try:
             return BACKEND_ALIASES[candidate]
@@ -841,20 +854,22 @@ class CgVideoGateway:
             r"[1-9][0-9]*:[1-9][0-9]*", str(ratio)
         ):
             raise ValueError("CG-video aspect_ratio must use the form WIDTH:HEIGHT")
-        if backend != "minimax-h3":
+        if backend != MINIMAX_H3_BACKEND:
             return
 
-        if mode not in {"text_to_video", "first_frame_to_video"}:
-            raise NotImplementedError(
-                "MiniMax H3 API supports text_to_video and "
-                "first_frame_to_video only"
-            )
-        if duration not in (6, 10):
-            raise ValueError("MiniMax H3 API duration_sec must be 6 or 10")
-        resolution = str(options.get("resolution") or "768P").upper()
-        if resolution == "1080P" and duration != 6:
+        # MiniMax H3 (Hailuo 3) 的能力边界。此前这里套用的是上一代
+        # MiniMax-Hailuo-2.3 的约束（只允许文生/首帧，时长仅 6 或 10 秒，
+        # 1080P 仅 6 秒），却挂在名为 minimax-h3 的后端上 —— 于是按
+        # `models/h3_zh.md` 写出的 Ref2VA 提示词会被网关挡回。
+        # 两代模型的 API model id 不同，不要混用：
+        #   MiniMax H3      -> minimax-video-h3
+        #   Hailuo 2.3      -> minimax-video-v2.3
+        if not (MINIMAX_H3_MIN_DURATION <= duration <= MINIMAX_H3_MAX_DURATION):
             raise ValueError(
-                "MiniMax H3 API 1080P output is available only for 6 seconds"
+                f"MiniMax H3 duration_sec must be "
+                f"{MINIMAX_H3_MIN_DURATION}-{MINIMAX_H3_MAX_DURATION}; "
+                f"got {duration!r}. (MiniMax-Hailuo-2.3 is a different model "
+                f"and only accepts 6 or 10 seconds.)"
             )
 
 
