@@ -860,7 +860,7 @@ class CgVideoGateway:
         # MiniMax H3 (Hailuo 3) 的能力边界。此前这里套用的是上一代
         # MiniMax-Hailuo-2.3 的约束（只允许文生/首帧，时长仅 6 或 10 秒，
         # 1080P 仅 6 秒），却挂在名为 minimax-h3 的后端上 —— 于是按
-        # `models/h3_zh.md` 写出的 Ref2VA 提示词会被网关挡回。
+        # `models/h3.md` 写出的 Ref2VA 提示词会被网关挡回。
         # 两代模型的 API model id 不同，不要混用：
         #   MiniMax H3      -> minimax-video-h3
         #   Hailuo 2.3      -> minimax-video-v2.3

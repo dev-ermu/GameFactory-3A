@@ -76,7 +76,9 @@ python pipeline/assets_gen/gen_tpose_image/run.py \
   --target-size 1024
 ```
 
-### JSONL批量处理若要指定任务文件，可使用 `--tasks` 参数；若想获取某款游戏的任务列表，则使用 `--game` 参数。一个任务支持以下字段：`image_path`（对于 Python 调用者而言，也可以是内存中的 PIL `image` 对象）、`game_id`、`task_id`、`description`、`seed`、`steps`、`target_size` 以及 `save_intermediate`。
+### JSONL批量处理
+
+若要指定任务文件，可使用 `--tasks` 参数；若想获取某款游戏的任务列表，则使用 `--game` 参数。一个任务支持以下字段：`image_path`（对于 Python 调用者而言，也可以是内存中的 PIL `image` 对象）、`game_id`、`task_id`、`description`、`seed`、`steps`、`target_size` 以及 `save_intermediate`。
 
 ```json
 {

@@ -85,7 +85,9 @@ python pipeline/assets_gen/gen_cg_video/run.py \
 
 视频和音频参考素材现在即可编写，但当前的Operator会在未来支持相关功能前阻止其执行。当前流水线会为每个任务生成一个`video.mp4`文件；将多个片段合成一个编辑后的主视频属于独立的后期制作步骤。
 
-## 共享模式| 模式 | 必需的图片输入 | 用途 |
+## 共享模式
+
+| 模式 | 必需的图片输入 | 用途 |
 |---|---|---|
 | `text_to_video` | 无 | 根据文本提示生成视频片段 |
 | `first_frame_to_video` | `first_frame` | 为预设的开场构图制作动画 |
@@ -100,8 +102,6 @@ python pipeline/assets_gen/gen_cg_video/run.py \
 |---|---:|---:|---:|---:|---|
 | Seedance 2.0云API | 支持 | 支持 | 支持 | 支持 | 所有共享模式下均能提供高质量的云端生成服务 |
 | MiniMax H3 云API | 支持 | 支持 | 支持 | 支持 | 4–15 秒；多模态参考（最多 9 图 / 3 视频 / 3 音频 / 12 文件） |
-
-
 
 ## 常用命令行用法
 
@@ -138,7 +138,8 @@ python pipeline/assets_gen/gen_cg_video/run.py \
   --last-frame /absolute/path/last.png \
   --prompt "在这两帧之间自然过渡。" \
   --duration-sec 5
-```# 有序参考图像；重复该参数
+
+# 有序参考图像；重复该参数
 python pipeline/assets_gen/gen_cg_video/run.py \
   --backend seedance \
   --mode reference_to_video \
@@ -209,7 +210,7 @@ python pipeline/assets_gen/gen_cg_video/run.py \
 
 ## MiniMax H3
 
-MiniMax 的视频模型有两个容易混淆的名字，本仓库使用的是 **MiniMax H3**（市场名亦作 Hailuo 3，API model id `minimax-video-h3`）。它**不是**上一代 **MiniMax-Hailuo-2.3**（model id `minimax-video-v2.3`）——后者只支持文生与首帧、时长仅 6 或 10 秒。两者不可混用。
+MiniMax 的视频模型有两个容易混淆的名字，本仓库使用的是 **MiniMax H3**（亦作 Hailuo 3，API model id `minimax-video-h3`）。它**不是**上一代 **MiniMax-Hailuo-2.3**（model id `minimax-video-v2.3`）——后者只支持文生与首帧、时长仅 6 或 10 秒。两者不可混用。
 
 ### 能力
 
@@ -217,7 +218,7 @@ MiniMax 的视频模型有两个容易混淆的名字，本仓库使用的是 **
 - 模式：`text_to_video`、`first_frame_to_video`、`first_last_frame_to_video`、`reference_to_video`（多模态参考）
 - 不提供种子参数；共享的种子参数会被接受但会被忽略
 
-模型参数与提示词约束详见 `<REPO_PATH>/agent_skills/asset_qa/cg_video/game-cg-director/models/h3_zh.md`。
+模型参数与提示词约束详见 `<REPO_PATH>/agent_skills/asset_qa/cg_video/game-cg-director/models/h3.md`。
 
 ### API运行时
 
@@ -257,7 +258,6 @@ python pipeline/assets_gen/gen_cg_video/run.py \
 python tests/harness/smoke.py --kind cg_video --backend seedance
 python tests/harness/smoke.py --kind cg_video --backend minimax-h3
 ```
-
 
 ```bash
 export ARK_API_KEY="你的API密钥"
