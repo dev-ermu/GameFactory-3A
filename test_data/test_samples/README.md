@@ -44,10 +44,6 @@ test_samples/
 │   │   ├── requirement.txt
 │   │   ├── ref_images/               ← character references
 │   │   └── tpose_tasks.jsonl
-│   ├── 3D_scene/
-│   │   ├── requirement.txt
-│   │   ├── ref_images/
-│   │   └── scene_tasks.jsonl
 │   ├── motion/
 │   │   ├── requirement.txt
 │   │   ├── ref_videos/
@@ -58,22 +54,12 @@ test_samples/
 │   │   ├── ref_videos/               ← optional video references
 │   │   ├── ref_audio/                ← optional audio references
 │   │   └── cg_tasks.jsonl
-│   ├── audio/
-│   │   ├── requirement.txt
-│   │   ├── ref_audio/                ← optional voice / sound references
-│   │   └── audio_tasks.jsonl
-│   ├── mechanic/
-│   │   ├── requirement.txt
-│   │   ├── unity_template/           ← or ue5_template/
-│   │   └── mechanic_tasks.jsonl
-│   ├── ui/
-│   │   ├── requirement.txt
-│   │   └── ui_tasks.jsonl
-│   └── pipeline/
-│       ├── design_doc.txt            ← 2-page game-design brief
-│       └── pipeline_task.jsonl       ← integrated full-pipeline task
+│   └── audio/
+│       ├── requirement.txt
+│       ├── ref_audio/                ← optional voice / sound references
+│       └── audio_tasks.jsonl
 │
-├── gameA_fighting_arena_ue/          ← same nine task dirs, UE5 variant
+├── gameA_fighting_arena_ue/          ← same five task dirs, UE5 variant
 ├── gameB_forest_adventure_unity/  ·  gameB_forest_adventure_ue/
 ├── gameC_fps_tactical_unity/      ·  gameC_fps_tactical_ue/
 ├── gameD_racing_unity/
@@ -81,14 +67,14 @@ test_samples/
 └── *_collect.jsonl                   ← cross-game aggregate jsonls
     ├── 3D_object_gen_collect.jsonl
     ├── tpose_gen_collect.jsonl
-    ├── 3D_scene_gen_collect.jsonl
     ├── motion_gen_collect.jsonl
     ├── cg_video_collect.jsonl
-    ├── audio_gen_collect.jsonl
-    ├── mechanic_collect.jsonl
-    ├── ui_collect.jsonl
-    └── pipeline_collect.jsonl
+    └── audio_gen_collect.jsonl
 ```
+
+`3D_scene`, `mechanic`, `ui` and `pipeline` are no longer registered task
+kinds: they described generating scenes, gameplay code and UI code, and no
+runner for any of them exists. Every kind below is an asset kind.
 
 Directory names and task-list filenames are registered in
 `pipeline/common/paths.py` (`TASK_INPUT_DIR`, `TASK_JSONL`, `TASK_COLLECT_JSONL`).
@@ -104,7 +90,7 @@ Every line in a `*_tasks.jsonl` / `*_collect.jsonl` should carry:
 |-------|---------|
 | `game_id` | Which game project this task belongs to → selects the output directory. Must match the directory the file sits in. |
 | `task_id` | Unique within its `(game_id, task_kind)` → names the output directory. |
-| `engine` | `mechanic` / `ui` tasks only: `unity3d` or `ue5`. |
+| `engine` | Which engine a task targets: `unity3d` or `ue5`. Present on tasks that feed an engine importer. |
 
 Everything else is task-specific (`image_path`, `prompt`, `description`, `seed`, …).
 Paths are written **relative to the repo root**.
@@ -126,17 +112,18 @@ paths only exist after the corresponding generation step has run.
 
 ## Current status
 
-| game_id | 3D_object | tpose | motion | 3D_scene | cg_video | audio | mechanic | ui |
-|---------|----------:|------:|-------:|---------:|---------:|------:|---------:|---:|
-| `gameA_fighting_arena_unity` | 7 | 2 | 14 | 1 | 6 | 22 | 1 | 1 |
-| `gameA_fighting_arena_ue` | 3 | – | 10 | 1 | – | – | 1 | 1 |
-| `gameB_forest_adventure_unity` | 8 | 3 | 14 | 1 | 1 | 12 | 9 | 1 |
-| `gameB_forest_adventure_ue` | 4 | – | 11 | 1 | – | – | 1 | 1 |
-| `gameC_fps_tactical_unity` | 6 | 1 | 16 | 1 | 1 | 7 | 1 | 1 |
-| `gameC_fps_tactical_ue` | 3 | – | 8 | 1 | – | – | 1 | 1 |
-| `gameD_racing_unity` | 2 | – | – | 1 | – | – | 1 | 1 |
+| game_id | 3D_object | tpose | motion | cg_video | audio |
+|---------|----------:|------:|-------:|---------:|------:|
+| `gameA_fighting_arena_unity` | 7 | 2 | 14 | 6 | 22 |
+| `gameA_fighting_arena_ue` | 3 | – | 10 | – | – |
+| `gameB_forest_adventure_unity` | 8 | 3 | 14 | 1 | 12 |
+| `gameB_forest_adventure_ue` | 4 | – | 11 | – | – |
+| `gameC_fps_tactical_unity` | 6 | 1 | 16 | 1 | 7 |
+| `gameC_fps_tactical_ue` | 3 | – | 8 | – | – |
+| `gameD_racing_unity` | 2 | – | – | – | – |
+| `threekingdoms_clash` | 3 | – | – | – | – |
 
-(task-line counts; `–` = no tasks yet)
+(task-line counts, read from the jsonl files; `–` = no tasks yet)
 
 The Unity variants carry detailed asset `requirement.txt` files; the UE variants
 currently hold one-line placeholders and reuse prepared assets

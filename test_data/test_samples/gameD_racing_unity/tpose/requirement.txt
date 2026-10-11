@@ -6,7 +6,7 @@ Racing uses one visible rigged driver, but the driver is supplied as an
 already-rigged FBX under the 3D-object task contract. The benchmark therefore
 does not generate an additional T-pose reference image.
 
-The T-pose pipeline (QwenEdit image generation → RMBG matting → 3D model
+The T-pose pipeline (Seedream image generation → 白底抠图 → 3D model
 via Seedream) is therefore **skipped** for this game.
 
 ## What is used instead

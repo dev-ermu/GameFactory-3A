@@ -2,11 +2,11 @@
 
 ## Overview
 Generate character dialogue (TTS) and game sound effects (SFX) for the fighting
-arena game. Dialogue uses Qwen3-TTS; sound effects use Woosh-DFlow.
+arena game. Dialogue uses Seed Audio; sound effects use Seed Audio.
 
 ## Model Backend
-- **Dialogue**: Qwen3-TTS (text → speech)
-- **Sound Effects**: Woosh-DFlow (text prompt → sound effect)
+- **Dialogue**: Seed Audio (text → speech)
+- **Sound Effects**: Seed Audio (text prompt → sound effect)
 
 ## Audio Assets
 

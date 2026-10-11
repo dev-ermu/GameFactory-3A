@@ -149,14 +149,9 @@ def run_from_jsonl(tasks_path: str, operator, game_filter: str | None = None) ->
     """Iterate a jsonl file and run each task, optionally restricted to one game."""
     results = []
     for task, game_id in paths.iter_tasks(tasks_path, game_filter=game_filter):
-        # A spec task has no image, so logging one would print '?' for the
-        # only field that identifies what is being built.
-        source = (
-            f"spec={task['spec'].get('subject', '?')!r}"
-            if task.get("spec") is not None
-            else f"image={task.get('image_path', '?')}"
-        )
-        print(f"[run] game={game_id}  task_id={task.get('task_id', '?')}  {source}")
+        # Every task names a source image; there is no inference-free variant.
+        print(f"[run] game={game_id}  task_id={task.get('task_id', '?')}  "
+              f"image={task.get('image_path', '?')}")
         result = generate(task, operator)
         if result.get("glb_path"):
             print(f"       → glb={result['glb_path']}  ({result['elapsed_sec']}s)")
@@ -219,48 +214,28 @@ def main():
 
     run_id = paths.new_run_id() if args.run_id == "auto" else args.run_id
 
-    # A task file of specs needs no model at all, and calling a cloud
-    # backend to build a crate would bill for work the job does not need.
-    # Decided from the tasks
-    # themselves rather than from a flag, so the caller cannot get it wrong.
     tasks_path = (
         None if args.image
         else paths.resolve_tasks_path(TASK_KIND, args.tasks, args.game)
     )
-    spec_only = False
-    if tasks_path is not None:
-        tasks = [task for task, _game in paths.iter_tasks(
-            str(tasks_path), game_filter=args.game)]
-        spec_only = bool(tasks) and all(
-            task.get("spec") is not None for task in tasks
+
+    # 在这里就失败，而不是等到第一个任务：云端后端需要 `.env` 里的凭证。
+    if args.backend in CLOUD_BACKENDS:
+        config.require_cloud_or_exit(
+            (args.backend,),
+            context=f"3D-object backend {args.backend!r}",
         )
 
-    if spec_only:
-        # Still true for a spec carrying `mesh` parts. Those read GLBs that
-        # already exist on disk, so the generation they needed happened in an
-        # earlier run and this one is arithmetic over files — the composition
-        # step never calls a model, which is what keeps a 60-part weapon
-        # rebuildable in a second on a machine with no GPU.
-        print("[run] every task carries a spec: no model loaded, no GPU needed")
-        model = None
-    else:
-        # 在这里就失败，而不是等到第一个任务：云端后端需要 `.env` 里的凭证。
-        if args.backend in CLOUD_BACKENDS:
-            config.require_cloud_or_exit(
-                (args.backend,),
-                context=f"3D-object backend {args.backend!r}",
-            )
-
-        ckpt = resolve_ckpt(args.backend, args.ckpt)
-        backend_kwargs = {
-            "cache_dir": args.cache_dir,
-            "low_poly": args.low_poly,
-            "output_format": args.output_format,
-            "timeout": args.timeout,
-            "verbose": True,
-        }
-        model = load_model(ckpt, device=args.device,
-                           backend=args.backend, **backend_kwargs)
+    ckpt = resolve_ckpt(args.backend, args.ckpt)
+    backend_kwargs = {
+        "cache_dir": args.cache_dir,
+        "low_poly": args.low_poly,
+        "output_format": args.output_format,
+        "timeout": args.timeout,
+        "verbose": True,
+    }
+    model = load_model(ckpt, device=args.device,
+                       backend=args.backend, **backend_kwargs)
 
     operator = make_operator(model, output_dir=args.out_dir,
                              run_id=run_id, default_game_id=args.game)

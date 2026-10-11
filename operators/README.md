@@ -21,7 +21,7 @@ metrics; 3D-object needs Chamfer + PBR checks; motion needs foot-skate + jerk).
 | Operator | Class | Description | Steps in `funcs/` |
 |---|---|---|---|
 | `gen_tpose_image` | `GenTPoseImageOperator` | Character image → T-pose RGBA, ready for rigging | `gen_tpose_image` |
-| `gen_3d_object` | `Gen3DObjectOperator` | Generate a single 3D asset from image / text | `art_plan`, `asset_import`, `asset_pack`, `mesh_cleanup` |
+| `gen_3d_object` | `Gen3DObjectOperator` | Generate a single 3D asset from an image, or stage a published CC0 one from the asset pack | `art_plan`, `asset_pack`, `mesh_cleanup` |
 | `gen_3d_scene` | `Gen3DSceneOperator` | Reconstruct a 3D scene from a reference image, or compose ground + placed objects | `scene_mask`, `points_to_mesh`, `build_scene_mesh`, `scene_assets`, `appearance_assets` |
 | `gen_motion` | `GenMotionOperator` | Rig a character, generate or fetch a clip, and retarget it | `rig_character`, `generate_motion`, `fetch_motion`, `retarget_motion` |
 | `gen_audio` | `GenAudioOperator` | Generate character dialogue and game sound effects | `generate_dialogue`, `generate_sound_effect`, `prepare_reference_audio`, `resample_audio` |

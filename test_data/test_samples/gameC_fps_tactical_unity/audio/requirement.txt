@@ -3,8 +3,8 @@
 ================================================================================
 
 生成方式:
-  - 对话/语音 (dialogue): Qwen3-TTS (TTS)
-  - 音效 (sound_effect): Woosh-DFlow (SFX generation)
+  - 对话/语音 (dialogue): Seed Audio (TTS)
+  - 音效 (sound_effect): Seed Audio (SFX generation)
 
 --------------------------------------------------------------------------------
  音效 (Sound Effects) — audio_type: sound_effect

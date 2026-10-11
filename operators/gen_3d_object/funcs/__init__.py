@@ -1,4 +1,16 @@
-"""Step functions for the 3D object operator."""
+"""Step functions for the 3D object operator.
+
+Two routes produce a mesh, and they answer different questions:
+
+* :mod:`.asset_pack` - a published CC0 model, for an asset that does not need
+  to match a concept (a crate, a calibration target, a rigged mannequin).
+* the cloud model behind :mod:`~operators.gen_3d_object.operator` - generated
+  from a reference image, for an asset that does.
+
+The declarative part-spec route used to live here too. It was removed because
+the meshes it produced were not good enough to ship; the two remaining routes
+cover the same ground without that compromise.
+"""
 
 from .art_plan import (
     DEFAULT_DECIMATION_TARGET,
@@ -12,48 +24,34 @@ from .art_plan import (
     neutral_canvas,
     plan_for_game,
 )
-from .code_asset import (
-    AXES,
-    GATES,
-    KINDS,
-    MAX_ATTEMPTS,
-    MESH_KIND,
-    PRIMITIVES,
-    SpecError,
-    build_code_asset,
-    correct_spec,
-    estimate_triangles,
-    run_gates,
-    spec_bounds,
-    suits_code_asset,
-    validate_spec,
+from .asset_pack import (
+    ASSET_PACK,
+    CACHE_ROOT,
+    asset_url,
+    describe_pack,
+    download,
+    fetch_asset_pack,
+    stage_asset,
 )
 from .mesh_cleanup import strip_ground_plate
 
 __all__ = [
-    "AXES",
+    "ASSET_PACK",
+    "CACHE_ROOT",
     "DEFAULT_DECIMATION_TARGET",
     "DEFAULT_TEXTURE_SIZE",
     "GAME_ART_PLANS",
-    "GATES",
     "GENERATED_FORWARD_AXIS",
-    "KINDS",
-    "MAX_ATTEMPTS",
-    "MESH_KIND",
-    "PRIMITIVES",
     "PROMPT_STYLE",
-    "SpecError",
-    "build_code_asset",
+    "asset_url",
     "concept_image",
-    "correct_spec",
+    "describe_pack",
     "describe_plans",
-    "estimate_triangles",
+    "download",
+    "fetch_asset_pack",
     "frame_subject",
     "neutral_canvas",
     "plan_for_game",
-    "run_gates",
-    "spec_bounds",
+    "stage_asset",
     "strip_ground_plate",
-    "suits_code_asset",
-    "validate_spec",
 ]

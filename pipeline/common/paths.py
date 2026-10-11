@@ -19,15 +19,17 @@ Full output tree::
             ├── assets/
             │   ├── 3d_object/<task_id>/       # model.glb        + meta.json
             │   ├── tpose/<task_id>/           # tpose_fg.png     + meta.json
-                        │   ├── motion/<task_id>/
+            │   ├── motion/<task_id>/
             │   ├── cg_video/<task_id>/
             │   └── audio/<task_id>/            # dialogue / sound-effect audio + meta.json
-            ├── mechanic/<task_id>/            # engine project + demo_outputs/ + launch.sh
-            ├── ui/<task_id>/
-            ├── pipeline/<task_id>/            # end-to-end game-slice artifacts
             └── eval/
                 ├── <task_kind>/<task_id>/     # metrics.json · build.log · judge_log.json
                 └── summary.json               # aggregate over the whole run
+
+Every registered task kind is an asset kind, so everything lands under
+``assets/``. The mechanic, ui and pipeline kinds are gone: they described
+generating gameplay and UI code, which this repository no longer does, and
+keeping them registered would only promise a runner that does not exist.
 
 The root stays next to the test set so any evaluator finds inputs and outputs side
 by side. Generated artifacts get large — point ``$AAAGF_OUTPUT_ROOT`` at a scratch
@@ -80,19 +82,13 @@ LATEST_LINK = "latest"
 
 # ── Task kinds ────────────────────────────────────────────────────────────────
 
-#: task_kind -> layer directory. Layer A = assets, B = mechanic, C = ui.
+#: task_kind -> layer directory. Every registered kind is an asset kind.
 TASK_LAYER: dict[str, str] = {
-    # Layer A — asset generation
     "3d_object": "assets",
     "tpose": "assets",
     "motion": "assets",
     "cg_video": "assets",
     "audio": "assets",
-    # Layer B / C — code generation
-    "mechanic": "mechanic",
-    "ui": "ui",
-    # End-to-end vertical slice
-    "pipeline": "pipeline",
 }
 
 #: task_kind -> directory name inside ``test_samples/<game_id>/``.
@@ -102,9 +98,6 @@ TASK_INPUT_DIR: dict[str, str] = {
     "motion": "motion",
     "cg_video": "cg_video",
     "audio": "audio",
-    "mechanic": "mechanic",
-    "ui": "ui",
-    "pipeline": "pipeline",
 }
 
 #: task_kind -> per-game task list filename inside ``TASK_INPUT_DIR``.
@@ -114,9 +107,6 @@ TASK_JSONL: dict[str, str] = {
     "motion": "motion_tasks.jsonl",
     "cg_video": "cg_tasks.jsonl",
     "audio": "audio_tasks.jsonl",
-    "mechanic": "mechanic_tasks.jsonl",
-    "ui": "ui_tasks.jsonl",
-    "pipeline": "pipeline_task.jsonl",
 }
 
 #: task_kind -> cross-game aggregate jsonl under ``test_samples/``.
@@ -126,9 +116,6 @@ TASK_COLLECT_JSONL: dict[str, str] = {
     "motion": "motion_gen_collect.jsonl",
     "cg_video": "cg_video_collect.jsonl",
     "audio": "audio_gen_collect.jsonl",
-    "mechanic": "mechanic_collect.jsonl",
-    "ui": "ui_collect.jsonl",
-    "pipeline": "pipeline_collect.jsonl",
 }
 
 #: Layer-A kinds only — what ``pipeline/assets_gen/`` covers.

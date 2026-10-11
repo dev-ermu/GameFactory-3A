@@ -83,7 +83,7 @@ outputs/gameB_forest_adventure_unity/3D_object/<task_id>/
 
 ## 注意事项
 
-1. 角色/怪物模型必须包含标准 Humanoid 骨骼绑定，以便后续 MoMask 动作 retarget
+1. 角色/怪物模型必须包含标准 Humanoid 骨骼绑定，以便后续 云端动作 retarget
 2. 宝箱模型需要支持开合动画（分为箱体和箱盖两部分）
 3. 所有模型必须使用 PBR 纹理流程（Albedo, Normal, Metallic, Roughness）
 4. UV 必须无重叠，纹理分辨率统一为 2048×2048

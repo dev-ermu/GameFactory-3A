@@ -11,4 +11,4 @@ procedural Unity behavior generated with the mechanic package:
 - the driver uses a seated pose and hand IK targets;
 - falling or flipped cars reset to the latest safe checkpoint.
 
-No MoMask, BVH, retargeted FBX, or authored AnimationClip is required.
+No 云端动作生成, BVH, retargeted FBX, or authored AnimationClip is required.

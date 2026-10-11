@@ -3,7 +3,7 @@
 ## 概述
 
 本目录包含 gameB_forest_adventure_unity（自由探索 ARPG）所需的人形角色动作生成任务。
-英雄和哥布林动作通过 MoMask text-to-motion 生成 BVH 文件，再 retarget 到角色骨骼上。
+英雄和哥布林动作通过 云端 text-to-motion 生成 BVH 文件，再 retarget 到角色骨骼上。
 蝙蝠不进入 humanoid motion pipeline；悬停、扇翼、俯冲、受击和坠落由游戏运行时程序化控制。
 
 ---
@@ -12,15 +12,15 @@
 
 | 动作类型 | 生成方式 | 模型 | 输出 |
 |---------|---------|------|------|
-| 战斗动作 | text_to_motion → BVH → retarget | MoMask | BVH + FBX |
-| 移动动作 | text_to_motion → BVH → retarget | MoMask | BVH + FBX |
-| 受击/死亡 | text_to_motion → BVH → retarget | MoMask | BVH + FBX |
-| 特殊动作 | text_to_motion → BVH → retarget | MoMask | BVH + FBX |
-| 蝙蝠动作 | 游戏运行时程序化控制 | 不使用 MoMask | 无 motion generation artifact |
+| 战斗动作 | text_to_motion → BVH → retarget | 云端动作生成 | BVH + FBX |
+| 移动动作 | text_to_motion → BVH → retarget | 云端动作生成 | BVH + FBX |
+| 受击/死亡 | text_to_motion → BVH → retarget | 云端动作生成 | BVH + FBX |
+| 特殊动作 | text_to_motion → BVH → retarget | 云端动作生成 | BVH + FBX |
+| 蝙蝠动作 | 游戏运行时程序化控制 | 不使用 云端动作生成 | 无 motion generation artifact |
 
 生成参数:
-- fps: 20 (MoMask 原生帧率)
-- model: MoMask
+- fps: 20 (生成器原生帧率)
+- model: 云端动作生成
 - output_format: bvh (后续 retarget 为 fbx)
 
 ---
@@ -76,7 +76,7 @@ test_data/outputs/gameB_forest_adventure_unity/<run_id>/assets/motion/<task_id>/
 
 ## 依赖关系
 
-动作生成依赖 3D 角色网格生成完成；`task_type=humanoid` 会依次完成自动绑骨、MoMask 动作生成和 retarget：
+动作生成依赖 3D 角色网格生成完成；`task_type=humanoid` 会依次完成自动绑骨、云端动作生成和 retarget：
 ```
 3D_object 任务 (demoForest_001, demoForest_003) → humanoid motion 任务 → retarget
 ```

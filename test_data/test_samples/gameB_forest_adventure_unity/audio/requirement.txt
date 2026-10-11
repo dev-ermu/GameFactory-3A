@@ -4,7 +4,7 @@
 
 本目录包含 gameB_forest_adventure_unity（自由探索 ARPG）所需的全部音频生成任务。
 音频分为两大类：环境音效（ambient loop）和一次性音效（one-shot SFX）。
-所有音效通过 Woosh-DFlow 模型生成。
+所有音效通过 Seed Audio 模型生成。
 
 ---
 
@@ -12,8 +12,8 @@
 
 | 音频类型 | 生成方式 | 模型 | 采样率 |
 |---------|---------|------|--------|
-| 环境音 | SFX generation (ambient loop) | Woosh-DFlow | 48000 Hz |
-| 游戏音效 | SFX generation (one-shot) | Woosh-DFlow | 48000 Hz |
+| 环境音 | SFX generation (ambient loop) | Seed Audio | 48000 Hz |
+| 游戏音效 | SFX generation (one-shot) | Seed Audio | 48000 Hz |
 
 ---
 

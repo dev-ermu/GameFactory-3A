@@ -70,5 +70,5 @@ outputs/gameB_forest_adventure_unity/cg_video/demoForest_030/
 
 CG 视频生成可在游戏资产生成完成后独立进行：
 ```
-3D_object + 3D_scene + motion 完成 → CG 视频生成
+3D_object + motion 完成 → CG 视频生成
 ```

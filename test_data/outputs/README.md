@@ -16,23 +16,22 @@ test_data/outputs/
         ├── run_meta.json             ← ckpts · seeds · git sha · argv (reproducibility)
         ├── <task_kind>_results_summary.json
         │
-        ├── assets/                   ← Layer A
+        ├── assets/                   ← every registered task kind
         │   ├── tpose/<task_id>/      ← T-pose PNG · meta.json
         │   ├── 3d_object/<task_id>/  ← model.glb · meta.json
-        │   ├── 3d_scene/<task_id>/
         │   ├── motion/<task_id>/
         │   ├── audio/<task_id>/      ← WAV · meta.json
         │   ├── cg_video/<task_id>/   ← video.mp4 · meta.json
         │   └── retarget/<task_id>/
         │
-        ├── mechanic/<task_id>/       ← Layer B: engine project · demo_outputs/*.json · launch.sh
-        ├── ui/<task_id>/             ← Layer C: UI code · screenshots/
-        ├── pipeline/<task_id>/       ← end-to-end vertical slice
-        │
         └── eval/
             ├── <task_kind>/<task_id>/    ← metrics.json · build.log · judge_log.json · reward.txt
             └── summary.json              ← aggregate over the whole run
 ```
+
+`3d_scene`, `mechanic`, `ui` and `pipeline` are gone: they described generating
+scenes, gameplay code and UI code, none of which this repository does any more.
+Every registered task kind is an asset kind and lands under `assets/`.
 
 ## Why this shape
 

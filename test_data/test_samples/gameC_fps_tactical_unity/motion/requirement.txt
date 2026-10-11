@@ -2,7 +2,7 @@
  Motion Generation Requirements — gameC_fps_tactical_unity
 ================================================================================
 
-生成方式: text_to_motion → BVH → retarget (MoMask + Puppeteer)
+生成方式: text_to_motion → BVH → retarget (云端动作生成 + 云端绑骨生成)
 任务类型 (task_type):
   - humanoid: 静态 GLB + prompt → rig + text_to_motion + retarget (完整链)
   - text_to_motion: prompt → BVH (仅动作生成)

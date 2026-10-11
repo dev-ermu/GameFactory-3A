@@ -55,7 +55,7 @@
 Motion prompts describe body movement only. They do not mention weapons,
 props, VFX, sound, cameras, or scene content. Idle, move, and block are loops;
 the other motions are one-shots that return to the same base guard. Unity owns
-gameplay locomotion, so all generated clips are in-place at MoMask's native
+gameplay locomotion, so all generated clips are in-place at 云端动作生成's native
 20 FPS.
 
 ## Scene

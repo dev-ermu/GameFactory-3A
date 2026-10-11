@@ -2,16 +2,16 @@
 
 ## Overview
 
-Generate seven core animations per character (14 total) with MoMask, then
-retarget them to the Puppeteer-generated character rigs. Keep the motion set
+Generate seven core animations per character (14 total) with 云端动作生成, then
+retarget them to the 云端绑骨生成的 character rigs. Keep the motion set
 small, visually consistent, and easy to validate.
 
 ## Character Rigging And Retargeting
 
-- Puppeteer predicts the character skeleton and skinning weights from the
+- 云端绑骨生成 predicts the character skeleton and skinning weights from the
   generated GLB mesh.
-- MoMask generates a generic 22-joint BVH motion at 20 FPS from each prompt.
-- The bpy world-delta retarget stage maps the BVH joints to the Puppeteer rig
+- 云端生成器生成 a generic 22-joint BVH motion at 20 FPS from each prompt.
+- The bpy world-delta retarget stage maps the BVH joints to the 云端绑骨
   and exports `animation.fbx` and `retargeted.fbx`.
 - All tasks use `task_type: humanoid` to execute those stages end to end.
 
@@ -42,7 +42,7 @@ particles, elemental effects, sound, camera direction, or scene content.
 
 ## Generation Parameters
 
-- FPS: 20, matching MoMask's native rate.
+- FPS: 20, matching 生成器的原生帧率.
 - Motion length: explicit per task; never use automatic length zero.
 - IK: enabled.
 - In place: enabled; remove root X/Z translation.

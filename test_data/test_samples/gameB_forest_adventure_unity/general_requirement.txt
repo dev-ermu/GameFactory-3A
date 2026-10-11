@@ -54,14 +54,14 @@
 - **主角（9 个动作）**: idle, walk, run, jump, sword_swing_1, sword_swing_2, ranged_attack, hit_react, death
 - **蝙蝠（程序化动作）**: fly_idle, fly_attack, hit_react, death 由运行时代码控制，不进入人形动作生成
 - **哥布林（5 个动作）**: idle, walk, attack_swing, hit_react, death
-- 人形动作生成方式: MoMask text-to-motion → BVH → retarget 到角色骨骼
+- 人形动作生成方式: 云端 text-to-motion → BVH → retarget 到角色骨骼
 
 ### 2.3 场景
 - 茂密奇幻森林，参天大树，树冠遮挡形成丁达尔效应（体积光）
 - 地面草地、落叶、苔藓；小溪流水、石头踏步；蘑菇、灌木丛
 - URP Volumetric Fog 实现真实光线穿透效果
 - 远处山的轮廓；3-5 个宝箱散布；怪物刷新点
-- 生成方式: Hunyuan-WorldPlay2 / FantasyWorld
+- 生成方式: 从资产包取用现成网格 + AI 大模型服务生成为主
 
 ### 2.4 特效
 - 光箭金色粒子拖尾 + 命中爆裂金色光花

@@ -19,7 +19,7 @@ operators/<任务类型>/
 | 运算符 | 类 | 描述 | `funcs/`中的步骤 |
 |---|---|---|---|
 | `gen_tpose_image` | `GenTPoseImageOperator` | 角色图像 → 适合绑定骨骼的T型姿势RGBA图像 | `gen_tpose_image` |
-| `gen_3d_object` | `Gen3DObjectOperator` | 根据图像/文本生成单个3D资产 | `art_plan`、`asset_import`、`asset_pack`、`mesh_cleanup` |
+| `gen_3d_object` | `Gen3DObjectOperator` | 根据图像生成单个3D资产，或从资产包中取出已发布的CC0模型 | `art_plan`、`asset_pack`、`mesh_cleanup` |
 | `gen_3d_scene` | `Gen3DSceneOperator` | 根据参考图像重建3D场景，或组合地面与放置的物体 | `scene_mask`、`points_to_mesh`、`build_scene_mesh`、`scene_assets`、`appearance_assets` |
 | `gen_motion` | `GenMotionOperator` | 为角色绑定骨骼，生成或获取动画片段，并进行重定向 | `rig_character`、`generate_motion`、`fetch_motion`、`retarget_motion` |
 | `gen_audio` | `GenAudioOperator` | 生成角色对话和游戏音效 | `generate_dialogue`、`generate_sound_effect`、`prepare_reference_audio`、`resample_audio` |

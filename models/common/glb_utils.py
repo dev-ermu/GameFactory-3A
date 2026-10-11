@@ -232,7 +232,7 @@ def _node_matrix(node: dict[str, Any]) -> list[float]:
     Handles both an explicit ``matrix`` and a TRS triple, since a file may use
     either. Ignoring the transform looks like a modelling error: a mesh
     authored Z-up whose node carries the -90 that stands it upright arrives on
-    its side, and the natural reaction is to rotate it back in the spec —
+    its side, and the natural reaction is to rotate it back by hand —
     hard-coding a correction for something the file already stated.
     """
 
@@ -282,11 +282,10 @@ def read_glb_mesh(data: bytes) -> dict[str, Any]:
     the result is in the file's own world coordinates rather than in the
     local frame of whichever mesh happened to be first.
 
-    The node hierarchy is deliberately *not* preserved. A part fetched from
-    a generator is one object as far as the composition is concerned — the
-    thing worth keeping addressable is the spec's part id, which the writer
-    attaches, and a generator's internal node names ("mesh_0", "Object_2")
-    are not names anything downstream can use.
+    The node hierarchy is deliberately *not* preserved. A model is one object
+    as far as a consumer is concerned — the thing worth keeping addressable is
+    the node names the file itself carries, and a generator's internal names
+    ("mesh_0", "Object_2") are not names anything downstream can use.
 
     Returns:
         dict with ``positions`` and ``normals`` as lists of 3-tuples,

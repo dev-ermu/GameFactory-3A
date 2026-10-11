@@ -2,7 +2,7 @@
  T-pose Image Generation Requirements — gameC_fps_tactical_unity
 ================================================================================
 
-生成方式: 角色参考图 → QwenEdit → T-pose 前景图 (RGBA)
+生成方式: 角色参考图 → Seedream → T-pose 前景图 (RGBA)
 输入: 角色概念图 (image_path)
 输出: tpose_fg.png (去背景的 T-pose 角色前景图)
 

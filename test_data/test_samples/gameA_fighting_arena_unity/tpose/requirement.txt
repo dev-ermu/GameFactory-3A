@@ -3,13 +3,13 @@
 ## Overview
 Generate clean T-pose reference images for each fighting character. These
 images serve as input to the 3D object generation pipeline. The T-pose image
-generator (QwenEdit + RMBG matting) takes an original character image and a
+generator (Seedream + 白底抠图) takes an original character image and a
 text description, then produces a clean, front-facing T-pose image with the
 background removed.
 
 ## Model Backend
-- **Generation**: Qwen/Qwen-Image-Edit-2511 (image editing model)
-- **Matting / Background Removal**: briaai/RMBG-1.4 (or DepthAnything)
+- **Generation**: doubao-seedream-5-0-260128 (image editing model)
+- **Matting / Background Removal**: 纯白背景抠图（无需模型）
 
 ## Input Requirements
 - Source images: original character reference images (front-facing full body)
