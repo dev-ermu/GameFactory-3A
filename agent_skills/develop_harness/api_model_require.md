@@ -1,8 +1,8 @@
-# api_model_require_zh.md — 针对闭源云API的`model_require_zh.md`补充文档
+# api_model_require.md — 针对闭源云API的`model_require.md`补充文档
 
-`model_require_zh.md`是为**本地权重**模型编写的：你拥有模型权重、运行设备和处理流程。而围绕**闭源云API**（Tripo、Meshy、Rodin、ElevenLabs、Kling等）的封装会打破其中的一些预设——不存在权重路径，没有运行设备，也没有`torch`；推理是远程*任务*而非简单的函数调用，每次调用都要付费，且网络故障也时有发生。
+`model_require.md`是为**本地权重**模型编写的：你拥有模型权重、运行设备和处理流程。而围绕**闭源云API**（Tripo、Meshy、Rodin、ElevenLabs、Kling等）的封装会打破其中的一些预设——不存在权重路径，没有运行设备，也没有`torch`；推理是远程*任务*而非简单的函数调用，每次调用都要付费，且网络故障也时有发生。
 
-本文档在`model_require_zh.md`的基础上新增了**R9**规则。R1–R8中未被此处明确覆盖的内容仍然适用，尤其是R1.1（禁止从`<REPO_PATH>/operators/`或`<REPO_PATH>/pipeline/`导入内容）、R1.2（切勿构造输出路径）、R1.4（不使用任务语义）以及R6（可互换性）。
+本文档在`model_require.md`的基础上新增了**R9**规则。R1–R8中未被此处明确覆盖的内容仍然适用，尤其是R1.1（禁止从`<REPO_PATH>/operators/`或`<REPO_PATH>/pipeline/`导入内容）、R1.2（切勿构造输出路径）、R1.4（不使用任务语义）以及R6（可互换性）。
 
 > 可将`<REPO_PATH>/models/gen_3d_object/tripo_model.py`作为参考实现，共享的HTTP/重试/缓存相关逻辑可参考`<REPO_PATH>/models/common/cloud_api.py`。
 
@@ -33,7 +33,7 @@ HTTP会话、重试/退避机制、错误分类、响应缓存以及轮询循环
 ---
 
 ## 合约偏差标注 — 共三处，均为必填项
-云服务商封装层出于设计原因会与`model_require_zh.md`中的规定存在偏差。必须标注清楚，以免读者猜测这种偏差是否属有意行为。
+云服务商封装层出于设计原因会与`model_require.md`中的规定存在偏差。必须标注清楚，以免读者猜测这种偏差是否属有意行为。
 
 **① 文件文档字符串中的`CONTRACT DEVIATIONS`章节**，每条规则占一行：
 ```python
@@ -42,7 +42,7 @@ TripoModel — 围绕Tripo3D云端3D生成API的封装层。
 
 参考链接：https://developers.tripo3d.ai/
 
-合约偏差（model_require_zh.md针对的是本地权重模型；详见agent_skills/develop_harness/api_model_require_zh.md）：
+合约偏差（model_require.md针对的是本地权重模型；详见agent_skills/develop_harness/api_model_require.md）：
   C1  R2.1/R2.2 → R9.1  `model_path`参数传递的是模型版本ID，而非权重文件路径。
   C2  R2.3      → R9.2  `device`参数虽被接收用于保持接口一致性，但会被忽略。
   ...
@@ -62,7 +62,7 @@ def __init__(self, model_path: str = "v3.1-20260211", device: str = "cuda", ...)
 ### 标准偏差标识
 请使用这些标识，以确保所有云封装层的处理逻辑一致。
 
-| 标识 | `model_require_zh.md` 对应条目 | 偏差描述 | 管控规则 |
+| 标识 | `model_require.md` 对应条目 | 偏差描述 | 管控规则 |
 |----|--------------------|-----------|-------------|
 | C1 | R2.1 / R2.2 | `model_path` 是模型版本标识 | R9.1 |
 | C2 | R2.3 | `device` 参数会被忽略 | R9.2 |

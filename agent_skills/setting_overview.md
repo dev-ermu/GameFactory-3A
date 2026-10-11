@@ -14,7 +14,7 @@
 
 | 写法 | 含义 |
 |---|---|
-| `<REPO_PATH>/agent_skills/engine_context/ue5_api_zh.md` | 一个技能模块，位于技能树内 |
+| `<REPO_PATH>/agent_skills/engine_context/ue5_api.md` | 一个技能模块，位于技能树内 |
 | `<REPO_PATH>/engine_adapters/ue5/` | 引擎参考代码——与`agent_skills/`同级，并非其内部子目录 |
 | `<REPO_PATH>/pipeline/`、`<REPO_PATH>/operators/`、`<REPO_PATH>/models/`、`<REPO_PATH>/scripts/`、`<REPO_PATH>/test/`、`<REPO_PATH>/test_data/`、`<REPO_PATH>/third_party/` | 同样与`agent_skills/`同级 |
 
@@ -29,9 +29,9 @@
 针对每一项游戏开发请求，请务必遵循以下流程，在游戏方案确定前切勿直接着手代码编写或资源生成（尤其注意资源生成）：
 
 1. **明确需求概要**：确定目标引擎、游戏类型、玩家交互循环、目标平台、所需交付物、视觉风格、以及验收标准。若用户未指定，需在规划前询问；
-2. **制定游戏规划**：查阅`<REPO_PATH>/agent_skills/game_design/SKILL_zh.md`，将各项需求及脚本转化为故事线，梳理出按时间顺序排列的章节流程。需区分预估游玩时间与虚构剧情时间，明确各章节的目标、关键节点、分支路径以及进入/退出条件。据此确定每个章节的角色、环境、道具、动态效果、音频、视觉特效及前端界面，同时复用已有共享资源。在最终美术设计确定前，先采用基础颜色布局。要将下一个可玩章节拆解为依赖关系明确的任务，并在整个开发过程中维护与章节绑定的TODO记录。
-3. **搭建可玩的白盒版本**：按照步骤2中确定的章节TODO列表及依赖关系推进开发。查阅`<REPO_PATH>/agent_skills/engine_context/engine_overview_zh.md`，了解工具及所选引擎的API规范。使用简单几何体与占位反馈元素，将场景、玩法、UI及章节切换功能整合为可运行的游戏核心内容循环。用统一的颜色及非色彩提示来区分主要功能或属性，保留稳定的资源ID以便后续替换。
-4. **在白盒版本中优化资源**：查阅`<REPO_PATH>/agent_skills/asset_qa/README_zh.md`，再参考对应资源类型的相关技能指南来完成资源的生成、获取、质量检查。根据白盒版本的反馈优先处理剩余的TODO任务。在隐私限制及费用审批允许的范围内，优先选用云API来生成资源；若可靠性更高，则优先选用引擎自带的授权动效/场景库。替换占位资源前需通过结构与视觉层面的质量检查，同时保留原有的资源ID及玩法/UI接口规范。需在游戏中检查资源的缩放比例、朝向、附着关系、碰撞检测及动画效果，重新测试受影响的流程。要将资源的来源、授权信息及验证凭证记录在TODO中。
+2. **制定游戏规划**：查阅`<REPO_PATH>/agent_skills/game_design/SKILL.md`，将各项需求及脚本转化为故事线，梳理出按时间顺序排列的章节流程。需区分预估游玩时间与虚构剧情时间，明确各章节的目标、关键节点、分支路径以及进入/退出条件。据此确定每个章节的角色、环境、道具、动态效果、音频、视觉特效及前端界面，同时复用已有共享资源。在最终美术设计确定前，先采用基础颜色布局。要将下一个可玩章节拆解为依赖关系明确的任务，并在整个开发过程中维护与章节绑定的TODO记录。
+3. **搭建可玩的白盒版本**：按照步骤2中确定的章节TODO列表及依赖关系推进开发。查阅`<REPO_PATH>/agent_skills/engine_context/engine_overview.md`，了解工具及所选引擎的API规范。使用简单几何体与占位反馈元素，将场景、玩法、UI及章节切换功能整合为可运行的游戏核心内容循环。用统一的颜色及非色彩提示来区分主要功能或属性，保留稳定的资源ID以便后续替换。
+4. **在白盒版本中优化资源**：查阅`<REPO_PATH>/agent_skills/asset_qa/README.md`，再参考对应资源类型的相关技能指南来完成资源的生成、获取、质量检查。根据白盒版本的反馈优先处理剩余的TODO任务。在隐私限制及费用审批允许的范围内，优先选用云API来生成资源；若可靠性更高，则优先选用引擎自带的授权动效/场景库。替换占位资源前需通过结构与视觉层面的质量检查，同时保留原有的资源ID及玩法/UI接口规范。需在游戏中检查资源的缩放比例、朝向、附着关系、碰撞检测及动画效果，重新测试受影响的流程。要将资源的来源、授权信息及验证凭证记录在TODO中。
 5. **对生成的资源进行验证**：确认资源格式，磁盘占用空间大小是否符合，生成路径是否正确。任务结束告知用户资源生成路径，最终由用户确认资源是否合格。
 
 ## 五、从任务要求开始
@@ -48,23 +48,23 @@
 
 | 工作内容 | 首先阅读 | 按需后续阅读 |
 |---|---|---|
-| 生成或选取3D物体 | `<REPO_PATH>/agent_skills/asset_qa/3d_object/SKILL_zh.md` | 若导入的网格模型存在朝向或缩放问题，可查阅`<REPO_PATH>/agent_skills/asset_qa/3d_object/orientation_review.md` |
-| 生成3D场景 | `<REPO_PATH>/agent_skills/asset_qa/3d_scene/SKILL_zh.md` | 确定场景制作策略后，需查阅对应选定引擎的API文档 |
-| 绑定骨骼、生成、获取或重定向动画 | `<REPO_PATH>/agent_skills/asset_qa/motion/SKILL_zh.md` | 导入动画前，需查阅对应选定引擎的API文档 |
-| 准备角色图像或T型姿势模型 | `<REPO_PATH>/agent_skills/asset_qa/image/SKILL_zh.md` | 预处理完成后，需查阅对应的3D物体或动画相关技能文档 |
-| 生成对话或音效 | `<REPO_PATH>/agent_skills/asset_qa/audio/SKILL_zh.md` | 集成到游戏中前，需查阅对应选定引擎的API文档 |
-| 生成CG视频 | `<REPO_PATH>/agent_skills/asset_qa/cg_video/SKILL_zh.md` | 若方案仅定义了视频片段的用途但尚未给出可用于模型训练的提示词，可查阅`<REPO_PATH>/agent_skills/asset_qa/cg_video/game-cg-director/SKILL_zh.md`；若视频需在游戏中使用，则需查阅对应选定引擎的API文档 |
+| 生成或选取3D物体 | `<REPO_PATH>/agent_skills/asset_qa/3d_object/SKILL.md` | 若导入的网格模型存在朝向或缩放问题，可查阅`<REPO_PATH>/agent_skills/asset_qa/3d_object/orientation_review.md` |
+| 生成3D场景 | `<REPO_PATH>/agent_skills/asset_qa/3d_scene/SKILL.md` | 确定场景制作策略后，需查阅对应选定引擎的API文档 |
+| 绑定骨骼、生成、获取或重定向动画 | `<REPO_PATH>/agent_skills/asset_qa/motion/SKILL.md` | 导入动画前，需查阅对应选定引擎的API文档 |
+| 准备角色图像或T型姿势模型 | `<REPO_PATH>/agent_skills/asset_qa/image/SKILL.md` | 预处理完成后，需查阅对应的3D物体或动画相关技能文档 |
+| 生成对话或音效 | `<REPO_PATH>/agent_skills/asset_qa/audio/SKILL.md` | 集成到游戏中前，需查阅对应选定引擎的API文档 |
+| 生成CG视频 | `<REPO_PATH>/agent_skills/asset_qa/cg_video/SKILL.md` | 若方案仅定义了视频片段的用途但尚未给出可用于模型训练的提示词，可查阅`<REPO_PATH>/agent_skills/asset_qa/cg_video/game-cg-director/SKILL.md`；若视频需在游戏中使用，则需查阅对应选定引擎的API文档 |
 
 ## 七、仅能选定一种引擎上下文
 
-针对资源的引擎集成工作，在阅读`<REPO_PATH>/agent_skills/engine_context/engine_overview_zh.md`之前，切勿直接从此表中选取API。该路由文档会先确定适用的引擎，再匹配唯一对应的API上下文：
+针对资源的引擎集成工作，在阅读`<REPO_PATH>/agent_skills/engine_context/engine_overview.md`之前，切勿直接从此表中选取API。该路由文档会先确定适用的引擎，再匹配唯一对应的API上下文：
 
 | 引擎标识符 | 必需的API上下文 | 参考代码 |
 |---|---|---|
-| `ue5` | `<REPO_PATH>/agent_skills/engine_context/ue5_api_zh.md` | `<REPO_PATH>/engine_adapters/ue5/` |
-| `blender` | `<REPO_PATH>/agent_skills/engine_context/blender_api_zh.md` | `<REPO_PATH>/engine_adapters/blender/` |
-| `unity3d` | `<REPO_PATH>/agent_skills/engine_context/unity3d_api_zh.md` | `<REPO_PATH>/engine_adapters/unity3d/` |
-| `godot` | `<REPO_PATH>/agent_skills/engine_context/godot_api_zh.md` | `<REPO_PATH>/engine_adapters/godot/` |
+| `ue5` | `<REPO_PATH>/agent_skills/engine_context/ue5_api.md` | `<REPO_PATH>/engine_adapters/ue5/` |
+| `blender` | `<REPO_PATH>/agent_skills/engine_context/blender_api.md` | `<REPO_PATH>/engine_adapters/blender/` |
+| `unity3d` | `<REPO_PATH>/agent_skills/engine_context/unity3d_api.md` | `<REPO_PATH>/engine_adapters/unity3d/` |
+| `godot` | `<REPO_PATH>/agent_skills/engine_context/godot_api.md` | `<REPO_PATH>/engine_adapters/godot/` |
 
 仅可使用公开的客户端API以及文档中说明的调用路径。
 
@@ -72,7 +72,7 @@
 
 该策略适用于第4步中的生产资产或独立资产请求。针对每个生产资产，需遵循以下流程：
 
-1. **根据需求生成资产**。若有合适的云模型可用，优先选用；若需大量使用付费云后端，比如同时生成20张以上图片，20个以上模型，必须先获得用户授权：暂停当前操作，说明要使用的模型，预估费用，用户同意后再继续，详情参见`<REPO_PATH>/agent_skills/asset_qa/README_zh.md`中的“付费云后端”章节。
+1. **根据需求生成资产**。若有合适的云模型可用，优先选用；若需大量使用付费云后端，比如同时生成20张以上图片，20个以上模型，必须先获得用户授权：暂停当前操作，说明要使用的模型，预估费用，用户同意后再继续，详情参见`<REPO_PATH>/agent_skills/asset_qa/README.md`中的“付费云后端”章节。
 2. **当生成质量不达标时，选用有授权的来源或备选方案**。需保留资产对应的源文件及许可/出处信息。严禁通过爬虫方式绕过需要登录或有使用限制的授权来源。
 3. **若生成方式和允许的来源都无法提供可上线的资产，需要将情况上报给用户**。说明缺失的功能、尝试的获取路径以及备选方案。
 

@@ -1,6 +1,6 @@
-# operatar_require_zh.md — `operators/`目录下的合约
+# operatar_require.md — `operators/`目录下的合约
 
-> 文件名保留了代码库骨架中使用的拼写。若想修正此问题，可通过 `git mv operatar_require_zh.md operator_require.md` 重命名——毕竟没有代码是通过该文件名引用它的。
+> 文件名保留了代码库骨架中使用的拼写。若想修正此问题，可通过 `git mv operatar_require.md operator_require.md` 重命名——毕竟没有代码是通过该文件名引用它的。
 
 **算子（operator）**的作用是将*一个任务字典*转换为*磁盘上的产物*。它负责定义任务的语义（提示词、步骤顺序、产物命名、元数据），并且刻意设计为**与模型无关**：任何符合预期方法签名的封装均可被注入使用。
 

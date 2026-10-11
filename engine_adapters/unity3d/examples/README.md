@@ -25,7 +25,7 @@
 
 ## 目录结构```
 示例/
-├── README_zh.md                           ← 您当前所在位置
+├── README.md                           ← 您当前所在位置
 ├── ArenaFighterExample/
 │   ├── package.json
 │   ├── ArenaFighterExample.asmdef

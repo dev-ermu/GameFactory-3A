@@ -37,7 +37,7 @@ assert result["ok"], result["errors"]
 
 ## 媒体导演命名规则
 
-跨引擎的逻辑组件名为`media_director`。这个Godot适配器保留了原生文件的拼写`media_director.gd`，并公开了公共类型`A3GameMediaDirector`；关于命名、所有权、暂停机制及契约细节，可查看`<REPO_PATH>/agent_skills/engine_context/godot_api_zh.md`中的**Godot媒体导演**章节。
+跨引擎的逻辑组件名为`media_director`。这个Godot适配器保留了原生文件的拼写`media_director.gd`，并公开了公共类型`A3GameMediaDirector`；关于命名、所有权、暂停机制及契约细节，可查看`<REPO_PATH>/agent_skills/engine_context/godot_api.md`中的**Godot媒体导演**章节。
 
 ## 运行时通信契约`GodotClient.runtime.sessions`会向`A3GameRuntime`发送JSON消息。该端点默认地址为`127.0.0.1:30050`，可通过`A3GAME_GODOT_RUNTIME_HOST`/`A3GAME_GODOT_RUNTIME_PORT`，或对应的项目设置项`a3game/runtime_host`/`a3game/runtime_port`来修改。
 

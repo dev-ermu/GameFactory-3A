@@ -1,4 +1,4 @@
-# pipeline_require_zh.md — `pipeline/`目录的契约
+# pipeline_require.md — `pipeline/`目录的契约
 
 Pipeline目录会暴露一个小型的公共生成API：`run.load_*()`用于加载或复用所需的模型，`run.make_operator()`会将模型注入到Operator中，而`run.generate(inp, operator)`则用于生成一个资源。`run.py`会为Benchmark批量调用同一个`generate()`入口；`eval.py`仅用于对已有产物进行评分。
 

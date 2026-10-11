@@ -1,4 +1,4 @@
-# model_require_zh.md — `models/` 目录的规范
+# model_require.md — `models/` 目录的规范
 
 `<REPO_PATH>/models/` 下的文件是**对单个模型的精简封装**。它知晓模型的权重、数据类型、运行设备以及该模型的原生 API。它完全不了解任务、jsonl 文件、游戏项目或输出目录相关信息。
 
@@ -6,7 +6,7 @@
 > 每个模型对应一个文件：`<REPO_PATH>/models/<家族名>/<模型名>_model.py`，类名为 `<名称>Model`。
 > 模型专用的辅助函数应放在 `<REPO_PATH>/models/<家族名>/<模型名>_utils/` 目录下。
 
-> **封装闭源云 API**（如 Tripo、Meshy、Rodin、Kling 等）？本规范默认模型使用本地权重。请查阅 `api_model_require_zh.md`——该文档新增了 **R9** 条款，用于覆盖 R2.1–R2.3、R3.3/R3.4、R3.6 及 R4 条款，适用于远程模型，同时明确了偏差情况的标注规则。
+> **封装闭源云 API**（如 Tripo、Meshy、Rodin、Kling 等）？本规范默认模型使用本地权重。请查阅 `api_model_require.md`——该文档新增了 **R9** 条款，用于覆盖 R2.1–R2.3、R3.3/R3.4、R3.6 及 R4 条款，适用于远程模型，同时明确了偏差情况的标注规则。
 
 示例：
 - 生成类模型：`<REPO_PATH>/models/gen_3d_object/tripo_model.py`、`<REPO_PATH>/models/gen_image/seedream_model.py`
@@ -81,7 +81,7 @@ def __init__(self, model_path: str | list[str], device: str = "cuda", **model_sp
 为现有插槽添加第二个后端时需注意：
 1. 必须与现有的函数签名及返回类型完全一致；
 2. 若语义确实存在差异，应由**算子的`funcs/`模块**来处理这种差异，而非由模型本身处理；
-3. 需将其添加到`<REPO_PATH>/models/README_zh.md`中的候选模型表中。
+3. 需将其添加到`<REPO_PATH>/models/README.md`中的候选模型表中。
 
 ## R7 — 文档字符串模板
 
@@ -113,5 +113,5 @@ def __init__(self, model_path: str | list[str], device: str = "cuda", **model_sp
 - [ ] 推理过程中使用了`torch.no_grad()`或`inference_mode()`
 - [ ] 针对大型模型提供了`unload()`方法，且该方法是幂等的
 - [ ] 已文档化返回结果的形状、数据类型及数值范围
-- [ ] 已将其添加到`<REPO_PATH>/models/README_zh.md`的表格中
+- [ ] 已将其添加到`<REPO_PATH>/models/README.md`的表格中
 - [ ] `<REPO_PATH>/tests/harness/stubs.py`中存在对应的桩代码，且执行`python tests/harness/smoke.py --kind <kind>`测试能通过

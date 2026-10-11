@@ -114,7 +114,7 @@ BlenderClient(
 )
 ```
 
-设置`no_render=True`可跳过Cycles渲染流程。详情参见`blender_api_zh.md`中的“试玩测试”章节。
+设置`no_render=True`可跳过Cycles渲染流程。详情参见`blender_api.md`中的“试玩测试”章节。
 
 ## 启动游戏（`--play`）
 
@@ -179,8 +179,8 @@ blender --background --factory-startup \
 ## 验证情况
 
 测试环境为**Blender 5.0.1**（pip安装的`bpy` wheel包，Python 3.11，无显示界面、无GPU支持）：
-- 导入模块与预览渲染器——具体测试数据及复现方法可查看`import_generated/README_zh.md`；
-- 可运行运行时环境——通过`runtime/selftest.py`验证，17个步骤全部通过，5种特效后端均正常工作；此外还通过一个未安装Blender的Python程序通过UDP协议驱动实时服务器进行测试。`runtime/README_zh.md`记录了两个在Blender 5.0.1环境下耗费实际时间排查出的问题。
+- 导入模块与预览渲染器——具体测试数据及复现方法可查看`import_generated/README.md`；
+- 可运行运行时环境——通过`runtime/selftest.py`验证，17个步骤全部通过，5种特效后端均正常工作；此外还通过一个未安装Blender的Python程序通过UDP协议驱动实时服务器进行测试。`runtime/README.md`记录了两个在Blender 5.0.1环境下耗费实际时间排查出的问题。
 
 主机端的相关功能——作业文件、参数结构、层级默认设置——已由`tests/test_world_asset.py`覆盖测试，该测试无需安装Blender。
 

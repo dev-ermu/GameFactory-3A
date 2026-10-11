@@ -88,18 +88,12 @@ def load_model_checks(model: str) -> dict[str, Any]:
     """读取某模型的 machine-checks 约束块。
 
     ``model`` 是**机器标识**而非文案：``h3`` 指 MiniMax H3（市场名亦作
-    Hailuo 3），``seedance`` 指 Seedance 2.0。档案文件按标识命名并带
-    ``_zh`` 语言后缀，因此两者可能不同 —— 查找时两种写法都试，校验则
-    始终以块内的 ``model`` 字段为准。
+    Hailuo 3），``seedance`` 指 Seedance 2.0。档案按标识命名，块内的
+    ``model`` 字段必须与传入值一致。
     """
-    models_dir = SKILL_DIR / "models"
-    candidates = [models_dir / f"{model}.md", models_dir / f"{model}_zh.md"]
-    profile_path = next((p for p in candidates if p.is_file()), None)
-    if profile_path is None:
-        raise ValueError(
-            f"model profile not found: "
-            + " or ".join(f"models/{p.name}" for p in candidates)
-        )
+    profile_path = SKILL_DIR / "models" / f"{model}.md"
+    if not profile_path.is_file():
+        raise ValueError(f"model profile not found: models/{model}.md")
     match = MACHINE_BLOCK.search(profile_path.read_text(encoding="utf-8"))
     if not match:
         raise ValueError(f"model profile has no machine-checks block: {profile_path.name}")

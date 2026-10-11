@@ -39,7 +39,7 @@ scripts\engine_install\godot\install.cmd --version 4.5.1 --json
 - 写入版本/平台清单、`godot4`的PATH占位符、机器可读的JSON，以及无需编辑配置文件即可加载的`.env`或`.cmd`配置；
 - 具备幂等性（`action=reused-managed`）：新的精确`--version`会安装在旧版本旁边，而`--force`参数仅替换已解析的目标文件。
 
-安装程序和适配器使用Python 3.14+标准库，无需pip包或引擎SDK包。兼容性由Python 3.14上的完整Godot适配器套件保障。平台详情、参数及故障处理逻辑详见`scripts/engine_install/godot/README_zh.md`。
+安装程序和适配器使用Python 3.14+标准库，无需pip包或引擎SDK包。兼容性由Python 3.14上的完整Godot适配器套件保障。平台详情、参数及故障处理逻辑详见`scripts/engine_install/godot/README.md`。
 
 请配置返回的路径，并通过公共客户端进行验证：```bash
 export A3GAME_GODOT_EXECUTABLE=/绝对路径/to/godot4

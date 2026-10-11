@@ -32,7 +32,7 @@ test_data/outputs/<game_id>/<run_id>/assets/cg_video/<task_id>/
 
 ## 导演子技能与测试框架的交接
 
-当已获批的游戏规划明确了CG片段的用途，但尚未给出适配模型的提示词时，可参考`<REPO_PATH>/agent_skills/asset_qa/cg_video/game-cg-director/SKILL_zh.md`文档。该子技能是本技能的子功能，并非独立的生成后端；它会为每个输出片段创建并验证一个导演信封，且不会调用模型进行生成。
+当已获批的游戏规划明确了CG片段的用途，但尚未给出适配模型的提示词时，可参考`<REPO_PATH>/agent_skills/asset_qa/cg_video/game-cg-director/SKILL.md`文档。该子技能是本技能的子功能，并非独立的生成后端；它会为每个输出片段创建并验证一个导演信封，且不会调用模型进行生成。
 
 阅读该文档及其引用的文件后，在使用相关条目前需先验证其返回的每个信封——若验证退出码非零，则流程将被阻塞：
 

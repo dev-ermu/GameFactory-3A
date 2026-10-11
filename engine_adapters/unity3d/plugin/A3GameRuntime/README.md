@@ -32,7 +32,7 @@ A3GameRuntime/
 
 ## 媒体导演命名规则
 
-跨引擎的逻辑组件名称为`media_director`。在Unity中遵循原生C#命名规范，该组件的文件名为`A3GameMediaDirector.cs`，公开类型为`A3GameMediaDirector`；请勿将其重命名为`media_director.cs`，因为MonoBehaviour文件名与类名必须保持一致。关于该组件的命名、所有权、暂停机制及数据契约详情，可参考`<REPO_PATH>/agent_skills/engine_context/unity3d_api_zh.md`中的“Unity媒体导演”章节。
+跨引擎的逻辑组件名称为`media_director`。在Unity中遵循原生C#命名规范，该组件的文件名为`A3GameMediaDirector.cs`，公开类型为`A3GameMediaDirector`；请勿将其重命名为`media_director.cs`，因为MonoBehaviour文件名与类名必须保持一致。关于该组件的命名、所有权、暂停机制及数据契约详情，可参考`<REPO_PATH>/agent_skills/engine_context/unity3d_api.md`中的“Unity媒体导演”章节。
 
 ## 关键设计决策
 

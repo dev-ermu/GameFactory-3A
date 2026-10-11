@@ -10,11 +10,11 @@
 
 | 文件 | 用途 |
 |------|------|
-| `README_zh.md` | 本文档 — 介绍工作流程（标准操作程序）和分层规则 |
-| `model_require_zh.md` | `<REPO_PATH>/models/` 下的包装器必须满足的接口约定 |
-| `api_model_require_zh.md` | **R9** — 当模型为闭源云API时的变更要求 |
-| `operatar_require_zh.md` | `<REPO_PATH>/operators/` 下的运算符必须满足的接口约定 |
-| `pipeline_require_zh.md` | `<REPO_PATH>/pipeline/*/run.py` 与 `eval.py` 必须满足的接口约定 |
+| `README.md` | 本文档 — 介绍工作流程（标准操作程序）和分层规则 |
+| `model_require.md` | `<REPO_PATH>/models/` 下的包装器必须满足的接口约定 |
+| `api_model_require.md` | **R9** — 当模型为闭源云API时的变更要求 |
+| `operatar_require.md` | `<REPO_PATH>/operators/` 下的运算符必须满足的接口约定 |
+| `pipeline_require.md` | `<REPO_PATH>/pipeline/*/run.py` 与 `eval.py` 必须满足的接口约定 |
 
 可执行部分（位于 `<REPO_PATH>/test/`，即代码存放位置）：
 
@@ -53,19 +53,19 @@ pipeline/assets_gen/<task>/     第三层 — “如何批量运行并评估结�
 `TASK_LAYER`、`TASK_INPUT_DIR`、`TASK_JSONL`、`TASK_COLLECT_JSONL`。
 仓库中其他部分均不会硬编码路径，因此这是唯一的注册点。
 
-### 2. 模型包装器 — `models/<family>/<model_name>_model.py`请遵循`model_require_zh.md`的要求。参考实现如下：
+### 2. 模型包装器 — `models/<family>/<model_name>_model.py`请遵循`model_require.md`的要求。参考实现如下：
 `<REPO_PATH>/models/gen_3d_object/tripo_model.py`（生成模块）。
 
 ### 3. 算子 — `operators/<task>/operator.py`（含`funcs/`目录）
 
-请遵循`operatar_require_zh.md`的要求。参考示例：`<REPO_PATH>/operators/gen_tpose_image/`
+请遵循`operatar_require.md`的要求。参考示例：`<REPO_PATH>/operators/gen_tpose_image/`
 （该目录下包含算子以及多步骤处理的`funcs/gen_tpose_image.py`文件）。
 
 实际算法步骤应放在`funcs/`目录下——每个逻辑步骤对应一个文件，这些文件应为纯函数，输入和输出分别为PIL图像、numpy数组或文件路径。算子本身则应写成简短的脚本：解析输入→调用相关函数→保存生成物→返回字典。
 
 ### 4. 运行器 — `pipeline/assets_gen/<task>/run.py`
 
-请遵循`pipeline_require_zh.md`的要求。参考示例：
+请遵循`pipeline_require.md`的要求。参考示例：
 `<REPO_PATH>/pipeline/assets_gen/gen_3d_object/run.py`。直接照搬其结构；其中五个模块级函数（`load_*`、`make_operator`、`generate`、`run_from_jsonl`、`main`）构成了生成运行器的API；调用方以及`<REPO_PATH>/test/`中的测试代码均通过名称调用它们。`eval.py`保持独立，用于读取已有的生成物。
 
 ### 5. 测试数据

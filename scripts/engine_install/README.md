@@ -20,7 +20,7 @@ python scripts/import_generated_asset.py --src <glb> --engine ue5 \
     --ue-extra=-EnablePlugins=PythonScriptPlugin
 ```
 
-已在UE 5.7版本上验证。关于为何导入工具会调用完整版编辑器而非命令式工具，可查看`engine_adapters/ue5/import_generated/README_zh.md`。
+已在UE 5.7版本上验证。关于为何导入工具会调用完整版编辑器而非命令式工具，可查看`engine_adapters/ue5/import_generated/README.md`。
 
 ## Unity
 
@@ -43,7 +43,7 @@ python scripts/import_generated_asset.py --src <glb> --engine ue5 \
 | Python环境 | 需使用Python 3.14及以上版本的标准库；适配器无需依赖引擎SDK包。 |
 
 实际开发中优先选用GLB格式。`.gltf` 文件可能会引用配套的缓冲数据和图像资源；公共路径 `GodotClient.assets` 以及兼容性启动器会对这些配套资源进行校验并统一处理。成功导入的资源还会被写入项目的Godot制品注册表，因此能立即在 `GodotClient`、World和Runtime中看到；若注册表写入失败，则导入操作会回滚至文件系统原始状态。
-详情请参阅 `scripts/engine_install/godot/README_zh.md` 和 `engine_adapters/godot/import_generated/README_zh.md`。
+详情请参阅 `scripts/engine_install/godot/README.md` 和 `engine_adapters/godot/import_generated/README.md`。
 
 ## 通用注意事项
 **运行导入操作前，请先在编辑器中关闭对应项目。** 导入工具会启动独立的编辑器进程；若编辑器已打开，它会继续显示原有的资产浏览器视图，导致导入操作看似没有生效。

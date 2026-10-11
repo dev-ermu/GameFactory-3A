@@ -10,10 +10,10 @@
 
 | 资产任务 | 对应技能 | 适用场景 |
 |---|---|---|
-| 图像预处理与T型姿势生成 | `<REPO_PATH>/agent_skills/asset_qa/image/SKILL_zh.md` | 单物体重建输入、角色T型姿势图像、透明度通道处理及图像质量检查 |
-| 3D物体生成与审核 | `<REPO_PATH>/agent_skills/asset_qa/3d_object/SKILL_zh.md` | 道具、虚拟形象、武器、网格模型质量评估、来源追溯、朝向与缩放及发布可行性审核 |
-| 动画处理 | `<REPO_PATH>/agent_skills/asset_qa/motion/SKILL_zh.md` | 骨骼绑定、动画生成/获取、动作重定向、导入操作及游戏内动画效果审核 |
-| CG视频制作 | `<REPO_PATH>/agent_skills/asset_qa/cg_video/SKILL_zh.md` | CG提示词设计、后端工具选择、视频生成、瑕疵排查及视频质量检查 |
+| 图像预处理与T型姿势生成 | `<REPO_PATH>/agent_skills/asset_qa/image/SKILL.md` | 单物体重建输入、角色T型姿势图像、透明度通道处理及图像质量检查 |
+| 3D物体生成与审核 | `<REPO_PATH>/agent_skills/asset_qa/3d_object/SKILL.md` | 道具、虚拟形象、武器、网格模型质量评估、来源追溯、朝向与缩放及发布可行性审核 |
+| 动画处理 | `<REPO_PATH>/agent_skills/asset_qa/motion/SKILL.md` | 骨骼绑定、动画生成/获取、动作重定向、导入操作及游戏内动画效果审核 |
+| CG视频制作 | `<REPO_PATH>/agent_skills/asset_qa/cg_video/SKILL.md` | CG提示词设计、后端工具选择、视频生成、瑕疵排查及视频质量检查 |
 
 导入已审核通过的资产或场景前，请先阅读`<REPO_PATH>/agent_skills/engine_context/`中的对应引擎规范文档。这些文档规定了格式要求、坐标约定、公共API、项目结构以及运行时验证规则。
 
@@ -33,7 +33,7 @@ cp .env.example .env          # Windows：copy .env.example .env
 
 | 资产类型 | 额外配置说明 |
 |---|---|
-| 图像/T-pose | 请参阅`<REPO_PATH>/agent_skills/asset_qa/image/SKILL_zh.md` |
+| 图像/T-pose | 请参阅`<REPO_PATH>/agent_skills/asset_qa/image/SKILL.md` |
 | 3D物体 | — |
 | 动作数据 | 重定向需要Blender：`<REPO_PATH>/scripts/engine_install/blender/install.sh` |
 | 音频 | — |

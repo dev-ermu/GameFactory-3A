@@ -251,7 +251,7 @@ target_ws = delta_ws @ dst_rest_ws
 
 Hunyuan-WorldPlay导出的内容并非网格文件。它包含Gaussian-splat格式的PLY文件（用于呈现视觉效果）以及一个或多个多边形PLY文件（用作碰撞体），而这些多边形是以**三角形碎片**的形式存在的：没有共享顶点、各部分之间存在缝隙、缠绕顺序混乱。直接将原始PLY文件导入Blender可以查看生成器输出的结果，但这并不能算作合格的资产。
 
-需先运行`<REPO_PATH>/scripts/prepare_world_asset.py`——它会合并各个部分并将表面修复为一个连续的`world.glb`文件，无需借助Blender或任何游戏引擎即可使用。修复功能的具体实现位于`<REPO_PATH>/models/common/mesh_repair.py`；`<REPO_PATH>/models/README_zh.md`详细说明了每个步骤的作用，以及为何填补孔洞时需要区分真正的孔洞和开放的边界。
+需先运行`<REPO_PATH>/scripts/prepare_world_asset.py`——它会合并各个部分并将表面修复为一个连续的`world.glb`文件，无需借助Blender或任何游戏引擎即可使用。修复功能的具体实现位于`<REPO_PATH>/models/common/mesh_repair.py`；`<REPO_PATH>/models/README.md`详细说明了每个步骤的作用，以及为何填补孔洞时需要区分真正的孔洞和开放的边界。
 
 ---
 

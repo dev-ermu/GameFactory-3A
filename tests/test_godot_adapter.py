@@ -884,8 +884,9 @@ class GodotEngineLogicTests(EngineTestBase):
 
     def test_install_directory_contains_only_install_entry_points(self) -> None:
         wrapper_root = Path("scripts/engine_install/godot")
+        # 本仓库只保留单份文档（文件名不再带语言后缀）。
         self.assertEqual(
-            {"README.md", "README_zh.md", "install.cmd", "install.py", "install.sh"},
+            {"README.md", "install.cmd", "install.py", "install.sh"},
             {item.name for item in wrapper_root.iterdir() if item.is_file()},
         )
         for removed in (

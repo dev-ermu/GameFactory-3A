@@ -60,10 +60,10 @@
 
 | 引擎 | Agent 上下文 | 参考实现 |
 |---|---|---|
-| UE5 | `agent_skills/engine_context/ue5_api_zh.md` | `engine_adapters/ue5/` |
-| Blender | `agent_skills/engine_context/blender_api_zh.md` | `engine_adapters/blender/` |
-| Unity | `agent_skills/engine_context/unity3d_api_zh.md` | `engine_adapters/unity3d/` |
-| Godot 4 | `agent_skills/engine_context/godot_api_zh.md` | `engine_adapters/godot/` |
+| UE5 | `agent_skills/engine_context/ue5_api.md` | `engine_adapters/ue5/` |
+| Blender | `agent_skills/engine_context/blender_api.md` | `engine_adapters/blender/` |
+| Unity | `agent_skills/engine_context/unity3d_api.md` | `engine_adapters/unity3d/` |
+| Godot 4 | `agent_skills/engine_context/godot_api.md` | `engine_adapters/godot/` |
 
 ---
 

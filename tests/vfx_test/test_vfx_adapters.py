@@ -186,14 +186,14 @@ class TestUnityAndSkillContracts(unittest.TestCase):
         skill = (skill_dir / "SKILL.md").read_text(encoding="utf-8")
         self.assertIn("engine_adapters/ue5/vfx/vfx_functions.py", skill)
         self.assertIn("engine_adapters/unity3d/vfx/Runtime/A3Game_VFX.cs", skill)
-        self.assertIn("Reuse Templates First", skill)
-        self.assertIn("Require Visual Approval", skill)
+        self.assertIn("优先复用现有模板", skill)
+        self.assertIn("需通过视觉审核", skill)
 
     def test_skill_is_single_file(self):
-        """该 skill 目录只允许存在中英两份 SKILL，不得有附属文件。
+        """该 skill 目录只允许存在中文 SKILL 与其附属文件。
 
-        此前断言目录里只有 `SKILL.md`，但本仓库的 skill 一律中英双份
-        （`SKILL.md` + `SKILL_zh.md`），断言已不成立。
+        本仓库只保留中文文档，英文副本已随其它 SKILL 一并删除，因此
+        目录里应只剩 `SKILL.md`。
         """
         skill_dir = (REPO_ROOT / "agent_skills" / "engine_context" /
                      "create-vfx-effects")
@@ -201,7 +201,7 @@ class TestUnityAndSkillContracts(unittest.TestCase):
             path.relative_to(skill_dir).as_posix()
             for path in skill_dir.rglob("*") if path.is_file()
         )
-        self.assertEqual(files, ["SKILL.md", "SKILL_zh.md"])
+        self.assertEqual(files, ["SKILL.md"])
 
     def test_ue_assets_resolve_from_configured_content_root(self):
         with mock.patch.dict(
