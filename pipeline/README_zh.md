@@ -5,7 +5,7 @@
 - **`run.py`** —— 仅负责生成（演示/生产环境）
 - **`eval.py`** —— 仅负责评估（基准测试评分）
 
-相关合约以及无需GPU的合规性检查工具位于 `agent_skills/develop_harness/pipeline_require.md` 中。
+相关合约以及无需GPU的合规性检查工具位于 `agent_skills/develop_harness/pipeline_require_zh.md` 中。
 
 ## 结构
 

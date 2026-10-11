@@ -19,7 +19,7 @@ godot = GodotClient(
 scripts/engine_install/godot/install.sh --version 4.5.1 --json
 ```
 
-这款跨平台安装程序是非交互式的，能自动识别架构，会验证官方的SHA-512校验值，以原子方式完成安装，还会检测实际安装的版本，并输出相关的PATH和配置信息。该安装程序以及本适配器均要求使用Python 3.14及以上版本。详情请参阅`scripts/engine_install/godot/README.md`。
+这款跨平台安装程序是非交互式的，能自动识别架构，会验证官方的SHA-512校验值，以原子方式完成安装，还会检测实际安装的版本，并输出相关的PATH和配置信息。该安装程序以及本适配器均要求使用Python 3.14及以上版本。详情请参阅`scripts/engine_install/godot/README_zh.md`。
 
 ## 配置说明
 

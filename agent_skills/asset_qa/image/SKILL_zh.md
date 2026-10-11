@@ -6,7 +6,7 @@
 
 | 需求 | 处理路径 | 下一步操作 |
 |---|---|---|
-| 用于重建的单物体概念艺术图 | `<REPO_PATH>/models/gen_image/seedream_model.py` | 先审核图像，随后使用`<REPO_PATH>/agent_skills/asset_qa/3d_object/SKILL.md`继续后续流程 |
+| 用于重建的单物体概念艺术图 | `<REPO_PATH>/models/gen_image/seedream_model.py` | 先审核图像，随后使用`<REPO_PATH>/agent_skills/asset_qa/3d_object/SKILL_zh.md`继续后续流程 |
 | 将现有角色图像转换为T型姿势 | `<REPO_PATH>/pipeline/assets_gen/gen_tpose_image/run.py` | 将该透明PNG图像作为输入，接入选定的3D物体或动作工作流 |
 | 验证已生成的T型姿势 | 本技能 | 交接前需确认姿势、身份特征、轮廓、透明度、构图及风格均符合要求 |
 

@@ -82,7 +82,7 @@ pip install -r requirements.txt
 
 仅使用选定的路径。API密钥应存储在环境变量中。
 
-**3D物体生成目前只有云端API可用——先选Tripo，再选Meshy**。这些服务是付费的，因此在首次调用前，**请暂停操作并参考`<REPO_PATH>/agent_skills/asset_qa/README.md`中的“付费云端后端”章节**：推荐合适的服务商，发送购买/获取API密钥的页面链接（<https://platform.tripo3d.ai/api-keys> 或 <https://www.meshy.ai/api>），说明包含重新生成尝试在内的、针对计划生成的网格数量的预估费用，请求用户购买访问权限并提供`TRIPO_API_KEY`/`MESHY_API_KEY`，待得到明确答复后再继续操作。
+**3D物体生成目前只有云端API可用——先选Tripo，再选Meshy**。这些服务是付费的，因此在首次调用前，**请暂停操作并参考`<REPO_PATH>/agent_skills/asset_qa/README_zh.md`中的“付费云端后端”章节**：推荐合适的服务商，发送购买/获取API密钥的页面链接（<https://platform.tripo3d.ai/api-keys> 或 <https://www.meshy.ai/api>），说明包含重新生成尝试在内的、针对计划生成的网格数量的预估费用，请求用户购买访问权限并提供`TRIPO_API_KEY`/`MESHY_API_KEY`，待得到明确答复后再继续操作。
 
 ## 三、各引擎支持的文件格式
 

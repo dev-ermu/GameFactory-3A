@@ -63,7 +63,7 @@ scripts/engine_install/unity/import_asset.sh \
     --dry-run
 ```
 
-资源导入功能接受的是仓库任务标识（game-id/task-id），而非任意的源路径。如果任务的`meta.json`文件中包含多个非空的`*_path`字段，则必须指定`--artifact-key`参数。移除`--dry-run`参数即可执行Unity导入操作。完整的接口规范可参考`agent_skills/engine_context/unity3d_api.md`。
+资源导入功能接受的是仓库任务标识（game-id/task-id），而非任意的源路径。如果任务的`meta.json`文件中包含多个非空的`*_path`字段，则必须指定`--artifact-key`参数。移除`--dry-run`参数即可执行Unity导入操作。完整的接口规范可参考`agent_skills/engine_context/unity3d_api_zh.md`。
 
 ### 运行
 ```bash

@@ -22,18 +22,18 @@
 | 引擎组装、构建、测试或运行时操作 | 选定的引擎API |
 | 试玩录制或游戏过程记录采集 | 选定的引擎API（试玩相关章节） |
 | 由游戏玩法触发的音频、视频CG、动画CG或视觉特效 | 选定的引擎API（媒体调度相关章节） |
-| 浏览器端交付 | `<REPO_PATH>/agent_skills/engine_context/browser_serving_api.md` + 选定的引擎API |
-| 视觉特效制作 | `<REPO_PATH>/agent_skills/engine_context/create-vfx-effects/SKILL.md` + 选定的引擎API |
-| 模型重定向、骨骼绑定、网格修复或中性资产准备 | `<REPO_PATH>/agent_skills/engine_context/blender_api.md` |
+| 浏览器端交付 | `<REPO_PATH>/agent_skills/engine_context/browser_serving_api_zh.md` + 选定的引擎API |
+| 视觉特效制作 | `<REPO_PATH>/agent_skills/engine_context/create-vfx-effects/SKILL_zh.md` + 选定的引擎API |
+| 模型重定向、骨骼绑定、网格修复或中性资产准备 | `<REPO_PATH>/agent_skills/engine_context/blender_api_zh.md` |
 
 ## 引擎选择
 
 任务包中明确了官方的引擎标识符。请准确选择一种主要引擎上下文：| 标识符 | API文档 | 公共主机入口点 |
 |---|---|---|
-| `ue5` | `<REPO_PATH>/agent_skills/engine_context/ue5_api.md` | `from engine_adapters.ue5 import UEClient` |
-| `unity3d` | `<REPO_PATH>/agent_skills/engine_context/unity3d_api.md` | `from engine_adapters.unity3d import UnityClient` |
-| `godot` | `<REPO_PATH>/agent_skills/engine_context/godot_api.md` | `from engine_adapters.godot import GodotClient` |
-| `blender` | `<REPO_PATH>/agent_skills/engine_context/blender_api.md` | 文档中提及的 `bpy` 解释器边界 |
+| `ue5` | `<REPO_PATH>/agent_skills/engine_context/ue5_api_zh.md` | `from engine_adapters.ue5 import UEClient` |
+| `unity3d` | `<REPO_PATH>/agent_skills/engine_context/unity3d_api_zh.md` | `from engine_adapters.unity3d import UnityClient` |
+| `godot` | `<REPO_PATH>/agent_skills/engine_context/godot_api_zh.md` | `from engine_adapters.godot import GodotClient` |
+| `blender` | `<REPO_PATH>/agent_skills/engine_context/blender_api_zh.md` | 文档中提及的 `bpy` 解释器边界 |
 
 当选中 `blender` 时，它属于中立的资产处理上下文，而非已发布的游戏运行时环境。请勿将其与核心引擎API或示例混用。浏览器渲染和VFX属于补充性上下文，仅在任务有相关需求时才会被选用。
 
@@ -72,7 +72,7 @@ UI的生成需在机械逻辑确定之后进行。在浏览器渲染发布可播
 - 不要导入适配器的内部模块、调用私有传输接口、直接启动引擎二进制文件，或创建并行的导入/构建/运行时实现。
 - 只有当Shell脚本委托给同一公共客户端路径时，才能将其用作人工操作或CI流程的入口。
 - 若所选API支持，可针对一批任务复用同一个配置好的客户端和引擎会话。
-- Blender代码仅在`blender_api.md`文档规定的解释器边界内才能导入`bpy`模块；普通主机代码需通过文档规定的适配器路径来调用。
+- Blender代码仅在`blender_api_zh.md`文档规定的解释器边界内才能导入`bpy`模块；普通主机代码需通过文档规定的适配器路径来调用。
 - 如果缺少某项必需的功能，应停止操作并上报公共API缺口。在生成的游戏代码依赖该功能之前，需先扩展对应的适配器合约。
 
 ## 浏览器边界

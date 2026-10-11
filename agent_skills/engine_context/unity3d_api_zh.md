@@ -244,7 +244,7 @@ Unity授权属于外部主机的前提条件，并非3AGameFactory的操作范�
 ## 坐标系
 glTF和Unity均采用Y轴向上的坐标系，且单位均为米，但两者的左右手规则有所不同。Unity的模型导入器会负责格式转换；适配器或游戏逻辑代码不应再额外进行统一的轴向转换。FBX文件的创作轴和单位可能存在差异，因此导入后的模型方向、缩放比例、骨骼结构以及武器朝向仍需进一步检查或通过导入器配置调整。
 
-# Unity VFX API对于烟雾、火焰、爆炸、尘埃以及粒子生命周期相关的效果制作，请使用[`create-vfx-effects`](create-vfx-effects/SKILL.md)技能，以及`<REPO_PATH>/engine_adapters/unity3d/vfx/Runtime/A3Game_VFX.cs`。
+# Unity VFX API对于烟雾、火焰、爆炸、尘埃以及粒子生命周期相关的效果制作，请使用[`create-vfx-effects`](create-vfx-effects/SKILL_zh.md)技能，以及`<REPO_PATH>/engine_adapters/unity3d/vfx/Runtime/A3Game_VFX.cs`。
 
 建议通过`SpawnPrefab`调用已有的、经过审核的粒子或VFX Graph预制体。那些名为ParticleSystem的函数属于无资源备用方案，它们采用Unity世界空间单位来定位。
 
@@ -261,4 +261,4 @@ python scripts/import_generated_asset.py --engine unity \
 
 该启动器会将`<REPO_PATH>/engine_adapters/unity3d/import_generated/ImportGeneratedMesh.cs`安装到项目的`Assets/Editor/`目录下，并调用`ImportGeneratedMesh.RunFromCLI`。若处理普通网格模型，请使用参数`--usage asset`；若为单个特效网格，使用`vfx_standalone`；若为粒子系统实例化的网格，则使用`vfx_particle`。
 
-请将JSON导入报告视为结果约定。在引用预制体之前，需检查其中的`ok`、`assetPath`、`prefabPath`字段，以及三角形数量、材质数量、绑定的纹理、边界信息及警告提示。导入GLB文件需要安装`com.unity.cloud.gltfast`插件；完整的项目设置说明详见`<REPO_PATH>/scripts/engine_install/README.md`。生成的项目包含具体的游戏逻辑实现。可选的Arena Fighter、FPS和赛车类示例仅作为参考，并非运行时依赖项，也不作为项目成功的标准。
+请将JSON导入报告视为结果约定。在引用预制体之前，需检查其中的`ok`、`assetPath`、`prefabPath`字段，以及三角形数量、材质数量、绑定的纹理、边界信息及警告提示。导入GLB文件需要安装`com.unity.cloud.gltfast`插件；完整的项目设置说明详见`<REPO_PATH>/scripts/engine_install/README_zh.md`。生成的项目包含具体的游戏逻辑实现。可选的Arena Fighter、FPS和赛车类示例仅作为参考，并非运行时依赖项，也不作为项目成功的标准。

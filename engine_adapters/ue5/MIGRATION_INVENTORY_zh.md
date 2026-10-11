@@ -48,7 +48,7 @@ D:\Desktop\game\3AGameFactory
 - 自动化测试成功的条件需同时满足：进程状态正常，且能解析出全新的`index.json`报告，报告中至少有一条匹配的测试用例且所有测试均通过；
 - 即便测试/进程失败，也会保留最新的自动化测试报告，同时返回命令输出、诊断信息、超时状态以及结构化的测试数量数据；
 - 新增针对配置缺失、模拟运行、测试成功、警告、测试失败、报告为空/不一致/无效/过期、进程失败以及超时等场景的专项测试；
-- 在`ue5_api.md`中记录了Agent/Operator/Evaluator的执行权限边界及其契约测试相关内容；
+- 在`ue5_api_zh.md`中记录了Agent/Operator/Evaluator的执行权限边界及其契约测试相关内容；
 - 通过公共API，使用UE 5.4版本编译并执行了生成式`AAAGame.GeneratedGameplay.Smoke`测试。
 - 新增与引擎无关的`game_generation.md`技能描述，以及`system.md`、`task.md`和`repair.md`提示词模板；
 - 将具体的引擎调用方式改为通过只读路径精确引用选定的单个API文件，而非在提示词中嵌入完整的API内容；
@@ -229,7 +229,7 @@ UnrealBuildTool可能需要提升沙盒权限，因为它会在`C:\Users\Y4624\A
 4. [已完成] 返回命令、进程输出、结构化诊断信息、报告产物以及解析后的测试数量。
 5. [已完成] 补充缺失配置、模拟运行、测试成功、测试失败、进程异常、超时以及报告解析相关的测试用例。
 6. [已完成] 使用UE 5.4编译并执行一个最简化的生成式UE自动化测试。
-7. [已完成] 在该方法和测试通过后更新`ue5_api.md`文档。
+7. [已完成] 在该方法和测试通过后更新`ue5_api_zh.md`文档。
 
 ### B阶段——定义机制Agent上下文 [已完成]
 
@@ -354,7 +354,7 @@ Stub运行模式仍作为源契约的基准。Codex验证运行完成了步骤1-
 - UE脚本仅负责创建、导入、构建和启动Unreal，不会启动平台网关或浏览器前端。
 - 平台服务仅能通过公开的`UEClient(api_version="v1")` API访问Unreal。前端、路由及应用使用场景不得导入UE适配器的内部实现。
 
-### Agent API参考- 保持`agent_skills/engine_context/ue5_api.md`与真实的公共`UEClient` API以及`AAAGamePlayable`公共头文件同步。
+### Agent API参考- 保持`agent_skills/engine_context/ue5_api_zh.md`与真实的公共`UEClient` API以及`AAAGamePlayable`公共头文件同步。
 - 待公共`z_other_serving` API问世后，完善`agent_skills/engine_context/z_other_serve_func.md`。切勿将拟定的API当作已实现的API来记录。
 - 这些参考文件描述了可调用的API及其边界。各游戏的具体行为与参数仍由用户的需求及任务JSONL文件决定。
 

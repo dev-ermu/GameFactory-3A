@@ -118,6 +118,6 @@ python3 <REPO_PATH>/agent_skills/asset_qa/cg_video/game-cg-director/scripts/vali
 
 ## 移交至父级技能
 
-对于3AGameFactory，需返回`cg_tasks.jsonl`的路径、有序的任务ID以及验证状态。父级路径`<REPO_PATH>/agent_skills/asset_qa/cg_video/SKILL.md`用于选择后端及宽高比运行参数，并调用生成流程。若用于独立使用场景，则需返回有序的信封文件路径以及验证状态。
+对于3AGameFactory，需返回`cg_tasks.jsonl`的路径、有序的任务ID以及验证状态。父级路径`<REPO_PATH>/agent_skills/asset_qa/cg_video/SKILL_zh.md`用于选择后端及宽高比运行参数，并调用生成流程。若用于独立使用场景，则需返回有序的信封文件路径以及验证状态。
 
 切勿自行选定输出`run_id`，也无需调用模型、消耗云额度，更不得声称已生成视频。

@@ -17,7 +17,7 @@
 
 1. `game.py` — `build()` / `tick()` / `summary()` / `verdict()`。
 2. `engine_adapters/blender/game/kernel.py` — `Game`基类。
-3. `agent_skills/engine_context/blender_api.md` — API使用注意事项。
+3. `agent_skills/engine_context/blender_api_zh.md` — API使用注意事项。
 
 ## 运行单个示例
 
