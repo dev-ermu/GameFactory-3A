@@ -582,7 +582,7 @@ def concept_image(
             )
         raise TypeError(
             "The image model exposes neither generate() nor edit(); see "
-            "models/gen_image/qwen_edit.py for the interface"
+            "models/gen_image/seedream_model.py for the interface"
         )
 
     attempts = max(1, int(candidates)) if frame else 1

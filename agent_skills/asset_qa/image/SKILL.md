@@ -9,7 +9,7 @@ image-generation and image-editing task; it is not a separate asset category.
 
 | Need | Route | Next step |
 |---|---|---|
-| Single-object concept art for reconstruction | `<REPO_PATH>/models/gen_image/sdxl_turbo.py` | Review image, then use `<REPO_PATH>/agent_skills/asset_qa/3d_object/SKILL.md` |
+| Single-object concept art for reconstruction | `<REPO_PATH>/models/gen_image/seedream_model.py` | Review image, then use `<REPO_PATH>/agent_skills/asset_qa/3d_object/SKILL.md` |
 | Convert an existing character image into a T-pose | `<REPO_PATH>/pipeline/assets_gen/gen_tpose_image/run.py` | Use the transparent PNG as input to the selected 3D-object or motion workflow |
 | Validate a generated T-pose | This Skill | Confirm pose, identity, silhouette, alpha, framing, and style before handoff |
 
@@ -21,34 +21,30 @@ They tend to become fused geometry, baked texture, or missing body parts.
 
 | Component | Location | Responsibility |
 |---|---|---|
-| Concept image model | `<REPO_PATH>/models/gen_image/sdxl_turbo.py` | Fast single-object text-to-image concept art; tuned for reconstruction inputs |
-| Image editor (local) | `<REPO_PATH>/models/gen_image/qwen_edit_model.py` | Turns a supplied character reference into a white-background T-pose render |
-| Image editor (cloud API) | `<REPO_PATH>/models/gen_image/seedream_model.py` | Uses Seedream image editing as a swappable T-pose generation backend |
+| Image editor (cloud API) | `<REPO_PATH>/models/gen_image/seedream_model.py` | Turns a supplied character reference into a white-background T-pose render |
+| Foreground / matting model | `<REPO_PATH>/models/tools/image_matting/depth_anything_model.py` | Derives the alpha matte a T-pose render needs; local path only, never downloaded |
 | Task operator | `<REPO_PATH>/operators/gen_tpose_image/operator.py` | Reads a task, generates the T-pose, saves artifacts and metadata |
 | Runner | `<REPO_PATH>/pipeline/assets_gen/gen_tpose_image/run.py` | Loads models, accepts CLI/JSONL tasks, and writes result summaries |
 
-can be changed to Seedream `doubao-seedream-5-0-260128` while keeping the same
-Local model weights are downloaded on first use unless checkpoint flags point to
+Seedream is the only image backend. The model id defaults to
+`doubao-seedream-5-0-260128` and is overridden with `--gen-ckpt`.
 
-**Prefer the Seedream cloud route** when the user permits paid generation; local
-first call **pause and follow *Paid cloud backend* in
-`<REPO_PATH>/agent_skills/asset_qa/README.md`**: send the purchase/API-key page
-(<https://console.volcengine.com/ark>), state the estimated cost for the planned
-image count including retries, ask the user to buy access and supply
-`ARK_API_KEY`, and wait for an explicit answer.
+**Seedream is a paid cloud API**, so before the first call **pause and follow
+*Paid cloud backend* in `<REPO_PATH>/agent_skills/asset_qa/README.md`**: send the
+purchase/API-key page (<https://console.volcengine.com/ark>), state the estimated
+cost for the planned image count including retries, ask the user to buy access and
+supply `ARK_API_KEY`, and wait for an explicit answer.
+
+The matting model is the one exception to the no-downloads rule: it runs locally,
+so it needs a `model_path` you supply. It is never fetched automatically.
 
 ## Install the image environment
 
+Image generation is a cloud API (Seedream), so the only dependency is an HTTP
+client plus the offline test requirements:
 
 ```bash
-bash scripts/asset_env_setup/image/qwen_image_install.sh
-conda activate qwen_image
-```
-
-Install only the shared HTTP and smoke-test dependencies for cloud wrappers:
-
-```bash
-bash scripts/asset_env_setup/image/cloud_api_install.sh
+bash scripts/asset_env_setup/cloud_api_install.sh
 ```
 
 ## Plan the image before generating
@@ -66,15 +62,15 @@ pads it to a square, and resizes it for reconstruction.
 
 ## Generate concept art for 3D reconstruction
 
-`SDXLTurboModel` is for fast **single-object concept art**, not final game art.
-It defaults to a square 512 px image and a negative prompt that excludes
-turnarounds, duplicate subjects, crops, ground planes, shadows, text, and busy
-backgrounds—details that harm 3D reconstruction.
+Concept art uses `SeedreamModel` (cloud API). Prompt it for **single-object**
+framing, not final game art: exclude turnarounds, duplicate subjects, crops,
+ground planes, shadows, text, and busy backgrounds — details that harm 3D
+reconstruction.
 
 ```python
-from models.gen_image.sdxl_turbo import SDXLTurboModel
+from models.gen_image.seedream_model import SeedreamModel
 
-model = SDXLTurboModel(model_path="stabilityai/sdxl-turbo", device="cuda")
+model = SeedreamModel(model_path="doubao-seedream-5-0-260128")
 image = model.generate(
     prompt="a single stylized brass-and-wood treasure chest, centered, full object visible",
     seed=42,
@@ -122,13 +118,12 @@ python pipeline/assets_gen/gen_tpose_image/run.py \
   --run-id auto
 ```
 
-Optional backend/model overrides and segmentation choice:
+Optional model override and credentials:
 
 ```bash
 python pipeline/assets_gen/gen_tpose_image/run.py \
-  --gen-backend qwen_edit \
-  --gen-ckpt Qwen/Qwen-Image-Edit-2511 \
-  --device cuda \
+  --gen-backend seedream \
+  --gen-ckpt doubao-seedream-5-0-260128 \
   --tasks test_data/test_samples/tpose_gen_collect.jsonl \
   --run-id auto
 

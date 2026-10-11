@@ -7,15 +7,15 @@ This directory intentionally contains only Windows/Linux launchers and this
 README. Python implementation lives in `engine_adapters/ue5/cli.py`:
 
 ```text
-scripts/ue/*.cmd or *.sh -> engine_adapters.ue5.cli -> UEClient
+scripts/engine_install/ue5/*.cmd or *.sh -> engine_adapters.ue5.cli -> UEClient
 ```
 
 ```powershell
-scripts\ue\create_project.cmd `
+scripts\engine_install\ue5\create_project.cmd `
   --ue-root D:\UE\UE_5.4 `
   --project-path D:\Projects\GeneratedGame
 
-scripts\ue\import_asset.cmd `
+scripts\engine_install\ue5\import_asset.cmd `
   --ue-root D:\UE\UE_5.4 `
   --project D:\Projects\GeneratedGame\GeneratedGame.uproject `
   --game-id gameA_cyberpunk_shooter `
@@ -23,7 +23,7 @@ scripts\ue\import_asset.cmd `
   --type prop `
   --artifact-key glb_path
 
-scripts\ue\run.cmd `
+scripts\engine_install\ue5\run.cmd `
   --ue-root D:\UE\UE_5.4 `
   --project D:\Projects\GeneratedGame\GeneratedGame.uproject `
   --map /Game/Maps/Arena

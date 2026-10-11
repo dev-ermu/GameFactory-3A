@@ -2,7 +2,7 @@
 
 What `engine_adapters/blender/` needs before it runs, why each piece is needed,
 and the failure signature it produces when it is missing. The companion script
-`blender_install.sh` does all of this non-interactively; this file is the
+`install.sh` does all of this non-interactively; this file is the
 reference for deciding *what* to install and for reading an error.
 
 Everything here is **sudo-free**: a portable Blender tarball plus a conda prefix

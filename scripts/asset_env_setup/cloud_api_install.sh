@@ -1,22 +1,22 @@
 #!/bin/bash
-# Shared implementation for task-specific cloud API installers.
-# Environment for the closed-source ("cloud API") model wrappers:
+# The one installer for every cloud API model wrapper:
 #   models/gen_3d_object/tripo_model.py
 #   models/gen_3d_object/meshy_model.py
-#   models/gen_audio/seed_audio_model.py
 #   models/gen_image/seedream_model.py
 #   models/gen_cg_video/seedance_model.py
-#   models/gen_cg_video/minimax_h3_model.py
+#   models/gen_audio/seed_audio_model.py
+#   models/gen_motion/tripo_rigging_model.py
 # via the shared plumbing in models/common/cloud_api.py
 #
 # These wrappers run anywhere Python runs: no GPU, no weights, no compiled
 # extensions. The whole dependency is an HTTP client.
 #
-# This is the shared implementation. Invoke a task-specific wrapper instead:
-#   bash scripts/asset_env_setup/3d_object/cloud_api_install.sh
-#   bash scripts/asset_env_setup/image/cloud_api_install.sh
-#   bash scripts/asset_env_setup/audio/cloud_api_install.sh --conda
-#   bash scripts/asset_env_setup/cg_video/cloud_api_install.sh
+# This directory used to hold one thin forwarder per asset task, all four
+# byte-identical. They were removed; this is the entry point.
+#
+# Usage:
+#   bash scripts/asset_env_setup/cloud_api_install.sh
+#   bash scripts/asset_env_setup/cloud_api_install.sh --conda
 
 set -e
 
@@ -51,11 +51,10 @@ echo "Verify without spending credits or touching the network:"
 echo "  python tests/harness/smoke.py --kind 3d_object --backend tripo"
 echo "  python tests/test_api_3d_object.py"
 echo "  python tests/harness/smoke.py --kind tpose --backend seedream"
-echo "  python tests/test_api_gen_tpose_image.py"
 echo "  python tests/harness/smoke.py --kind audio --backend seed_audio"
 echo "  python tests/test_api_audio.py"
 echo "  python tests/harness/smoke.py --kind cg_video --backend seedance"
-echo "  python tests/harness/smoke.py --kind cg_video --backend minimax-h3"
+echo "  python tests/harness/smoke.py --kind motion"
 echo
 echo "Check a balance (free, needs a key):"
 echo "  python -c \"from models.gen_3d_object import TripoModel; print(TripoModel().balance())\""

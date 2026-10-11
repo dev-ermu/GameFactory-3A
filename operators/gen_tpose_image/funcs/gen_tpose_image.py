@@ -4,13 +4,14 @@ operators/gen_tpose_image/funcs/gen_tpose_image.py
 gen_tpose_image — Generate a game-CG T-pose RGBA image from a reference character image.
 
 Pipeline:
-  1. Use a GenImageModel (e.g. QwenEditModel) to turn the reference image into
+  1. Use a GenImageModel (e.g. SeedreamModel) to turn the reference image into
      a game-CG T-pose render on a pure white background.
   2. Use a *mask model* to extract the foreground character. Two flavors are
-     supported transparently — the right branch is selected automatically:
-       - RMBGModel        : returns a clean foreground probability mask.
-       - DepthAnythingModel: returns a depth map, threshold + white-bg
-                             suppression are applied to derive the mask.
+     supported transparently — the right branch is selected automatically by
+     class name, so any model returning a matte works:
+       - a direct alpha-mask model  : returns a foreground probability mask.
+       - DepthAnythingModel        : returns a depth map, threshold + white-bg
+                                    suppression are applied to derive the mask.
   3. Post-process: validate alpha, tight-crop the foreground bbox, pad to a
      square canvas and resize to a fixed target size (1024 by default) so the
      result is directly consumable by downstream 3D pipelines.
@@ -99,7 +100,7 @@ def _extract_foreground_via_mask(
     mask_model,
     threshold: float = 0.5,
 ) -> Image.Image:
-    """Segment foreground using a direct alpha-mask model (e.g. RMBG-1.4).
+    """Segment foreground using a direct alpha-mask model.
 
     The mask model is expected to return either a HxW float array in [0, 1]
     (foreground probability) or an RGBA PIL image. The continuous mask is
@@ -216,10 +217,11 @@ def gen_tpose_image(
     Args:
         ref_image:           Reference PIL image of the character.
         description:         Short text description of the character (can be empty).
-        gen_model:           Loaded GenImageModel (e.g. QwenEditModel).
-        mask_model:          Loaded foreground / matting model — `RMBGModel`
-                             or `DepthAnythingModel`. The branch is selected
-                             automatically based on the class name.
+        gen_model:           Loaded GenImageModel (e.g. SeedreamModel).
+        mask_model:          Loaded foreground / matting model — any object
+                             whose class name identifies a depth estimator
+                             takes the depth branch, anything else the direct
+                             alpha-mask branch.
         depth_model:         Backwards-compatible alias for `mask_model`.
         seed:                Random seed for the image-edit model.
         steps:               Diffusion steps for the image-edit model.

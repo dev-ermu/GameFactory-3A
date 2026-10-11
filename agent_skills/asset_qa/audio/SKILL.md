@@ -87,7 +87,7 @@ For Qwen3-TTS, install `qwen-tts` as described in the
 ### Shared cloud API dependency
 
 ```bash
-bash scripts/asset_env_setup/audio/cloud_api_install.sh
+bash scripts/asset_env_setup/cloud_api_install.sh
 ```
 
 

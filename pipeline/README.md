@@ -53,8 +53,8 @@ from pipeline.assets_gen.gen_tpose_image.run import (
     make_operator,
 )
 
-gen_model = load_gen_model("Qwen/Qwen-Image-Edit-2511")
-mask_model = load_mask_model("briaai/RMBG-1.4", model_type="rmbg")
+gen_model = load_gen_model("doubao-seedream-5-0-260128")
+mask_model = load_mask_model("<local/path/to/depth-anything>", model_type="depth_anything")
 operator = make_operator(gen_model, mask_model, run_id="default")
 
 result = generate(
@@ -71,8 +71,8 @@ print(result["tpose_rgba_path"])
 ```
 
 The concrete wrappers used by this runner live at
-`models/gen_image/qwen_edit_model.py` and
-`models/tools/image_matting/{rmbg_model.py,depth_anything_model.py}`. Call
+`models/gen_image/seedream_model.py` and
+`models/tools/image_matting/depth_anything_model.py`. Call
 `unload()` on loaded models when they are no longer needed.
 
 ## Responsibilities

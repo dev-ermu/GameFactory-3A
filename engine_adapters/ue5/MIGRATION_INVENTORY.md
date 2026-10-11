@@ -64,7 +64,7 @@ Completed on August 2, 2026:
 - changed `project.create()` to generate a minimal C++ host module plus Game and
   Editor targets, without concrete gameplay defaults;
 - migrated `create_project`, `import_asset`, and `run` CLI behavior; the final
-  repository wrappers live under `scripts/ue` and call only public-UEClient
+  repository wrappers live under `scripts/engine_install/ue5` and call only public-UEClient
   implementation in `engine_adapters/ue5/cli.py`;
 - changed the import launcher from arbitrary source paths to repository task
   descriptors;
@@ -77,7 +77,7 @@ Completed on August 2, 2026:
 
 Completed on August 3, 2026:
 
-- moved the public Windows/Linux wrappers to repository-level `scripts/ue`;
+- moved the public Windows/Linux wrappers to `scripts/engine_install/ue5`;
 - kept Python CLI implementation in `engine_adapters/ue5/cli.py`, with the
   wrappers calling it and the CLI importing only the public `UEClient`;
 - extracted Preview character, controller, and GameMode behavior into the
@@ -717,7 +717,7 @@ The OpenWL source currently contains:
 | `serving/` | 273 | UE implementation, platform serving, Blender runtime, and shared contracts |
 | `serving/engines/unreal/` | 153 | UE adapter implementation and UE-specific debug UI |
 | `OpenWLPlayable` plugin | 29 | Runtime infrastructure mixed with Fighter/FPS/Racing/Preview implementations |
-| `scripts/ue/` | 7 | Public create/import/run launchers |
+| `scripts/engine_install/ue5/` | 7 | Public create/import/run launchers |
 | Game templates/examples | 47 | Arena Fighter, FPS, and Racing references |
 
 The OpenWL source worktree has uncommitted files. Migration must copy from the
@@ -866,9 +866,9 @@ internal modules.
 
 | Source | Target | Action |
 | --- | --- | --- |
-| `scripts/ue/create_project.*` | `scripts/ue/` + `engine_adapters/ue5/cli.py` | `COMPLETE`: wrapper calls public-UEClient CLI |
-| `scripts/ue/import_asset.*` | `scripts/ue/` + `engine_adapters/ue5/cli.py` | `COMPLETE`: descriptor-based import only |
-| `scripts/ue/run.*` | `scripts/ue/` + future platform launcher | `SPLIT`: Unreal launch complete; platform launch pending |
+| `scripts/ue/create_project.*` | `scripts/engine_install/ue5/` + `engine_adapters/ue5/cli.py` | `COMPLETE`: wrapper calls public-UEClient CLI |
+| `scripts/ue/import_asset.*` | `scripts/engine_install/ue5/` + `engine_adapters/ue5/cli.py` | `COMPLETE`: descriptor-based import only |
+| `scripts/ue/run.*` | `scripts/engine_install/ue5/` + future platform launcher | `SPLIT`: Unreal launch complete; platform launch pending |
 | Fighter concrete C++ behavior | `engine_adapters/ue5/examples/ArenaFighterExample/` | `COMPLETE` reference plugin |
 | FPS concrete C++ behavior | `engine_adapters/ue5/examples/FPSExample/` | `COMPLETE` reference plugin |
 | Racing concrete C++ behavior | `engine_adapters/ue5/examples/RacingExample/` | `COMPLETE` reference plugin |

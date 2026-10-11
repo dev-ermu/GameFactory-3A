@@ -6,9 +6,9 @@ foreground / matting model) and processes an input dict into a T-pose RGBA
 image saved as PNG.
 
 The operator is intentionally model-agnostic: you inject any object that
-implements the same interface as `QwenEditModel` (`.infer(image, prompt, seed,
-steps) -> PIL.Image`), and any tool model that behaves like `RMBGModel` or
-`DepthAnythingModel` (`.infer(image) -> np.ndarray`). New model wrappers
+implements the same interface as `SeedreamModel` (`.infer(image, prompt, seed,
+steps) -> PIL.Image`), and any tool model that behaves like `DepthAnythingModel`
+(`.infer(image) -> np.ndarray`). New model wrappers
 can be swapped in without touching this file.
 
 Output layout — two modes, chosen by whether `output_dir` is given:
@@ -26,12 +26,12 @@ Output layout — two modes, chosen by whether `output_dir` is given:
     byte-for-byte the historical behaviour. Existing callers are unaffected.
 
 Usage:
-    from models.gen_image.qwen_edit_model import QwenEditModel
-    from models.tools.image_matting.rmbg_model import RMBGModel
+    from models.gen_image.seedream_model import SeedreamModel
+    from models.tools.image_matting.depth_anything_model import DepthAnythingModel
     from operators.gen_tpose_image.operator import GenTPoseImageOperator
 
-    gen_model  = QwenEditModel(model_path="Qwen/Qwen-Image-Edit-2511")
-    mask_model = RMBGModel(model_path="briaai/RMBG-1.4")
+    gen_model  = SeedreamModel(model_path="doubao-seedream-5-0-260128")
+    mask_model = DepthAnythingModel(model_path="<local/path>")
 
     # per-game layout
     op = GenTPoseImageOperator(gen_model=gen_model, mask_model=mask_model)
@@ -69,11 +69,11 @@ class GenTPoseImageOperator:
     Operator for character T-pose image generation.
 
     Args:
-        gen_model:  A loaded image-edit model with an
+        gen_model:  A loaded image-generation model with an
                     `.infer(image, prompt, seed, steps) -> PIL.Image` method
-                    (currently supports QwenEditModel).
-        mask_model: (optional) A loaded foreground / matting model — either
-                    `RMBGModel` or `DepthAnythingModel` (or any object with a
+                    (currently supports SeedreamModel).
+        mask_model: (optional) A loaded foreground / matting model —
+                    `DepthAnythingModel` (or any object with a
                     `.infer(image) -> np.ndarray` method). The extraction
                     branch is selected automatically based on the class name.
         output_dir (str, optional): **Legacy flat mode.** When given, PNGs are

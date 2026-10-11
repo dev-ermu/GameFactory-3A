@@ -304,36 +304,38 @@ python "<repo_path>/pipeline/assets_gen/gen_motion/run.py" --list-motion-sources
 
 ## 1. Rigging
 
-Prefer Vibe `fit_skeleton` + `skin_mesh` for compatible geometry. Use the
-Puppeteer route below when procedural fitting does not meet the task.
+Rigging runs as a Tripo cloud model. Vibe `fit_skeleton` + `skin_mesh` remains the
+procedural route for compatible geometry.
 
-**Model:** `<repo_path>/models/gen_motion/puppeteer_model.py` (CUDA required for real runs).
+**Model:** `<repo_path>/models/gen_motion/tripo_rigging_model.py` (cloud API; `$TRIPO_API_KEY`).
 **Step:** `<repo_path>/operators/gen_motion/funcs/rig_character.py`.
 
 Accepted mesh formats: `.glb`, `.gltf`, `.obj`, `.ply`, `.stl` (and `.fbx` at
 retarget time). The operator accepts both `target_mesh_path` and the legacy
 `target_glb_path` key.
 
-**Contract that must not break:** Puppeteer's `skin` lines address vertices by
-index in the mesh it consumed. The rig artifacts therefore include that exact
-OBJ. Retargeting binds weights against the same vertex order — any conversion
-that reorders vertices between rig and retarget silently ruins the skin.
+**Contract that must not break:** a `skin` step addresses vertices by index in
+the mesh it consumed. The rig artifacts therefore include that exact OBJ.
+Retargeting binds weights against the same vertex order — any conversion that
+reorders vertices between rig and retarget silently ruins the skin.
 
-Stub-test without CUDA: inject `StubPuppeteerModel` from `<repo_path>/tests/harness/stubs.py`.
+Stub-test without credentials: inject a stub from
+`<repo_path>/tests/harness/stubs.py`.
 
 ## 2. Motion Generation
 
-**Model:** `<repo_path>/models/gen_motion/momask_model.py`.
+Motion runs as a Tripo cloud model.
+
+**Model:** `<repo_path>/models/gen_motion/tripo_rigging_model.py`.
 **Step:** `<repo_path>/operators/gen_motion/funcs/generate_motion.py`.
 
-Use MoMask as a fallback after [Vibe Motion](#prefer-vibe-motion-functions)
-cannot meet the task after parameter tuning and QA. Choose a matching mocap clip
-instead when it offers the required performance.
+Use this after [Vibe Motion](#prefer-vibe-motion-functions) cannot meet the task
+after parameter tuning and QA. Choose a matching mocap clip instead when it
+offers the required performance.
 
-- Native rate is **20 fps**. Pass that through to retarget; exporting a 20 fps
-  clip as 30 fps plays too fast without looking "broken".
-- Prefer HumanML3D-style sentences ("a person walks forward and waves"), not
-  tag lists.
+- Check the native rate the provider returns and pass it through to retarget;
+  re-timing a clip without resampling plays too fast without looking "broken".
+- Prefer sentence-style prompts ("a person walks forward and waves"), not tag lists.
 - `in_place=True` when the game drives locomotion and the clip only has to
   look like walking.
 - Do not expect prompt-level control over timing, style, foot contact, or
@@ -554,60 +556,47 @@ Run these after `inspect_fbx` / Blender import report `ok=True`:
 
 ## 6. Runtime Environment
 
-Configure bpy for FBX retargeting. Install the following Linux environments for
-model-backed fallback and retarget routes:
+Rigging and animation run as TokenHub cloud models; retargeting runs locally
+through `bpy`. There is no installer for motion: the local-weight backends
+(Puppeteer for rigging, MoMask for text-to-motion) have been removed, and the
+repository does not download weights.
+
+Configure `bpy` for FBX retargeting:
 
 ```bash
-bash "<repo_path>/scripts/asset_env_setup/gen_motion/install.sh"
-
-# Install sources and environments only; download weights later if needed.
-bash "<repo_path>/scripts/asset_env_setup/gen_motion/install.sh" --skip-weights
-
-source "<repo_path>/scripts/asset_env_setup/gen_motion/runtime_env.sh"
+bash <repo_path>/scripts/engine_install/blender/install.sh
+source "$HOME/.aaagf/blender_env.sh"
 ```
 
-The installer creates `gamefactory3a-puppeteer`, `gamefactory3a-momask`, and
-`gamefactory3a-retarget-bpy`. `<repo_path>/scripts/asset_env_setup/gen_motion/runtime_env.sh` exports:
+Cloud-backed task types need only credentials in `.env`:
 
-- `A3GF_PUPPETEER_MODEL_PATH`
-- `A3GF_PUPPETEER_PYTHON`
-- `A3GF_MOMASK_MODEL_PATH`
-- `A3GF_MOMASK_PYTHON`
-- `A3GF_RETARGET_BPY_PYTHON`
-
-Pass them explicitly to the pipeline so the command does not depend on legacy
-environment-variable aliases:
+| Task type | Backend | Needs |
+|---|---|---|
+| `cloud_rig`, `cloud_humanoid` | TokenHub cloud model | `$TOKENHUB_API_KEY` |
+| `retarget` | local `bpy` | a Blender install (above) |
 
 ```bash
 python "<repo_path>/pipeline/assets_gen/gen_motion/run.py" \
-  --task-type humanoid \
+  --task-type cloud_humanoid \
   --target-mesh "<mesh_path>" \
   --prompt "A person walks forward and waves." \
-  --puppeteer-model-path "$A3GF_PUPPETEER_MODEL_PATH" \
-  --puppeteer-python "$A3GF_PUPPETEER_PYTHON" \
-  --momask-model-path "$A3GF_MOMASK_MODEL_PATH" \
-  --momask-python "$A3GF_MOMASK_PYTHON" \
-  --bpy-python "$A3GF_RETARGET_BPY_PYTHON" \
   --in-place
 ```
+
+`--task-type humanoid` and `rig` are the removed local-weight routes and now
+fail with an unknown-task-type error rather than degrading silently.
 
 Tests::
 
 ```bash
-# Unit + stub integration
-python -m unittest test.test_gen_motion
-
-# Create an unlicensed, single-mesh T-pose fixture for a real local run.
-"$A3GF_MOMASK_PYTHON" \
-  "<repo_path>/scripts/asset_env_setup/gen_motion/create_humanoid_glb.py" \
-  "<output_dir>/humanoid.glb"
+python -m unittest tests.test_gen_motion
 ```
 
-Synthetic humanoid fixture (mesh + Mixamo-named BVH + matching Puppeteer
-rig), for local repro without licensed assets. Use
+Synthetic humanoid fixture (mesh + Mixamo-named BVH + matching rig), for local
+repro without licensed assets. Use
 `<repo_path>/tests/test_rigging_retarget.py` from the repository root:
 
 ```python
-from test.test_rigging_retarget import build_all
+from tests.test_rigging_retarget import build_all
 build_all("<output_dir>", mesh_format=".glb")
 ```
