@@ -99,7 +99,7 @@ python pipeline/assets_gen/gen_cg_video/run.py \
 | 后端/运行环境 | 文本输入 | 首帧输入 | 首尾帧输入 | 参考图片输入 | 最佳适用场景 |
 |---|---:|---:|---:|---:|---|
 | Seedance 2.0云API | 支持 | 支持 | 支持 | 支持 | 所有共享模式下均能提供高质量的云端生成服务 |
-| MiniMax Hailuo 2.3 API | 支持 | 支持 | 不支持 | 不支持 | 仅适用于云端文本转视频和图像转视频任务 |
+| MiniMax H3 云API | 支持 | 支持 | 支持 | 支持 | 4–15 秒；多模态参考（最多 9 图 / 3 视频 / 3 音频 / 12 文件） |
 
 
 
@@ -207,11 +207,21 @@ python pipeline/assets_gen/gen_cg_video/run.py \
   --prompt "一座悬浮城市的电影级全景镜头。"
 ```
 
-## MiniMax H3 / Hailuo 2.3
+## MiniMax H3
+
+MiniMax 的视频模型有两个容易混淆的名字，本仓库使用的是 **MiniMax H3**（市场名亦作 Hailuo 3，API model id `minimax-video-h3`）。它**不是**上一代 **MiniMax-Hailuo-2.3**（model id `minimax-video-v2.3`）——后者只支持文生与首帧、时长仅 6 或 10 秒。两者不可混用。
+
+### 能力
+
+- 输出时长 **4–15 秒**
+- 模式：`text_to_video`、`first_frame_to_video`、`first_last_frame_to_video`、`reference_to_video`（多模态参考）
+- 不提供种子参数；共享的种子参数会被接受但会被忽略
+
+模型参数与提示词约束详见 `<REPO_PATH>/agent_skills/asset_qa/cg_video/game-cg-director/models/h3_zh.md`。
 
 ### API运行时
 
-Hailuo 2.3仅支持`text_to_video`和`first_frame_to_video`模式。
+属于云端API，无需安装本地运行环境，只需在`.env`中配置`$MINIMAX_API_KEY`：
 
 ```bash
 pip install -r requirements.txt
@@ -226,13 +236,7 @@ python pipeline/assets_gen/gen_cg_video/run.py \
   --resolution 1080P
 ```
 
-Hailuo API支持768P分辨率下生成6秒或10秒的视频，以及1080P分辨率下生成6秒的视频。该API不提供种子参数；共享的种子参数会被接受但会被忽略。
-
-Hailuo属于云端API，无需安装本地运行环境，只需在`.env`中配置`$MINIMAX_API_KEY`。共用的依赖安装脚本为：
-
-```bash
-pip install -r requirements.txt
-```
+首尾帧生成：
 
 ```bash
 python pipeline/assets_gen/gen_cg_video/run.py \
