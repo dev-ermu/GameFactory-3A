@@ -43,13 +43,11 @@ pipeline/
 from pipeline.assets_gen.gen_tpose_image.run import (
     generate,
     load_gen_model,
-    load_mask_model,
     make_operator,
 )
 
-gen_model = load_gen_model("Qwen/Qwen-Image-Edit-2511")
-mask_model = load_mask_model("briaai/RMBG-1.4", model_type="rmbg")
-operator = make_operator(gen_model, mask_model, run_id="default")
+gen_model = load_gen_model("doubao-seedream-5-0-260128")
+operator = make_operator(gen_model, run_id="default")
 
 result = generate(
     {
@@ -62,9 +60,10 @@ result = generate(
     operator,
 )
 print(result["tpose_rgba_path"])
-```该运行器所使用的具体封装代码位于
-`models/gen_image/qwen_edit_model.py` 和
-`models/tools/image_matting/{rmbg_model.py,depth_anything_model.py}`。当不再需要已加载的模型时，请调用其 `unload()` 方法。
+```
+
+该运行器所使用的具体封装代码位于
+`models/gen_image/seedream_model.py`。当不再需要已加载的模型时，请调用其 `unload()` 方法。
 
 ## 职责划分
 

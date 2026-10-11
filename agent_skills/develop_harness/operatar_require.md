@@ -45,7 +45,7 @@ operator's artifact layout.
 ```python
 def __init__(
     self,
-    model: Any,                          # or gen_model / mask_model / ...
+    model: Any,                          # or gen_model / ...
     output_dir: Optional[str] = None,    # legacy flat mode
     run_id: str = "default",
     default_game_id: Optional[str] = None,
@@ -55,7 +55,7 @@ def __init__(
 | # | Rule |
 |---|------|
 | R2.1 | Loaded model objects are the **leading positional** arguments. |
-| R2.2 | Auxiliary models are `Optional` and default to `None`; the operator degrades gracefully (see `mask_model` — without it the T-pose stays opaque). |
+| R2.2 | Auxiliary models are `Optional` and default to `None`; the operator degrades gracefully rather than raising. |
 | R2.3 | Do **no** work beyond storing args and `mkdir`. No inference, no downloads. |
 | R2.4 | Every arg after the models has a default, so `Op(model)` alone is valid. |
 | R2.5 | Store `run_id` / `default_game_id`; they are needed per-task, not per-batch. |
@@ -129,7 +129,7 @@ per-game mode `task_id` is already the directory, so files must be **generic**
 | R5.4 | Prompt templates live here as module constants (see `TPOSE_PROMPT`), never in `operator.py`. |
 | R5.5 | `return_intermediate: bool = False` when intermediates are useful — return a dict of named stages when `True`. |
 | R5.6 | Model-flavour dispatch (mask vs. depth) is absorbed **here**, not in the model and not in the operator. |
-| R5.7 | Keep backwards-compatible aliases when renaming a parameter (see `depth_model` → `mask_model`). |
+| R5.7 | Renaming a parameter is a breaking change for callers: update the contract docs and every call site in the same commit. |
 
 ## R6 — `metrics/`
 

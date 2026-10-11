@@ -20,14 +20,12 @@ install the Python dependencies each provider needs.
 
 | Slot | Class | File | Kind | Needs |
 |------|-------|------|------|-------|
-| `gen_3d_object` | `TripoModel` | `gen_3d_object/tripo_model.py` | cloud API | `$TRIPO_API_KEY` + `scripts/asset_env_setup/cloud_api_install.sh` |
-| `gen_3d_object` | `MeshyModel` | `gen_3d_object/meshy_model.py` | cloud API | `$MESHY_API_KEY` + `scripts/asset_env_setup/cloud_api_install.sh` |
-| `gen_image` | `SeedreamModel` | `gen_image/seedream_model.py` | cloud API | `$ARK_API_KEY` + `scripts/asset_env_setup/cloud_api_install.sh` |
-| `gen_cg_video` | `SeedanceModel` | `gen_cg_video/seedance_model.py` | cloud API | `$ARK_API_KEY` + `scripts/asset_env_setup/cloud_api_install.sh` |
-| `gen_audio` | `SeedAudioModel` | `gen_audio/seed_audio_model.py` | cloud API | `$SEED_AUDIO_API_KEY` + `scripts/asset_env_setup/cloud_api_install.sh`; one class serves both dialogue and SFX slots |
+| `gen_3d_object` | `TripoModel` | `gen_3d_object/tripo_model.py` | cloud API | `$TRIPO_API_KEY |
+| `gen_3d_object` | `MeshyModel` | `gen_3d_object/meshy_model.py` | cloud API | `$MESHY_API_KEY |
+| `gen_image` | `SeedreamModel` | `gen_image/seedream_model.py` | cloud API | `$ARK_API_KEY |
+| `gen_cg_video` | `SeedanceModel` | `gen_cg_video/seedance_model.py` | cloud API | `$ARK_API_KEY |
+| `gen_audio` | `SeedAudioModel` | `gen_audio/seed_audio_model.py` | cloud API | `$SEED_AUDIO_API_KEY; one class serves both dialogue and SFX slots |
 | `gen_motion` | `TripoRiggingModel` | `gen_motion/tripo_rigging_model.py` | cloud API | `$TRIPO_API_KEY`; rigging, retargeting, animation and format conversion over one provider |
-| `tools/image_matting` | `DepthAnythingModel` | `tools/image_matting/depth_anything_model.py` | local weights, **path supplied by the caller** | a local `model_path`; loaded with `local_files_only=True`, never downloaded |
-| `tools/segmentation` | `SkySegmentationModel` | `tools/segmentation/sky.py` | local ONNX, **path supplied by the caller** | a local `model_path` + `onnxruntime` (the CPU build is enough) |
 
 ## Choosing a `gen_3d_object` backend
 
@@ -49,20 +47,10 @@ Pick one with:
 python pipeline/assets_gen/gen_3d_object/run.py --backend {tripo,meshy}
 ```
 
-## The two tool models
-
-`DepthAnythingModel` and `SkySegmentationModel` are the only wrappers that read
-weights from disk, and neither will fetch them: both take a local path and fail
-with an actionable message when it is missing. They stay local because a
-segmentation or depth head has no cloud equivalent that fits the pipeline's
-latency budget.
-
-`SkySegmentationModel` exists because depth heads cannot express "infinitely
-far". They place sky at a finite depth that no threshold separates from real
-surface, so it gets meshed into a curtain over the whole scene; only
-segmentation finds it.
-
 ## Sub-modules
+
+No wrapper reads weights from disk. Everything here is a cloud API reached over
+HTTP, so there is no local model, no checkpoint path, and nothing to download.
 
 | Directory        | Purpose                              | Candidate models |
 |------------------|--------------------------------------|------------------|
@@ -71,5 +59,5 @@ segmentation finds it.
 | `gen_cg_video/`  | Cinematic / CG video generation      | Seedance, Kling, Veo, Sora, Runway Gen-4, Hailuo, Vidu |
 | `gen_audio/`     | Character voice, dialogue, game SFX  | Seed Audio; other voice and SFX backends as candidates |
 | `reasoning/`     | LLMs / VLMs used inside the pipeline  | Claude, GPT, GLM, Kimi, DeepSeek, Gemini, Qwen, Llama, Mistral |
-| `tools/`         | Utility models (depth, matting, segmentation) | Depth-Anything, SAM |
+| `common/`        | Shared plumbing: HTTP, retry, cache, glTF writers | — |
 | `unified_model/` | Composite / multimodal pipelines     | e.g. end-to-end asset+motion models |

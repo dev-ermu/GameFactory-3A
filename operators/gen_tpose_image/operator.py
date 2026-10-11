@@ -1,15 +1,14 @@
 """
 operators/gen_tpose_image/operator.py
 
-GenTPoseImageOperator — accepts a loaded image-edit model (and an optional
-foreground / matting model) and processes an input dict into a T-pose RGBA
-image saved as PNG.
+GenTPoseImageOperator — accepts a loaded image-edit model and processes an input
+dict into a T-pose RGBA image saved as PNG.
 
 The operator is intentionally model-agnostic: you inject any object that
 implements the same interface as `SeedreamModel` (`.infer(image, prompt, seed,
-steps) -> PIL.Image`), and any tool model that behaves like `DepthAnythingModel`
-(`.infer(image) -> np.ndarray`). New model wrappers
-can be swapped in without touching this file.
+steps) -> PIL.Image`). New model wrappers can be swapped in without touching
+this file. Foreground extraction is derived from the white background the
+prompt pins, so there is no second model to inject.
 
 Output layout — two modes, chosen by whether `output_dir` is given:
 
@@ -27,18 +26,15 @@ Output layout — two modes, chosen by whether `output_dir` is given:
 
 Usage:
     from models.gen_image.seedream_model import SeedreamModel
-    from models.tools.image_matting.depth_anything_model import DepthAnythingModel
     from operators.gen_tpose_image.operator import GenTPoseImageOperator
 
-    gen_model  = SeedreamModel(model_path="doubao-seedream-5-0-260128")
-    mask_model = DepthAnythingModel(model_path="<local/path>")
+    gen_model = SeedreamModel(model_path="doubao-seedream-5-0-260128")
 
     # per-game layout
-    op = GenTPoseImageOperator(gen_model=gen_model, mask_model=mask_model)
+    op = GenTPoseImageOperator(gen_model=gen_model)
 
     # legacy flat layout (unchanged)
-    op = GenTPoseImageOperator(gen_model=gen_model, mask_model=mask_model,
-                               output_dir="outputs/tpose")
+    op = GenTPoseImageOperator(gen_model=gen_model, output_dir="outputs/tpose")
 
     result = op.run({
         "game_id": "gameA_cyberpunk_shooter",   # optional, inferred when omitted
@@ -72,10 +68,6 @@ class GenTPoseImageOperator:
         gen_model:  A loaded image-generation model with an
                     `.infer(image, prompt, seed, steps) -> PIL.Image` method
                     (currently supports SeedreamModel).
-        mask_model: (optional) A loaded foreground / matting model —
-                    `DepthAnythingModel` (or any object with a
-                    `.infer(image) -> np.ndarray` method). The extraction
-                    branch is selected automatically based on the class name.
         output_dir (str, optional): **Legacy flat mode.** When given, PNGs are
                     written as `<output_dir>/<task_id>_tpose_fg.png` (and
                     `_tpose.png`), exactly as before. When omitted (default),
@@ -90,13 +82,11 @@ class GenTPoseImageOperator:
     def __init__(
         self,
         gen_model: Any,
-        mask_model: Optional[Any] = None,
         output_dir: Optional[str] = None,
         run_id: str = "default",
         default_game_id: Optional[str] = None,
     ):
         self.gen_model = gen_model
-        self.mask_model = mask_model
         self.run_id = run_id
         self.default_game_id = default_game_id
         # Legacy flat mode is active only when an explicit output_dir is supplied.
@@ -187,7 +177,6 @@ class GenTPoseImageOperator:
             ref_image,
             description=description,
             gen_model=self.gen_model,
-            mask_model=self.mask_model,
             seed=seed,
             steps=steps,
             target_size=target_size,
@@ -228,7 +217,6 @@ class GenTPoseImageOperator:
                 "steps": steps,
                 "target_size": target_size,
                 "gen_model": type(self.gen_model).__name__,
-                "mask_model": type(self.mask_model).__name__ if self.mask_model else None,
             })
 
         return out

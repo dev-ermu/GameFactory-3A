@@ -62,9 +62,8 @@ Nothing else in the repo hardcodes a path, so this is the only registration poin
 
 ### 2. Model wrapper — `models/<family>/<model_name>_model.py`
 
-Follow `model_require.md`. Reference implementations:
-`<REPO_PATH>/models/gen_3d_object/tripo_model.py` (generation),
-`<REPO_PATH>/models/tools/image_matting/depth_anything_model.py` (tool model, inherits `BaseToolModel`).
+Follow `model_require.md`. Reference implementation:
+`<REPO_PATH>/models/gen_3d_object/tripo_model.py` (generation).
 
 ### 3. Operator — `operators/<task>/operator.py` (+ `funcs/`)
 

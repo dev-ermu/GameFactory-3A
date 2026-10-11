@@ -366,7 +366,7 @@ key. Set up only the generation route you actually chose:
 
 ```bash
 # Cloud 3D backends such as Tripo and Meshy
-bash scripts/asset_env_setup/cloud_api_install.sh
+pip install -r requirements.txt
 
 ```
 

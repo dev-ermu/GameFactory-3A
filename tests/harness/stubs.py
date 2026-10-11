@@ -856,22 +856,7 @@ class StubSeedAudioModel(_StubBase):
 
 
 
-class StubDepthAnythingModel(_StubBase):
-    """Mimics `models.tools.image_matting.depth_anything_model.DepthAnythingModel`."""
-
-    def predict(self, image: Image.Image, **kw) -> np.ndarray:
-        self.calls.append({"op": "predict", "size": image.size})
-        arr = np.asarray(image.convert("RGB")).astype(np.float32)
-        # Darker (non-white) pixels read as "closer".
-        return 1.0 - arr.mean(axis=-1) / 255.0
-
-    def __call__(self, image: Image.Image, **kw) -> np.ndarray:
-        return self.predict(image, **kw)
-
-
-
-
-
+# ── Registry ──────────────────────────────────────────────────────────────────
 
 # ── Registry ──────────────────────────────────────────────────────────────────
 
@@ -907,8 +892,7 @@ STUB_OPERATOR_KWARGS: dict[str, Any] = {
     "3d_object": lambda model_key=None: {
         "model": STUB_BACKENDS["3d_object"][model_key or "tripo"]()},
     "tpose": lambda model_key=None: {
-        "gen_model": STUB_BACKENDS["tpose"][model_key or "seedream"](),
-        "mask_model": StubDepthAnythingModel()},
+        "gen_model": STUB_BACKENDS["tpose"][model_key or "seedream"]()},
     "cg_video": lambda model_key=None: {
         "model": STUB_BACKENDS["cg_video"][model_key or "seedance"]()},
     "audio": lambda model_key=None: {

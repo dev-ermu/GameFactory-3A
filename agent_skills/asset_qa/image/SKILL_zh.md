@@ -6,7 +6,7 @@
 
 | 需求 | 处理路径 | 下一步操作 |
 |---|---|---|
-| 用于重建的单物体概念艺术图 | `<REPO_PATH>/models/gen_image/sdxl_turbo.py` | 先审核图像，随后使用`<REPO_PATH>/agent_skills/asset_qa/3d_object/SKILL.md`继续后续流程 |
+| 用于重建的单物体概念艺术图 | `<REPO_PATH>/models/gen_image/seedream_model.py` | 先审核图像，随后使用`<REPO_PATH>/agent_skills/asset_qa/3d_object/SKILL.md`继续后续流程 |
 | 将现有角色图像转换为T型姿势 | `<REPO_PATH>/pipeline/assets_gen/gen_tpose_image/run.py` | 将该透明PNG图像作为输入，接入选定的3D物体或动作工作流 |
 | 验证已生成的T型姿势 | 本技能 | 交接前需确认姿势、身份特征、轮廓、透明度、构图及风格均符合要求 |
 
@@ -16,8 +16,8 @@
 
 | 组件 | 位置 | 职责 |
 |---|---|---|
-| 概念图像模型 | `<REPO_PATH>/models/gen_image/sdxl_turbo.py` | 快速生成单物体文生图概念艺术图，专为重建输入场景优化 |
 | 图像编辑器（云端API） | `<REPO_PATH>/models/gen_image/seedream_model.py` | 采用Seedream图像编辑功能作为可替换的T型姿势生成后端 |
+| 前景提取 | `<REPO_PATH>/operators/gen_tpose_image/funcs/gen_tpose_image.py` | 从提示词钉死的纯白背景推导alpha通道——无需抠图模型 |
 | 任务执行器 | `<REPO_PATH>/operators/gen_tpose_image/operator.py` | 读取任务指令，生成T型姿势图像，保存相关产物与元数据 |
 | 运行器 | `<REPO_PATH>/pipeline/assets_gen/gen_tpose_image/run.py` | 加载模型，接收命令行/JSONL格式的任务指令，输出结果摘要 |
 
@@ -28,10 +28,10 @@
 ```bash
 ```
 
-仅安装云端封装所需的通用HTTP及冒烟测试依赖项：
+仅需安装本仓库声明的依赖：
 
 ```bash
-bash scripts/asset_env_setup/image/cloud_api_install.sh
+pip install -r requirements.txt
 ```
 
 ## 生成图像前先制定规划
@@ -42,12 +42,12 @@ T型姿势编辑器会在保留输入外观的基础上，要求生成固定结�
 
 ## 为3D重建生成概念图
 
-`SDXLTurboModel`适用于快速生成**单物体概念图**，而非最终游戏画面。它默认生成512像素的正方形图像，且负向提示词会排除多视角图、重复主体、裁剪画面、地面、阴影、文字以及杂乱背景——这些元素都会对3D重建造成干扰。
+概念图使用`SeedreamModel`（云端API）生成。提示词应针对**单物体**构图，而非最终游戏画面：需排除多视角图、重复主体、裁剪画面、地面、阴影、文字以及杂乱背景——这些元素都会对3D重建造成干扰。
 
 ```python
-from models.gen_image.sdxl_turbo import SDXLTurboModel
+from models.gen_image.seedream_model import SeedreamModel
 
-model = SDXLTurboModel(model_path="stabilityai/sdxl-turbo", device="cuda")
+model = SeedreamModel(model_path="doubao-seedream-5-0-260128")
 image = model.generate(
     prompt="一个风格化的黄铜与木质制成的宝箱，居中摆放，完整可见",
     seed=42,

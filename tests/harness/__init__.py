@@ -33,8 +33,7 @@ from tests.harness.stubs import (
     # 3D 物体
     StubMeshyModel,
     StubTripoModel,
-    # 图像 / 抠像 / 深度
-    StubDepthAnythingModel,
+    # 图像
     StubSeedreamModel,
     # 音频
     StubSeedAudioModel,
@@ -72,8 +71,7 @@ __all__ = [
     # 3D 物体
     "StubMeshyModel",
     "StubTripoModel",
-    # 图像 / 抠像 / 深度
-    "StubDepthAnythingModel",
+    # 图像
     "StubSeedreamModel",
     # 音频
     "StubSeedAudioModel",

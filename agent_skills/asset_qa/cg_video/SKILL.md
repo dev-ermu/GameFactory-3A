@@ -231,7 +231,7 @@ not the shell working directory.
 Install the shared dependency and set credentials:
 
 ```bash
-bash scripts/asset_env_setup/cloud_api_install.sh
+pip install -r requirements.txt
 export ARK_API_KEY="your-api-key"
 export GAMEFACTORY3A_API_CACHE=test_data/outputs/_api_cache
 ```
@@ -279,7 +279,7 @@ python pipeline/assets_gen/gen_cg_video/run.py \
 Hailuo 2.3 supports `text_to_video` and `first_frame_to_video` only.
 
 ```bash
-bash scripts/asset_env_setup/cloud_api_install.sh
+pip install -r requirements.txt
 export MINIMAX_API_KEY="your-key"
 
 python pipeline/assets_gen/gen_cg_video/run.py \
@@ -298,7 +298,7 @@ Hailuo is a cloud API, so there is no local runtime to install — only
 `$MINIMAX_API_KEY` in `.env`. The shared dependency installer is:
 
 ```bash
-bash scripts/asset_env_setup/cloud_api_install.sh
+pip install -r requirements.txt
 ```
 
 ```bash

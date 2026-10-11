@@ -38,7 +38,7 @@ operators/<task>/
 ```python
 def __init__(
     self,
-    model: Any,                          # 或gen_model / mask_model / ...
+    model: Any,                          # 或gen_model / ...
     output_dir: Optional[str] = None,    # 传统扁平模式
     run_id: str = "default",
     default_game_id: Optional[str] = None,
@@ -48,7 +48,7 @@ def __init__(
 | 编号 | 规则 |
 |---|---|
 | R2.1 | 已加载的模型对象是**首要的位置参数**。 |
-| R2.2 | 辅助模型标记为`Optional`且默认值为`None`；算子会优雅地降级运行（比如`mask_model`缺失时，T型姿势会保持不透明状态）。 |
+| R2.2 | 辅助模型标记为`Optional`且默认值为`None`；算子应优雅降级，而不是抛出异常。 |
 | R2.3 | 除存储参数和创建目录外，**不做任何实际工作**。不执行推理，也不进行下载操作。 |
 | R2.4 | 模型之后的所有参数均有默认值，因此仅传入`model`就能实例化算子。 |
 | R2.5 | 需存储`run_id`和`default_game_id`；它们是任务级别而非批次级别所需的参数。 |
@@ -113,7 +113,7 @@ GLB_FILENAME = "model.glb"   # 按游戏分类模式下的产物文件名
 | R5.4 | 提示词模板作为模块常量存放于此（参见 `TPOSE_PROMPT`），绝不允许放在 `operator.py` 中。 |
 | R5.5 | 当中间结果有用时，设置 `return_intermediate: bool = False`；若设为 `True`，则返回包含各阶段结果的字典。 |
 | R5.6 | 模型类型调度（掩码模型与深度模型）在此处处理，既不在模型中处理，也不在运算符中处理。 |
-| R5.7 | 重命名参数时需保留向后兼容的别名（参见 `depth_model` → `mask_model`）。 |
+| R5.7 | 重命名参数对调用方而言属于破坏性变更：需在同一次提交中同步更新契约文档与所有调用点。 |
 
 ## R6 — `metrics/` 目录相关规则
 

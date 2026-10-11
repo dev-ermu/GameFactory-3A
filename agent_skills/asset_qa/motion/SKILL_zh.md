@@ -156,24 +156,27 @@ python "<repo_path>/pipeline/assets_gen/gen_motion/run.py" --list-motion-sources
 
 ## 1. 骨骼绑定
 
-对于兼容的几何数据，优先使用Vibe的`fit_skeleton`和`skin_mesh`功能。如果程序化拟合无法满足任务需求，则采用下方的Puppeteer方案。
+骨骼绑定通过Tripo云端模型完成。对于兼容的几何数据，仍优先使用Vibe的`fit_skeleton`和`skin_mesh`进行程序化拟合。
 
-**模型路径：** `<repo_path>/models/gen_motion/puppeteer_model.py`（实际运行需依赖CUDA）。
+**模型路径：** `<repo_path>/models/gen_motion/tripo_rigging_model.py`（云端API，需要`$TRIPO_API_KEY`）。
 **操作步骤：** `<repo_path>/operators/gen_motion/funcs/rig_character.py`。
 
 支持的网格格式：`.glb`、`.gltf`、`.obj`、`.ply`、`.stl`（重定位时支持`.fbx`格式）。该操作器同时接受`target_mesh_path`和旧版的`target_glb_path`参数。
 
-**不可破坏的约定：** Puppeteer生成的`skin`数据是通过网格中顶点的索引来定位顶点的。因此绑定的产物会包含对应的OBJ文件。重定位过程是基于相同的顶点顺序来分配权重——任何在绑定骨骼和重定位阶段导致顶点顺序变化的转换，都会直接破坏蒙皮效果。
+**不可破坏的约定：** `skin`数据是通过网格中顶点的索引来定位顶点的。因此绑定的产物会包含对应的OBJ文件。重定位过程是基于相同的顶点顺序来分配权重——任何在绑定骨骼和重定位阶段导致顶点顺序变化的转换，都会直接破坏蒙皮效果。
 
-无需CUDA即可进行的简易测试：从`<repo_path>/tests/harness/stubs.py`中引入`StubPuppeteerModel`即可。
+无需凭证即可进行的简易测试：从`<repo_path>/tests/harness/stubs.py`中引入对应的桩即可。
 
 ## 2. 动画生成
 
-**模型路径：** `<repo_path>/models/gen_motion/momask_model.py`。
+动画生成同样通过Tripo云端模型完成。
+
+**模型路径：** `<repo_path>/models/gen_motion/tripo_rigging_model.py`。
 **操作步骤：** `<repo_path>/operators/gen_motion/funcs/generate_motion.py`。
 
-在经过参数调整和QA检测后，如果[Vibe Motion](#prefer-vibe-motion-functions)仍无法满足任务需求，可将MoMask作为备选方案。若现有的动作捕捉片段能满足性能要求，则优先选用该片段。- 原生帧率为**20帧/秒**。将该帧率直接传递给重定位模块；将20帧/秒的剪辑以30帧/秒导出时，动画播放速度会过快，但不会出现“画面错乱”的情况。
-- 优先使用HumanML3D风格的语句描述（如“一个人向前走并挥手”），而非标签列表。
+在经过参数调整和QA检测后，如果[Vibe Motion](#prefer-vibe-motion-functions)仍无法满足任务需求，可采用该云端方案。若现有的动作捕捉片段能满足性能要求，则优先选用该片段。
+- 请确认服务商返回的原生帧率，并将该帧率直接传递给重定位模块；未做重采样的情况下改变帧率会导致播放速度变化。
+- 优先使用句子式提示词（如"一个人向前走并挥手"），而非标签列表。
 - 当游戏本身负责控制角色移动，而该动画剪辑仅需呈现行走外观时，需设置`in_place=True`。
 - 不要指望能针对动画的时序、风格、脚部接触效果或循环逻辑进行提示词级别的控制。如果某个方案需要特定的动画表现，应直接下载对应结果，而非重新生成随机种子。
 
@@ -343,54 +346,41 @@ result = godot.animation.import_motion(
 
 ## 6. 运行时环境
 
-需配置bpy以实现FBX重定向功能。为支持基于模型的备选方案及重定向流程，需安装以下Linux环境：
+骨骼绑定与动画通过TokenHub云端模型完成；重定向则通过`bpy`在本地运行。动作任务没有安装脚本：本地权重后端（骨骼绑定用的Puppeteer、文生动作用的MoMask）已被移除，本仓库也不下载权重。
+
+配置`bpy`以实现FBX重定向：
 
 ```bash
-bash "<repo_path>/scripts/asset_env_setup/gen_motion/install.sh"
-
-# 仅安装源码与环境，权重文件可后续按需下载。
-bash "<repo_path>/scripts/asset_env_setup/gen_motion/install.sh" --skip-weights
-
-source "<repo_path>/scripts/asset_env_setup/gen_motion/runtime_env.sh"
+bash <repo_path>/scripts/engine_install/blender/install.sh
+source "$HOME/.aaagf/blender_env.sh"
 ```
 
-安装程序会创建`gamefactory3a-puppeteer`、`gamefactory3a-momask`和`gamefactory3a-retarget-bpy`三个组件。`<repo_path>/scripts/asset_env_setup/gen_motion/runtime_env.sh`脚本会导出以下环境变量：
-- `A3GF_PUPPETEER_MODEL_PATH`
-- `A3GF_PUPPETEER_PYTHON`
-- `A3GF_MOMASK_MODEL_PATH`
-- `A3GF_MOMASK_PYTHON`
-- `A3GF_RETARGET_BPY_PYTHON`
+云端任务类型只需在`.env`中配置凭证：
 
-需将这些变量明确传递给流水线，避免命令依赖旧版环境变量别名：
+| 任务类型 | 后端 | 所需条件 |
+|---|---|---|
+| `cloud_rig`、`cloud_humanoid` | TokenHub云端模型 | `$TOKENHUB_API_KEY` |
+| `retarget` | 本地`bpy` | 上文安装的Blender |
 
 ```bash
 python "<repo_path>/pipeline/assets_gen/gen_motion/run.py" \
-  --task-type humanoid \
+  --task-type cloud_humanoid \
   --target-mesh "<mesh_path>" \
   --prompt "一个人向前走并挥手。" \
-  --puppeteer-model-path "$A3GF_PUPPETEER_MODEL_PATH" \
-  --puppeteer-python "$A3GF_PUPPETEER_PYTHON" \
-  --momask-model-path "$A3GF_MOMASK_MODEL_PATH" \
-  --momask-python "$A3GF_MOMASK_PYTHON" \
-  --bpy-python "$A3GF_RETARGET_BPY_PYTHON" \
   --in-place
 ```
+
+`--task-type humanoid` 与 `rig` 属于已移除的本地权重路线，现在会直接报未知任务类型错误，而不会静默降级。
 
 测试步骤：
 
 ```bash
-# 单元测试+桩集成测试
-python -m unittest test.test_gen_motion
-
-# 创建一个无授权、单网格的T型姿势测试模型，用于本地运行。
-"$A3GF_MOMASK_PYTHON" \
-  "<repo_path>/scripts/asset_env_setup/gen_motion/create_humanoid_glb.py" \
-  "<output_dir>/humanoid.glb"
+python -m unittest tests.test_gen_motion
 ```
 
-合成人类角色测试模型（包含网格、命名符合Mixamo规范的BVH文件以及匹配的Puppeteer绑定 rig），无需授权资产即可在本地复现流程。可从仓库根目录找到`<repo_path>/tests/test_rigging_retarget.py`脚本并使用：
+合成人类角色测试模型（包含网格、命名符合Mixamo规范的BVH文件以及匹配的绑定rig），无需授权资产即可在本地复现流程。可从仓库根目录找到`<repo_path>/tests/test_rigging_retarget.py`脚本并使用：
 
 ```python
-from test.test_rigging_retarget import build_all
+from tests.test_rigging_retarget import build_all
 build_all("<output_dir>", mesh_format=".glb")
 ```

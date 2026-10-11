@@ -3,7 +3,7 @@ pipeline/assets_gen/gen_tpose_image/run.py
 
 T-pose image generation demo runner.
 
-Loads SeedreamModel (cloud API) + DepthAnythingModel, injects them into
+Loads SeedreamModel (cloud API) and injects it into
 GenTPoseImageOperator, reads tasks from
 test_data/test_samples/tpose_gen_collect.jsonl (or a single game's
 tpose_tasks.jsonl), and writes PNG outputs grouped per game project:
@@ -49,7 +49,6 @@ TASK_KIND = "tpose"
 # Default model identifiers. The selected backend decides which one is used
 # when --gen-ckpt is omitted.
 DEFAULT_SEEDREAM_MODEL = "doubao-seedream-5-0-260128"
-DEFAULT_MASK_CKPT = "depth-anything/Depth-Anything-V2-Small-hf"
 DEFAULT_TASKS = paths.collect_jsonl(TASK_KIND)
 
 
@@ -74,17 +73,8 @@ def load_gen_model(
     )
 
 
-def load_mask_model(ckpt: str, device: str = "cpu"):
-    """Load the foreground / matting model (DepthAnything)."""
-    from models.tools.image_matting.depth_anything_model import DepthAnythingModel
-
-    print(f"[run] Loading DepthAnythingModel from: {ckpt}")
-    return DepthAnythingModel(model_path=ckpt, device=device)
-
-
 def make_operator(
     gen_model,
-    mask_model=None,
     output_dir: str | None = None,
     run_id: str = paths.DEFAULT_RUN_ID,
     default_game_id: str | None = None,
@@ -98,7 +88,6 @@ def make_operator(
     from operators.gen_tpose_image.operator import GenTPoseImageOperator
     return GenTPoseImageOperator(
         gen_model=gen_model,
-        mask_model=mask_model,
         output_dir=output_dir,
         run_id=run_id,
         default_game_id=default_game_id,
@@ -170,8 +159,7 @@ def main():
         device=args.device,
         backend=args.gen_backend,
     )
-    mask_model = load_mask_model(DEFAULT_MASK_CKPT, device=args.device)
-    operator = make_operator(gen_model, mask_model, output_dir=args.out_dir,
+    operator = make_operator(gen_model, output_dir=args.out_dir,
                              run_id=run_id, default_game_id=args.game)
 
     if args.image:

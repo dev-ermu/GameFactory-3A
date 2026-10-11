@@ -22,7 +22,7 @@ They tend to become fused geometry, baked texture, or missing body parts.
 | Component | Location | Responsibility |
 |---|---|---|
 | Image editor (cloud API) | `<REPO_PATH>/models/gen_image/seedream_model.py` | Turns a supplied character reference into a white-background T-pose render |
-| Foreground / matting model | `<REPO_PATH>/models/tools/image_matting/depth_anything_model.py` | Derives the alpha matte a T-pose render needs; local path only, never downloaded |
+| Foreground extraction | `<REPO_PATH>/operators/gen_tpose_image/funcs/gen_tpose_image.py` | Derives the alpha channel from the white background the prompt pins — no matting model |
 | Task operator | `<REPO_PATH>/operators/gen_tpose_image/operator.py` | Reads a task, generates the T-pose, saves artifacts and metadata |
 | Runner | `<REPO_PATH>/pipeline/assets_gen/gen_tpose_image/run.py` | Loads models, accepts CLI/JSONL tasks, and writes result summaries |
 
@@ -40,11 +40,11 @@ so it needs a `model_path` you supply. It is never fetched automatically.
 
 ## Install the image environment
 
-Image generation is a cloud API (Seedream), so the only dependency is an HTTP
-client plus the offline test requirements:
+Image generation is a cloud API (Seedream), so the repository's dependencies are
+all it needs:
 
 ```bash
-bash scripts/asset_env_setup/cloud_api_install.sh
+pip install -r requirements.txt
 ```
 
 ## Plan the image before generating

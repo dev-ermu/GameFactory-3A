@@ -56,7 +56,7 @@ if __name__ == "__main__": main()
 
 | # | Rule |
 |---|------|
-| R2.1 | One `load_<slot>_model()` per model the task needs (`load_gen_model`, `load_mask_model`, …). Each prints what it is loading. |
+| R2.1 | One `load_<slot>_model()` per model the task needs (`load_gen_model`, `load_rig_model`, …). Each prints what it is loading. |
 | R2.2 | `make_operator()` mirrors the operator's constructor 1:1 and passes arguments through unchanged. Do not invent defaults here. |
 | R2.3 | `generate(inp, operator)` is a one-liner `return operator.run(inp)`. |
 | R2.4 | `run_from_jsonl()` iterates via `paths.iter_tasks(tasks_path, game_filter=...)` — never open and `json.loads` the file by hand. |

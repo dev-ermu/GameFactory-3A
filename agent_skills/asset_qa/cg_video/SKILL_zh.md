@@ -169,7 +169,7 @@ JSONL格式的任务示例：
 安装共享依赖并设置凭证：
 
 ```bash
-bash scripts/asset_env_setup/cg_video/cloud_api_install.sh
+pip install -r requirements.txt
 export ARK_API_KEY="你的API密钥"
 export GAMEFACTORY3A_API_CACHE=test_data/outputs/_api_cache
 ```
@@ -214,7 +214,7 @@ python pipeline/assets_gen/gen_cg_video/run.py \
 Hailuo 2.3仅支持`text_to_video`和`first_frame_to_video`模式。
 
 ```bash
-bash scripts/asset_env_setup/cg_video/cloud_api_install.sh
+pip install -r requirements.txt
 export MINIMAX_API_KEY="你的密钥"
 
 python pipeline/assets_gen/gen_cg_video/run.py \
@@ -228,10 +228,11 @@ python pipeline/assets_gen/gen_cg_video/run.py \
 
 Hailuo API支持768P分辨率下生成6秒或10秒的视频，以及1080P分辨率下生成6秒的视频。该API不提供种子参数；共享的种子参数会被接受但会被忽略。
 
-
+Hailuo属于云端API，无需安装本地运行环境，只需在`.env`中配置`$MINIMAX_API_KEY`。共用的依赖安装脚本为：
 
 ```bash
-bash scripts/asset_env_setup/cg_video/minimax_h3_install.sh
+pip install -r requirements.txt
+```
 
 ```bash
 python pipeline/assets_gen/gen_cg_video/run.py \

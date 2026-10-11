@@ -9,8 +9,9 @@
 > **封装闭源云 API**（如 Tripo、Meshy、Rodin、Kling 等）？本规范默认模型使用本地权重。请查阅 `api_model_require.md`——该文档新增了 **R9** 条款，用于覆盖 R2.1–R2.3、R3.3/R3.4、R3.6 及 R4 条款，适用于远程模型，同时明确了偏差情况的标注规则。
 
 示例：
-- 生成类模型：`<REPO_PATH>/models/gen_3d_object/trellis_2_model.py`、`<REPO_PATH>/models/gen_image/qwen_edit_model.py`
-- 工具类模型：`<REPO_PATH>/models/tools/image_matting/rmbg_model.py`（继承自 `BaseToolModel`）
+- 生成类模型：`<REPO_PATH>/models/gen_3d_object/tripo_model.py`、`<REPO_PATH>/models/gen_image/seedream_model.py`
+
+本仓库没有工具类模型这一层：不存在任何本地权重封装，`models/tools/` 目录也不存在。T型姿势渲染所需的前景提取来自提示词所钉死的纯白背景，而非抠图模型。
 
 ---
 
@@ -23,7 +24,7 @@
 | R1.3 | **禁止使用 `argparse`，也不得编写 `if __name__ == "__main__"` 相关的业务逻辑。** | 命令行接口功能由 `run.py` 实现。 |
 | R1.4 | **不涉及任务语义。不得使用 `task_id`、`game_id`，也不得为特定任务编写提示词模板。** | 提示词相关逻辑属于 `<REPO_PATH>/operators/<任务名>/funcs/` 目录。 |
 | R1.5 | 重量级依赖（`torch`、`diffusers`、第三方库）若属于可选依赖，应放在 `__init__` 或 `_load()` 内部，以便该模块能在仅搭载 CPU 的设备上被导入。 | `<REPO_PATH>/tests/harness/smoke.py` 必须能在没有模型权重的情况下导入整个流程链。 |
-| R1.6 | 当缺少环境前提条件时，需快速抛出包含**可操作指引**的错误信息。 | 可参考 `trellis_2_model.py` 中的 `o_voxel` 检查逻辑。 |
+| R1.6 | 当缺少环境前提条件时，需快速抛出包含**可操作指引**的错误信息。 | 可参考 `tripo_model.py` 中对缺失 API Key 的检查逻辑。 |
 
 ### R1.2 — 唯一例外情况
 
@@ -70,34 +71,16 @@ def __init__(self, model_path: str | list[str], device: str = "cuda", **model_sp
 | R4.1 | 当模型占用的显存超过1GB时，需提供`unload()`方法：将模型移至CPU，执行`del`、`gc.collect()`以及`torch.cuda.empty_cache()`操作。 |
 | R4.2 | `unload()`方法是幂等的——即使调用两次或在加载失败后仍可安全调用。 |
 | R4.3 | 若存在`unload()`方法，调用`infer()`时应能透明地重新加载模型。 |
-| R4.4 | 针对工具类模型，需支持`lazy=True`参数（延迟加载权重）——`BaseToolModel`类已实现了该功能。 |
+| R4.4 | 云端后端完全不需要生命周期管理：调用之间不驻留任何资源，因此没有需要卸载的东西。 |
 
-## R5 — 工具类模型专项规则
+## R6 — 模型可替换性
 
-所有辅助功能相关模型（深度估计、图像分割、抠图、姿态估计、关键点检测等）需存放于`<REPO_PATH>/models/tools/<group>/`目录下，且**必须**继承自`BaseToolModel`（路径为`<REPO_PATH>/models/tools/base.py`），仅需重写以下方法：
-
-```python
-def _load(self) -> None:        # 将模型权重及处理器加载到self.device上
-def infer(self, image: Image.Image, **kwargs) -> Any:
-```
-
-这样就能直接复用`__init__(model_path, device, lazy)`、`_ensure_loaded()`、`__call__`和`unload()`这些方法。
-
-| # | 规则 |
-|---|------|
-| R5.1 | `infer()`方法开头需调用`self._ensure_loaded()`。 |
-| R5.2 | `infer()`方法接收RGB格式的`PIL.Image`对象，并在内部进行归一化处理（`image.convert("RGB")`）。 |
-| R5.3 | 返回类型为普通的`np.ndarray`（数据类型为`float32`），**分辨率需与原始图像一致**——推理完成后需再调整尺寸。 |
-| R5.4 | 需在文档字符串中说明返回值的取值范围：掩码类结果的取值范围为`[0, 1]`；深度图需注明是否经过归一化。 |
-| R5.5 | 方法需添加`@torch.no_grad()`装饰器。 |
-| R5.6 | 需将该类同时导出到对应组的`__init__.py`文件以及`<REPO_PATH>/models/tools/__init__.py`中。 |
-| R5.7 | 返回PIL图像的便捷辅助函数（如`remove_background()`）是受欢迎的，但`infer()`仍需遵循返回原始数组的约定。 |
-
-## R6 — 模型可替换性用于同一算子插槽的两个封装器必须能够互换，且不会引发算子的行为变化。具体来说，`RMBGModel`和`DepthAnythingModel`都符合`infer(PIL.Image) -> np.ndarray[H, W] float32`这一接口规范，因此`<REPO_PATH>/operators/gen_tpose_image/funcs/gen_tpose_image.py`可以仅根据类名来分发调用。
+用于同一算子插槽的两个封装器必须能够互换，且不会引发算子的行为变化。具体来说，共用同一插槽的两个云端后端——`TripoModel`与`MeshyModel`——都符合
+`infer_and_save(image, output_path, seed, decimation_target, texture_size)`这一接口规范，因此`<REPO_PATH>/operators/gen_3d_object/operator.py`可以在不改动自身代码的情况下切换后端。
 
 为现有插槽添加第二个后端时需注意：
 1. 必须与现有的函数签名及返回类型完全一致；
-2. 若语义确实存在差异（如掩码与深度数据），应由**算子的`funcs/`模块**来处理这种差异，而非由模型本身处理；
+2. 若语义确实存在差异，应由**算子的`funcs/`模块**来处理这种差异，而非由模型本身处理；
 3. 需将其添加到`<REPO_PATH>/models/README.md`中的候选模型表中。
 
 ## R7 — 文档字符串模板

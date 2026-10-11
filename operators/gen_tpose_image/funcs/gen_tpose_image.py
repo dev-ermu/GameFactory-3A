@@ -6,12 +6,9 @@ gen_tpose_image — Generate a game-CG T-pose RGBA image from a reference charac
 Pipeline:
   1. Use a GenImageModel (e.g. SeedreamModel) to turn the reference image into
      a game-CG T-pose render on a pure white background.
-  2. Use a *mask model* to extract the foreground character. Two flavors are
-     supported transparently — the right branch is selected automatically by
-     class name, so any model returning a matte works:
-       - a direct alpha-mask model  : returns a foreground probability mask.
-       - DepthAnythingModel        : returns a depth map, threshold + white-bg
-                                    suppression are applied to derive the mask.
+  2. Derive the alpha channel from that white background: the prompt pins it to
+     RGB 255,255,255 with no gradient and no cast shadow, so a threshold is
+     enough and no matting model is involved.
   3. Post-process: validate alpha, tight-crop the foreground bbox, pad to a
      square canvas and resize to a fixed target size (1024 by default) so the
      result is directly consumable by downstream 3D pipelines.
@@ -19,7 +16,6 @@ Pipeline:
 
 import numpy as np
 from PIL import Image
-from scipy.ndimage import binary_dilation, binary_erosion, binary_fill_holes
 
 
 # ---------------------------------------------------------------------------
@@ -56,85 +52,33 @@ def _generate_tpose_rgb(
 
 
 # ---------------------------------------------------------------------------
-# Step 2: Foreground extraction
+# Step 2: Foreground extraction from the white background
 # ---------------------------------------------------------------------------
 
-def _is_depth_model(model) -> bool:
-    """Detect whether the supplied tool model is a depth estimator."""
-    cls = type(model).__name__.lower()
-    if "depth" in cls:
-        return True
-    if "rmbg" in cls or "matting" in cls or "segment" in cls:
-        return False
-    return False
-
-
-def _extract_foreground_via_depth(
+def _extract_foreground(
     image: Image.Image,
-    depth_model,
     white_thresh: int = 235,
-    depth_quantile: float = 0.35,
 ) -> Image.Image:
-    """Segment foreground using depth cues + white-bg suppression."""
-    img = np.array(image.convert("RGB"))
+    """Turn the pure-white backdrop into an alpha channel.
 
-    depth = depth_model.infer(image)
-    depth_norm = (depth - depth.min()) / (depth.max() - depth.min() + 1e-8)
-
-    white_mask = (
-        (img[..., 0] >= white_thresh)
-        & (img[..., 1] >= white_thresh)
-        & (img[..., 2] >= white_thresh)
+    阈值抠图而非模型抠图是刻意的：提示词已把背景钉死为 RGB 255,255,255，
+    无渐变、无投影，因此前景恰好是低于阈值的像素集合。引入模型只会增加
+    依赖与失败模式，却不会改变结果。
+    """
+    rgb = np.array(image.convert("RGB"))
+    white = (
+        (rgb[..., 0] >= white_thresh)
+        & (rgb[..., 1] >= white_thresh)
+        & (rgb[..., 2] >= white_thresh)
     )
 
-    fg = binary_fill_holes(depth_norm >= depth_quantile) & ~white_mask
-    fg = binary_dilation(binary_erosion(fg, iterations=2), iterations=3)
+    # 按与白色的距离生成软 alpha，避免抗锯齿轮廓像素被硬切成全透明而留下黑边。
+    min_channel = rgb.min(axis=2)
+    distance = np.clip(white_thresh - min_channel, 0, white_thresh)
+    alpha = np.where(white, 0, distance.astype(np.uint8))
 
-    rgba = np.array(image.convert("RGBA"))
-    rgba[..., 3] = (fg * 255).astype(np.uint8)
+    rgba = np.dstack([rgb, alpha])
     return Image.fromarray(rgba, "RGBA")
-
-
-def _extract_foreground_via_mask(
-    image: Image.Image,
-    mask_model,
-    threshold: float = 0.5,
-) -> Image.Image:
-    """Segment foreground using a direct alpha-mask model.
-
-    The mask model is expected to return either a HxW float array in [0, 1]
-    (foreground probability) or an RGBA PIL image. The continuous mask is
-    used as-is for the alpha channel; a binary version is also computed for
-    light morphological cleanup so post-processing can find a stable bbox.
-    """
-    out = mask_model.infer(image)
-
-    if isinstance(out, Image.Image):
-        rgba = np.array(out.convert("RGBA"))
-        return Image.fromarray(rgba, "RGBA")
-
-    mask = np.asarray(out, dtype=np.float32)
-    if mask.ndim == 3:
-        mask = mask[..., 0]
-    mn, mx = float(mask.min()), float(mask.max())
-    if mx > mn:
-        mask = (mask - mn) / (mx - mn)
-
-    binary = mask >= threshold
-    binary = binary_dilation(binary_erosion(binary, iterations=1), iterations=1)
-    soft_alpha = mask.copy()
-    soft_alpha[~binary] = 0.0
-
-    rgba = np.array(image.convert("RGBA"))
-    rgba[..., 3] = np.clip(soft_alpha * 255.0, 0, 255).astype(np.uint8)
-    return Image.fromarray(rgba, "RGBA")
-
-
-def _extract_foreground(image: Image.Image, mask_model) -> Image.Image:
-    """Dispatch to the correct extraction routine based on the model type."""
-    if _is_depth_model(mask_model):
-        return _extract_foreground_via_depth(image, mask_model)
-    return _extract_foreground_via_mask(image, mask_model)
 
 
 # ---------------------------------------------------------------------------
@@ -204,8 +148,6 @@ def gen_tpose_image(
     ref_image: Image.Image,
     description: str,
     gen_model,
-    mask_model=None,
-    depth_model=None,  # backwards-compat alias
     seed: int = 42,
     steps: int = 40,
     target_size: int = 1024,
@@ -218,11 +160,6 @@ def gen_tpose_image(
         ref_image:           Reference PIL image of the character.
         description:         Short text description of the character (can be empty).
         gen_model:           Loaded GenImageModel (e.g. SeedreamModel).
-        mask_model:          Loaded foreground / matting model — any object
-                             whose class name identifies a depth estimator
-                             takes the depth branch, anything else the direct
-                             alpha-mask branch.
-        depth_model:         Backwards-compatible alias for `mask_model`.
         seed:                Random seed for the image-edit model.
         steps:               Diffusion steps for the image-edit model.
         target_size:         Output canvas size (square).
@@ -233,17 +170,11 @@ def gen_tpose_image(
         If `return_intermediate=True`, returns a dict with keys
         {"tpose_rgb", "tpose_rgba"}.
     """
-    if mask_model is None:
-        mask_model = depth_model
-
     # Step 1: image edit → white-bg T-pose
     tpose_rgb = _generate_tpose_rgb(gen_model, ref_image, description, seed, steps)
 
-    # Step 2: foreground extraction
-    if mask_model is not None:
-        fg_rgba = _extract_foreground(tpose_rgb, mask_model)
-    else:
-        fg_rgba = tpose_rgb.convert("RGBA")
+    # Step 2: foreground extraction from the white backdrop
+    fg_rgba = _extract_foreground(tpose_rgb)
 
     # Step 3: post-process for downstream 3D
     fg_rgba = _postprocess_for_3d(fg_rgba, size=target_size)

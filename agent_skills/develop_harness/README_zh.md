@@ -54,8 +54,7 @@ pipeline/assets_gen/<task>/     第三层 — “如何批量运行并评估结�
 仓库中其他部分均不会硬编码路径，因此这是唯一的注册点。
 
 ### 2. 模型包装器 — `models/<family>/<model_name>_model.py`请遵循`model_require.md`的要求。参考实现如下：
-`<REPO_PATH>/models/gen_3d_object/trellis_2_model.py`（生成模块），
-`<REPO_PATH>/models/tools/image_matting/rmbg_model.py`（工具模型，继承自`BaseToolModel`）。
+`<REPO_PATH>/models/gen_3d_object/tripo_model.py`（生成模块）。
 
 ### 3. 算子 — `operators/<task>/operator.py`（含`funcs/`目录）
 

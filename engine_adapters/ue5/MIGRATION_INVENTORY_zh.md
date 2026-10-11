@@ -32,13 +32,13 @@ D:\Desktop\game\3AGameFactory
 - 移植了针对特定资产、特效、PBR、高斯泼溅、PLY格式、世界、插件、构建、运行时、反射以及公共契约的测试；
 - 使用UE 5.4版本编译该框架及测试套件，同时针对编辑器目标和游戏目标进行测试；验证结果表明无头游戏世界能够接收UDP格式的`sync_session`指令，并能成功生成/绑定相应实体；
 - 将`project.create()`的功能调整为生成最小的C++宿主模块，同时包含游戏和编辑器目标，但不包含具体的游戏玩法默认设置；
-- 迁移`create_project`、`import_asset`和`run`等命令行接口的行为；最终的仓库封装代码位于`scripts/ue`目录下，且仅调用`engine_adapters/ue5/cli.py`中的公共UEClient实现；
+- 迁移`create_project`、`import_asset`和`run`等命令行接口的行为；最终的仓库封装代码位于`scripts/engine_install/ue5`目录下，且仅调用`engine_adapters/ue5/cli.py`中的公共UEClient实现；
 - 将导入启动器从任意源路径改为基于仓库任务描述符进行工作；
 - 将运行启动器的功能限定为仅负责启动Unreal引擎；网关/浏览器服务相关功能不再混入UE脚本中；
 - 当生成的插件声明依赖`AAAGamePlayable`时，`plugin.install()`会自动同步并启用该组件；
 - 验证结果表明，新创建的脚本化项目能够成功安装框架及生成的测试套件，运行UHT工具，并使用UE 5.4编译两个插件模块。
 
-完成于2026年8月3日：- 将公共的Windows/Linux封装器移至仓库级别的`scripts/ue`目录；
+完成于2026年8月3日：- 将公共的Windows/Linux封装器移至`scripts/engine_install/ue5`目录；
 - 将Python命令行接口实现保留在`engine_adapters/ue5/cli.py`中，由封装器调用该接口，而命令行接口仅导入公共的`UEClient`；
 - 把预览角色、控制器以及GameMode行为提取到可选的、由适配器管理的`AAAGamePreview`插件中；
 - 将具体的Arena Fighter、FPS以及赛车类角色/Pawn、控制器、GameMode、HUD、标准化输入处理逻辑，还有实体工厂注册功能，提取到`engine_adapters/ue5/examples`下的独立可选插件中；
@@ -451,7 +451,7 @@ test_data/outputs/<game_id>/<run_id>/mechanic/<task_id>/
 | `serving/` | 273 | 虚幻引擎实现、平台服务、Blender运行时及共享合约 |
 | `serving/engines/unreal/` | 153 | 虚幻引擎适配器实现及虚幻引擎专属调试UI |
 | `OpenWLPlayable`插件 | 29 | 运行时基础设施，混杂有格斗类/第一人称射击类/赛车类/预览版实现 |
-| `scripts/ue/` | 7 | 公开的创建/导入/运行启动器 |
+| `scripts/engine_install/ue5/` | 7 | 公开的创建/导入/运行启动器 |
 | 游戏模板/示例 | 47 | 竞技场格斗、第一人称射击、赛车类参考示例 |
 
 OpenWL源码工作区存在未提交的文件。迁移时必须从源码中复制内容，不得删除、移动、重置或重写源码文件。
@@ -576,9 +576,9 @@ Source/AAAGamePlayable/Public/
 
 | 源路径 | 目标路径 | 操作类型 |
 | --- | --- | --- |
-| `scripts/ue/create_project.*` | `scripts/ue/` + `engine_adapters/ue5/cli.py` | `COMPLETE`：包装器调用公共的UEClient CLI |
-| `scripts/ue/import_asset.*` | `scripts/ue/` + `engine_adapters/ue5/cli.py` | `COMPLETE`：仅支持基于描述符的导入 |
-| `scripts/ue/run.*` | `scripts/ue/` + 未来的平台启动器 | `SPLIT`：Unreal启动已完成；平台启动待处理 |
+| `scripts/ue/create_project.*` | `scripts/engine_install/ue5/` + `engine_adapters/ue5/cli.py` | `COMPLETE`：包装器调用公共的UEClient CLI |
+| `scripts/ue/import_asset.*` | `scripts/engine_install/ue5/` + `engine_adapters/ue5/cli.py` | `COMPLETE`：仅支持基于描述符的导入 |
+| `scripts/ue/run.*` | `scripts/engine_install/ue5/` + 未来的平台启动器 | `SPLIT`：Unreal启动已完成；平台启动待处理 |
 | Fighter具体的C++实现 | `engine_adapters/ue5/examples/ArenaFighterExample/` | `COMPLETE` 参考插件 |
 | FPS具体的C++实现 | `engine_adapters/ue5/examples/FPSExample/` | `COMPLETE` 参考插件 |
 | 赛车类游戏具体的C++实现 | `engine_adapters/ue5/examples/RacingExample/` | `COMPLETE` 参考插件 |

@@ -49,13 +49,11 @@ already manage loaded models may use the lower-level `operator.run(inp)` API.
 from pipeline.assets_gen.gen_tpose_image.run import (
     generate,
     load_gen_model,
-    load_mask_model,
     make_operator,
 )
 
 gen_model = load_gen_model("doubao-seedream-5-0-260128")
-mask_model = load_mask_model("<local/path/to/depth-anything>", model_type="depth_anything")
-operator = make_operator(gen_model, mask_model, run_id="default")
+operator = make_operator(gen_model, run_id="default")
 
 result = generate(
     {
@@ -70,10 +68,9 @@ result = generate(
 print(result["tpose_rgba_path"])
 ```
 
-The concrete wrappers used by this runner live at
-`models/gen_image/seedream_model.py` and
-`models/tools/image_matting/depth_anything_model.py`. Call
-`unload()` on loaded models when they are no longer needed.
+The concrete wrapper used by this runner lives at
+`models/gen_image/seedream_model.py`. Call
+`unload()` on a loaded model when it is no longer needed.
 
 ## Responsibilities
 

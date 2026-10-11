@@ -20,9 +20,7 @@ subdirectories of it.
 | Asset task | Skill | Use it for |
 |---|---|---|
 | Image preparation and T-pose generation | `<REPO_PATH>/agent_skills/asset_qa/image/SKILL.md` | Single-object reconstruction inputs, character T-pose images, alpha preparation, and image QA |
-| 3D object generation and review | `<REPO_PATH>/agent_skills/asset_qa/3d_object/SKILL.md` | Props, avatars, weapons, mesh quality, provenance, and ship-readiness |
-| Imported asset orientation | `<REPO_PATH>/agent_skills/asset_qa/3d_object/orientation_review.md` | Forward axis, scale, ground contact, attachment points, and engine import review |
-| 3D scene generation | `<REPO_PATH>/agent_skills/asset_qa/3d_scene/SKILL.md` | Scene generation or assembly, layout, environment quality, and scene-level review |
+| 3D object generation and review | `<REPO_PATH>/agent_skills/asset_qa/3d_object/SKILL.md` | Props, avatars, weapons, mesh quality, provenance, facing, scale, and ship-readiness |
 | Motion | `<REPO_PATH>/agent_skills/asset_qa/motion/SKILL.md` | Rigging, generation/fetch, retargeting, import, and in-game motion review |
 | CG video | `<REPO_PATH>/agent_skills/asset_qa/cg_video/SKILL.md` | CG prompt direction, backend selection, generation, artifact layout, and video QA |
 
@@ -30,21 +28,42 @@ Read the selected engine contract from `<REPO_PATH>/agent_skills/engine_context/
 importing an approved asset or scene. The engine documents define formats,
 coordinate conventions, public APIs, project structure, and runtime validation.
 
-## Environment setup map
+## Environment setup
 
-Use the task-specific installer below before the relevant generation route. All
-paths are relative to the repository root, `<REPO_PATH>/`.
-`cloud_api_install.sh` at the `<REPO_PATH>/scripts/asset_env_setup/` root is the common
-implementation; new agent workflows should invoke the task-specific entry point
-rather than the shared script directly.
+One virtual environment, one dependency file. Every asset task uses the same
+Python dependencies, so there is no per-task installer.
 
-| Asset task | Canonical setup command | Additional setup |
-|---|---|---|
-| Image / T-pose | No repository-wide installer currently required | See `<REPO_PATH>/scripts/asset_env_setup/cloud_api_install.sh` and `<REPO_PATH>/agent_skills/asset_qa/image/SKILL.md` |
-| 3D object | `bash scripts/asset_env_setup/cloud_api_install.sh` | — |
-| Motion | No repository-wide installer currently required | See `<REPO_PATH>/agent_skills/asset_qa/motion/SKILL.md` |
-| Audio | `bash scripts/asset_env_setup/cloud_api_install.sh` | See `<REPO_PATH>/agent_skills/asset_qa/audio/SKILL.md` |
-| CG video | `bash scripts/asset_env_setup/cloud_api_install.sh` | — |
+```bash
+python -m venv .venv
+.venv/Scripts/activate        # Windows
+# source .venv/bin/activate   # Linux / macOS
+pip install -r requirements.txt
+cp .env.example .env          # Windows: copy .env.example .env
+```
+
+`requirements.txt` pins exact versions. That is the whole dependency surface:
+every backend is a cloud API reached over HTTP, so there is no local model, no
+checkpoint path, and nothing to download.
+
+| Asset task | Extra setup |
+|---|---|
+| Image / T-pose | See `<REPO_PATH>/agent_skills/asset_qa/image/SKILL.md` |
+| 3D object | — |
+| Motion | Blender for retargeting: `<REPO_PATH>/scripts/engine_install/blender/install.sh` |
+| Audio | — |
+| CG video | — |
+
+Verify without spending credits or touching the network:
+
+```bash
+python tests/harness/smoke.py --kind 3d_object --backend tripo
+python tests/test_api_3d_object.py
+python tests/harness/smoke.py --kind tpose --backend seedream
+python tests/harness/smoke.py --kind audio --backend seed_audio
+python tests/test_api_audio.py
+python tests/harness/smoke.py --kind cg_video --backend seedance
+python tests/harness/smoke.py --kind motion
+```
 
 ## Paid cloud backend: ask the user before spending
 
@@ -66,11 +85,11 @@ provider needs **both** its `*_API_BASE` and its `*_API_KEY`; the base URL is
 required and has no silent default, because the public endpoint is not reachable
 from every network.
 
-The local route is the default for 3D object, image/T-pose and audio, and it needs
-a CUDA GPU plus tens of GB of weights and disk. If the machine cannot run it,
-switch that slot to its cloud backend in `.env` and fill in the provider's
-`*_API_BASE` and `*_API_KEY`: the Pipeline runners refuse to start while either is
-unset, so an unusable local route surfaces immediately rather than mid-task.
+There is no local fallback for these asset types. The repository does not
+download model weights, and every listed backend runs server-side: no GPU, no
+local checkpoints, no disk budget. Fill the provider's `*_API_BASE` and
+`*_API_KEY` in `.env`; the Pipeline runners refuse to start while either is
+unset, so a missing key surfaces immediately rather than mid-task.
 
 Before the first paid call:
 
@@ -86,9 +105,9 @@ Before the first paid call:
 4. **If approved**, prefer that the user exports the key themselves; otherwise
    set it only in the session environment. Never put a key in a JSONL, task
    metadata, cache key, log, or commit.
-5. **If declined, or the budget does not allow it**, say so and switch to the
-   documented local/open fallback for that asset type. If no route can produce a
-   shippable asset, report the gap instead of silently downgrading quality.
+5. **If declined, or the budget does not allow it**, say so and report the gap.
+   There is no local route to fall back to, so state plainly which asset type
+   cannot be produced and why, rather than silently downgrading quality.
 6. Run the Skill's free smoke/contract check before spending credits, and
    re-confirm with the user before an unusually large or repeated batch.
 

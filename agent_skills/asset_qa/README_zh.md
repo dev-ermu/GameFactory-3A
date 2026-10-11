@@ -11,9 +11,7 @@
 | 资产任务 | 对应技能 | 适用场景 |
 |---|---|---|
 | 图像预处理与T型姿势生成 | `<REPO_PATH>/agent_skills/asset_qa/image/SKILL.md` | 单物体重建输入、角色T型姿势图像、透明度通道处理及图像质量检查 |
-| 3D物体生成与审核 | `<REPO_PATH>/agent_skills/asset_qa/3d_object/SKILL.md` | 道具、虚拟形象、武器、网格模型质量评估、来源追溯及发布可行性审核 |
-| 导入资产的朝向调整 | `<REPO_PATH>/agent_skills/asset_qa/3d_object/orientation_review.md` | 前向轴校准、缩放调整、地面接触判定、附着点设置及引擎导入审核 |
-| 3D场景生成 | `<REPO_PATH>/agent_skills/asset_qa/3d_scene/SKILL.md` | 场景生成或组装、布局规划、环境质量评估及场景级审核 |
+| 3D物体生成与审核 | `<REPO_PATH>/agent_skills/asset_qa/3d_object/SKILL.md` | 道具、虚拟形象、武器、网格模型质量评估、来源追溯、朝向与缩放及发布可行性审核 |
 | 动画处理 | `<REPO_PATH>/agent_skills/asset_qa/motion/SKILL.md` | 骨骼绑定、动画生成/获取、动作重定向、导入操作及游戏内动画效果审核 |
 | CG视频制作 | `<REPO_PATH>/agent_skills/asset_qa/cg_video/SKILL.md` | CG提示词设计、后端工具选择、视频生成、瑕疵排查及视频质量检查 |
 
@@ -21,19 +19,41 @@
 
 ## 环境配置指南
 
-在执行相关生成任务前，请先使用下方的特定任务安装脚本。所有路径均相对于仓库根目录`<REPO_PATH>/`。位于`<REPO_PATH>/scripts/asset_env_setup/`目录下的`cloud_api_install.sh`为通用实现脚本；新的代理工作流应调用特定任务的入口点，而非直接调用该共享脚本。
+一个虚拟环境、一份依赖清单。所有资产任务共用同一套Python依赖，因此不再按任务区分安装脚本。
 
-| 资产类型       | 标准配置命令                                                                 | 额外配置说明                                                                 |
-|----------------|------------------------------------------------------------------------------|------------------------------------------------------------------------------|
-| 图像/T-pose    | 目前无需全局安装脚本                                                         | 请参阅`<REPO_PATH>/scripts/asset_env_setup/image/cloud_api_install.sh`，以及`<REPO_PATH>/agent_skills/asset_qa/image/SKILL.md` |
-| 3D物体         | `bash scripts/asset_env_setup/3d_object/cloud_api_install.sh`                | — |
-| 动作数据       | 目前无需全局安装脚本                                                         | 请参阅`<REPO_PATH>/agent_skills/asset_qa/motion/SKILL.md` |
-| 音频           | `bash scripts/asset_env_setup/audio/cloud_api_install.sh`                     | 请参阅`<REPO_PATH>/agent_skills/asset_qa/audio/SKILL.md` |
-| CG视频         | `bash scripts/asset_env_setup/cg_video/cloud_api_install.sh`                 | 本地MiniMax H3模型：执行`bash scripts/asset_env_setup/cg_video/minimax_h3_install.sh` |
+```bash
+python -m venv .venv
+.venv/Scripts/activate        # Windows
+# source .venv/bin/activate   # Linux / macOS
+pip install -r requirements.txt
+cp .env.example .env          # Windows：copy .env.example .env
+```
+
+`requirements.txt`锁定了精确版本号，这就是全部依赖面：所有后端都是通过HTTP访问的云端API，既没有本地模型，也没有检查点路径，更没有任何需要下载的东西。
+
+| 资产类型 | 额外配置说明 |
+|---|---|
+| 图像/T-pose | 请参阅`<REPO_PATH>/agent_skills/asset_qa/image/SKILL.md` |
+| 3D物体 | — |
+| 动作数据 | 重定向需要Blender：`<REPO_PATH>/scripts/engine_install/blender/install.sh` |
+| 音频 | — |
+| CG视频 | — |
+
+以下命令可在不消耗额度、不联网的情况下完成验证：
+
+```bash
+python tests/harness/smoke.py --kind 3d_object --backend tripo
+python tests/test_api_3d_object.py
+python tests/harness/smoke.py --kind tpose --backend seedream
+python tests/harness/smoke.py --kind audio --backend seed_audio
+python tests/test_api_audio.py
+python tests/harness/smoke.py --kind cg_video --backend seedance
+python tests/harness/smoke.py --kind motion
+```
 
 ## 付费云后端：使用前需征求用户许可
 
-对于成熟的资产类型——**3D物体、图像/T-pose、音频、CG视频**——推荐使用闭源云API作为首选方案，因为它们的可靠性远高于本地/开源方案。由于这些服务会消耗用户的费用，代理程序必须**暂停并询问用户**，而不能默认用户已拥有相应的访问密钥。
+对于成熟的资产类型——**3D物体、图像/T-pose、音频、CG视频**——闭源云API是**唯一**可用方案。它们会消耗用户的费用，因此代理程序必须**暂停并询问用户**，而不能默认用户已拥有相应的访问密钥。
 
 | 资产类型       | 推荐的付费后端               | 购买/获取API密钥页面                                                                 | 环境变量               |
 |----------------|----------------------------|------------------------------------------------------------------------------------|------------------------|
@@ -42,7 +62,7 @@
 | 音频           | 通过火山引擎调用的Seed Audio | <https://console.volcengine.com/speech/>                                          | `SEED_AUDIO_API_KEY`   |
 | CG视频         | 通过Ark平台调用的Seedance，其次是MiniMax Hailuo | <https://console.volcengine.com/ark>、<https://platform.minimax.io/user-center/basic-information/interface-key> | `ARK_API_KEY`、`MINIMAX_API_KEY` |所有配置项都要写入 **`<REPO_PATH>/.env`** 这个唯一的配置文件（执行 `cp .env.example .env` 即可创建），该文件会被 `<REPO_PATH>/config.py` 读取。每个服务提供商都需要同时设置 `*_API_BASE` 和 `*_API_KEY` 两个参数；其中基础URL是必填项，且没有默认取值，因为公共端点并非在所有网络中都能访问。
 
-3D模型、图像/T姿态以及音频的本地处理路径是默认选项，但该方式需要配备CUDA GPU，还需占用数十GB的权重文件和磁盘空间。如果当前机器无法运行本地处理流程，可在 `.env` 文件中将该选项切换为云后端，并填入对应服务提供商的 `*_API_BASE` 和 `*_API_KEY`：只要这两个参数未设置，Pipeline运行器就会拒绝启动，因此无法使用的本地路径会立刻被识别出来，而不会在任务中途才暴露问题。
+这些资产类型没有本地备选路线。本仓库不下载模型权重，上述后端全部在服务端运行：无需GPU、无需本地检查点、无需占用磁盘配额。请在 `.env` 中填入对应服务商的 `*_API_BASE` 与 `*_API_KEY`：只要这两个参数未设置，Pipeline运行器就会拒绝启动，因此缺失密钥会立刻暴露，而不会在任务中途才出现问题。
 
 首次调用付费服务前，请遵循以下步骤：
 
@@ -50,7 +70,7 @@
 2. **单条消息询问**，内容需包含：推荐的服务提供商及理由；上述购买/获取API密钥的链接；该提供商当前的定价页面（从该控制台可找到链接），以及你对该批次任务的**预估费用**——即单价乘以任务数量、时长或分辨率，再加上重试所需的额外费用；同时要明确请求用户购买访问权限并将密钥提供给你。
 3. **等待用户的明确答复**。是否付费由用户决定，而非默认选项。
 4. **若获得批准**，优先让用户自行导出密钥；否则仅将密钥设置在会话环境中。绝不要把密钥写入JSONL文件、任务元数据、缓存键、日志或提交记录中。
-5. **若被拒绝，或预算不足以支持付费服务**，请如实告知用户，并切换为针对该资产类型的已文档说明的本地/开源替代方案。如果没有任何路径能生成可交付的资产，应直接汇报这一缺口，而非悄悄降低质量。
+5. **若被拒绝，或预算不足以支持付费服务**，请如实告知用户。这些资产类型没有本地路线可退，应直接说明哪一类资产无法产出以及原因，而非悄悄降低质量。
 6. 在消耗积分前，先运行该技能对应的免费 Smoke 测试/合约检查；对于规模较大或需要重复处理的批次任务，还需事先再次征得用户确认。
 
 ## 审核工作流程

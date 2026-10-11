@@ -47,7 +47,7 @@ def main(): ...
 if __name__ == "__main__": main()
 ```| # | 规则 |
 |---|------|
-| R2.1 | 任务所需的每个模型对应一个 `load_<slot>_model()` 函数（如 `load_gen_model`、`load_mask_model` 等）。每个函数都会输出正在加载的模型信息。 |
+| R2.1 | 任务所需的每个模型对应一个 `load_<slot>_model()` 函数（如 `load_gen_model`、`load_rig_model` 等）。每个函数都会输出正在加载的模型信息。 |
 | R2.2 | `make_operator()` 需与操作符的构造函数一一对应，且直接原样传递参数。切勿在此处自行设定默认值。 |
 | R2.3 | `generate(inp, operator)` 只需一行代码：`return operator.run(inp)`。 |
 | R2.4 | `run_from_jsonl()` 通过 `paths.iter_tasks(tasks_path, game_filter=...)` 来迭代处理任务——切勿手动打开文件并执行 `json.loads`。 |

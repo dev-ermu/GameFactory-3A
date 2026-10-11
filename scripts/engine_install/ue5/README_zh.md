@@ -5,15 +5,15 @@
 该目录中特意仅包含Windows/Linux平台的启动器以及本README文件。Python实现代码位于`engine_adapters/ue5/cli.py`中：
 
 ```text
-scripts/ue/*.cmd或*.sh -> engine_adapters.ue5.cli -> UEClient
+scripts/engine_install/ue5/*.cmd or *.sh -> engine_adapters.ue5.cli -> UEClient
 ```
 
 ```powershell
-scripts\ue\create_project.cmd `
+scripts\engine_install\ue5\create_project.cmd `
   --ue-root D:\UE\UE_5.4 `
   --project-path D:\Projects\GeneratedGame
 
-scripts\ue\import_asset.cmd `
+scripts\engine_install\ue5\import_asset.cmd `
   --ue-root D:\UE\UE_5.4 `
   --project D:\Projects\GeneratedGame\GeneratedGame.uproject `
   --game-id gameA_cyberpunk_shooter `
@@ -21,7 +21,7 @@ scripts\ue\import_asset.cmd `
   --type prop `
   --artifact-key glb_path
 
-scripts\ue\run.cmd `
+scripts\engine_install\ue5\run.cmd `
   --ue-root D:\UE\UE_5.4 `
   --project D:\Projects\GeneratedGame\GeneratedGame.uproject `
   --map /Game/Maps/Arena

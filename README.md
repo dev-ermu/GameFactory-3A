@@ -82,9 +82,9 @@ GameFactory-3A/
 ├── pipeline/                   # 生成与评测入口
 │   ├── assets_gen/             # 图片、3D、场景、动作、音频与 CG 视频任务
 │   └── common/                 # 共享辅助模块；paths.py 是所有输入输出路径的唯一来源
-├── scripts/                    # 环境配置、引擎启动器与导入工具
-│   ├── asset_env_setup/        # 按资产任务组织的环境配置，含 gen_motion 运行时与权重安装
+├── scripts/                    # 引擎安装/启动器与导入工具
 │   └── engine_install/         # UE5、Blender、Unity、Godot 的安装与启动脚本
+├── requirements.txt            # Python 依赖（精确版本），配合 .venv 使用
 ├── test/                       # 用于验证流程实际可运行的契约、集成与 smoke 脚本
 ├── test_data/                  # 示例需求；生成的游戏结果位于 outputs/
 └── third_party/                # 检出的外部仓库，例如 trimesh 与引擎材质/资产库
