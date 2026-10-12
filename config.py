@@ -58,7 +58,7 @@ class Settings(BaseSettings):
     )
 
     # 通用
-    output_root: Path = Field(REPO_ROOT / "test_data" / "outputs", validation_alias="AAAGF_OUTPUT_ROOT")
+    output_root: Path = Field(REPO_ROOT / "outputs" / "runs", validation_alias="AAAGF_OUTPUT_ROOT")
     api_cache: str | None = Field(None, validation_alias=_a("AAAGF_API_CACHE", "GAMEFACTORY3A_API_CACHE"))
 
     # 任务槽位的后端开关。**只支持云端 API**——本地权重后端已全部移除。
@@ -156,7 +156,7 @@ class Settings(BaseSettings):
     browser_upload_run_id: str = Field("", validation_alias="A3GAME_BROWSER_UPLOAD_RUN_ID")
 
     # 单元测试相关配置项。所有测试强制要求从项目根目录开始运行，保证工作路径是项目根目录。
-    test_data_dir: str = "./tests/data"
+    outputs_dir: str = "./tests/data"
 
 
 #: 全局唯一实例。模块导入即完成 `.env` 解析。

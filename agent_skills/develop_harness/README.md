@@ -71,7 +71,7 @@ pipeline/assets_gen/<task>/     第三层 — “如何批量运行并评估结�
 ### 5. 测试数据
 
 需将该任务的相关条目同时添加到针对单个游戏的
-`<REPO_PATH>/test_data/test_samples/<game>/<TaskDir>/<kind>_tasks.jsonl`文件，以及跨游戏通用的
+`<REPO_PATH>/outputs/samples/<game>/<TaskDir>/<kind>_tasks.jsonl`文件，以及跨游戏通用的
 `<kind>_collect.jsonl`文件中。每条条目都必须包含`game_id`和`task_id`字段。
 
 ### 6. 注册存根并验证——无需GPU环境
@@ -96,7 +96,7 @@ python tests/test_<task>.py
 所有生成物均通过`(game_id, run_id, task_kind, task_id)`这一标识来定位，它们存储在与测试集结构对应的根目录下：
 
 ```
-test_data/outputs/<game_id>/<run_id>/assets/<task_kind>/<task_id>/
+outputs/runs/<game_id>/<run_id>/assets/<task_kind>/<task_id>/
 ```
 
 务必通过`<REPO_PATH>/pipeline/common/paths.py`来操作路径：
@@ -124,7 +124,7 @@ paths.write_results_summary(results, kind, run_id)      # 各游戏项目的汇�
 |-------|-----|
 | 在算子中直接使用 `argparse` | 将命令行接口相关逻辑放在 `run.py` 中处理 |
 | 算子中直接构建模型 | 注入已加载的模型 |
-| 模型直接往 `<REPO_PATH>/test_data/outputs/` 目录写数据 | 让模型返回数据，再由算子负责保存 |
+| 模型直接往 `<REPO_PATH>/outputs/runs/` 目录写数据 | 让模型返回数据，再由算子负责保存 |
 | 使用 `os.path.join("outputs", ...)` | 改用 `paths.task_output_dir(...)` |
 | 在算子的模块顶层导入 `torch` | 在函数内部导入 |
 | 评估阶段导入 `run.generate()` 或加载生成模型 | 仅对已有的产物进行解析和评分 |

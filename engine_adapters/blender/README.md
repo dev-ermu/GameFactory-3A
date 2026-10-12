@@ -47,7 +47,7 @@ python engine_adapters/blender/import_generated/import_mesh.py \
 
 ```bash
 python scripts/import_generated_asset.py --engine blender \
-    --src test_data/outputs/<game>/<run>/assets/3d_object/<task>/model.glb \
+    --src outputs/runs/<game>/<run>/assets/3d_object/<task>/model.glb \
     --blender-preview
 ```
 

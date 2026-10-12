@@ -128,7 +128,7 @@ class UnityClient:
         This is orchestration over the same public namespace clients exposed by
         ``UnityClient``.  Asset descriptors must resolve through the canonical
         benchmark output registry; no source path is copied directly from
-        ``test_samples`` or the repository's prepared-asset directory.
+        ``samples`` or the repository's prepared-asset directory.
         """
         if native_editor:
             return self._generate_game_native(

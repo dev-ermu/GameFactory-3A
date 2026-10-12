@@ -79,7 +79,7 @@ python pipeline/assets_gen/gen_tpose_image/run.py \
 {
   "game_id": "gameA_cyberpunk_shooter",
   "task_id": "luffy_tpose_001",
-  "image_path": "test_data/test_samples/gameA_cyberpunk_shooter/tpose/ref_images/luffy.jpg",
+  "image_path": "outputs/samples/gameA_cyberpunk_shooter/tpose/ref_images/luffy.jpg",
   "description": "蒙奇·D·路飞身着标志性的红色背心和草帽。",
   "seed": 42,
   "steps": 40,
@@ -98,7 +98,7 @@ python pipeline/assets_gen/gen_tpose_image/run.py \
 ```bash
 python pipeline/assets_gen/gen_tpose_image/run.py \
   --device cuda \
-  --tasks test_data/test_samples/tpose_gen_collect.jsonl \
+  --tasks outputs/samples/tpose_gen_collect.jsonl \
   --run-id auto
 
 export ARK_API_KEY="your-key"
@@ -106,7 +106,7 @@ python pipeline/assets_gen/gen_tpose_image/run.py \
   --gen-backend seedream \
   --gen-ckpt doubao-seedream-5-0-260128 \
   --device cuda \
-  --tasks test_data/test_samples/tpose_gen_collect.jsonl \
+  --tasks outputs/samples/tpose_gen_collect.jsonl \
   --run-id auto
 ```
 
@@ -117,7 +117,7 @@ python pipeline/assets_gen/gen_tpose_image/run.py \
 当前注册的任务类型仍为 `tpose`，因此标准产出物如下：
 
 ```text
-test_data/outputs/<game_id>/<run_id>/assets/tpose/<task_id>/
+outputs/runs/<game_id>/<run_id>/assets/tpose/<task_id>/
 ├── tpose_fg.png   # 透明背景的交付文件
 ├── tpose.png      # 白色背景的中间文件，除非 `save_intermediate` 设为 false
 └── meta.json       # 包含源数据、所用模型、随机种子、处理步骤、图像尺寸及任务元数据

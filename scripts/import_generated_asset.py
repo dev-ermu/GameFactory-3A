@@ -4,7 +4,7 @@ scripts/import_generated_asset.py
 
 Host-side launcher for the last leg of the chain:
 
-    models/gen_3d_object  →  test_data/outputs/.../model.glb  →  UE5 / Unity / Godot / Blender asset
+    models/gen_3d_object  →  outputs/runs/.../model.glb  →  UE5 / Unity / Godot / Blender asset
 
 It finds the engine binary, drives it in batch mode with the importer that lives
 in `engine_adapters/<engine>/import_generated/`, and reports what the engine
@@ -41,7 +41,7 @@ Usage:
 
     # everything a generation run produced
     python scripts/import_generated_asset.py --engine both \\
-        --summary test_data/outputs/<game>/<run>/3d_object_results_summary.json
+        --summary outputs/runs/<game>/<run>/3d_object_results_summary.json
 
 Environment (so the flags can be omitted):
     AAAGF_UE_EDITOR       path to UnrealEditor-Cmd.exe

@@ -20,7 +20,7 @@ description: 将游戏CG创作意图及可选的媒体引用转换为经过验�
 当3AGameFactory将该工具作为子功能模块调用时，还需提供选定的`game_id`，并使用其标准的创作工作区：
 
 ```text
-test_data/test_samples/<game_id>/cg_video/
+outputs/samples/<game_id>/cg_video/
 ├── requirement.txt
 ├── ref_images/                 # 可选的源素材
 ├── ref_videos/                 # 可选的源素材
@@ -102,7 +102,7 @@ test_data/test_samples/<game_id>/cg_video/
 1. 构建不含`game_id`和`run_id`的封装结构。
 2. 将其写入仓库外的唯一临时JSON文件，并运行捆绑的验证器对该文件进行校验。
 3. 验证通过后，仅添加选定的`game_id`，然后将完整对象作为一行紧凑的内容直接写入
-   `<REPO_PATH>/test_data/test_samples/<game_id>/cg_video/cg_tasks.jsonl`。
+   `<REPO_PATH>/outputs/samples/<game_id>/cg_video/cg_tasks.jsonl`。
 4. 保留原有行序及无关任务。除非调用方明确请求修订，否则拒绝重复的`task_id`；若收到修订请求，则直接替换对应行内容。
 5. 删除临时验证文件。切勿创建持久的`director/`工作目录。
 

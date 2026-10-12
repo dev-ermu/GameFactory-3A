@@ -1,0 +1,48 @@
+# Game D: Racing MVP (gameD_racing_unity)
+
+## Goal
+
+Generate a playable Unity 2022.3 URP circuit-racing game from three prepared
+inputs: one racing-car FBX, one rigged-driver FBX, and one existing Unity track
+scene. Mechanic and UI code are generated as separate packages and assembled
+through the public UnityClient.
+
+## First-Version Scope
+
+- Third-person chase and cockpit-or-hood cameras, switched with C
+- Rigidbody-based arcade vehicle control: W/S/A/D and Space handbrake
+- One player and three AI racers using the same car and driver prefabs
+- 3-2-1-GO countdown, ordered checkpoints, three laps, timing and ranking
+- Restart with Enter or the results-screen button
+- HUD for speed, gear, lap, current/best time, position and camera mode
+- Unity Editor Play Mode and runtime-session validation
+
+## Prepared Inputs
+
+- `demoRacing_001`: user-generated racing car, materialized as `model.fbx`
+- `demoRacing_007`: user-provided rigged driver, materialized as `model.fbx`
+- `demoRacing_010`: cleaned environment-only track package, materialized as
+  `environment.unitypackage`
+
+Unity must consume these artifacts from the canonical benchmark output. It
+must not import directly from `asset/`, `samples`, or the source track
+project.
+
+## Procedural Animation
+
+No generated motion asset is required. Wheel rotation, steering, body roll,
+the seated driver pose, and hand placement are driven by mechanic code and IK.
+If the car has no independent wheel nodes, physics wheel anchors remain
+required and the missing visual-wheel animation is reported as a P1 gap.
+
+## Deferred
+
+CG video, generated audio, WebGL build, browser serving, rear-view mirror and
+vehicle deformation are not part of this first version.
+
+## Playable Loop
+
+```
+Launch -> Countdown -> Drive -> Ordered Checkpoints -> Complete 3 Laps
+-> Finish and Rank -> Restart
+```

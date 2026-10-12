@@ -83,7 +83,7 @@ class BrowserServingCgVideoTests(unittest.TestCase):
             )
             with mock.patch.object(
                 paths,
-                "TEST_SAMPLES_ROOT",
+                "SAMPLES_ROOT",
                 samples,
             ), mock.patch.object(paths, "OUTPUT_ROOT", outputs):
                 gateway = CgVideoGateway(
@@ -143,7 +143,7 @@ class BrowserServingCgVideoTests(unittest.TestCase):
                     + "\n",
                     encoding="utf-8",
                 )
-                with mock.patch.object(paths, "TEST_SAMPLES_ROOT", root / "samples"):
+                with mock.patch.object(paths, "SAMPLES_ROOT", root / "samples"):
                     with self.assertRaises(NotImplementedError):
                         gateway.submit(
                             game_id="game_demo",
@@ -191,7 +191,7 @@ class CgVideoReuseTests(unittest.TestCase):
 
         stack = contextlib.ExitStack()
         self.addCleanup(stack.close)
-        stack.enter_context(mock.patch.object(paths, "TEST_SAMPLES_ROOT", samples))
+        stack.enter_context(mock.patch.object(paths, "SAMPLES_ROOT", samples))
         stack.enter_context(mock.patch.object(paths, "OUTPUT_ROOT", outputs))
 
         if model is None:

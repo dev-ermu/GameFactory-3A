@@ -22,7 +22,7 @@
 标准产物目录结构如下：
 
 ```text
-test_data/outputs/<game_id>/<run_id>/assets/cg_video/<task_id>/
+outputs/runs/<game_id>/<run_id>/assets/cg_video/<task_id>/
 ├── video.mp4
 └── meta.json
 ```
@@ -43,7 +43,7 @@ python3 <REPO_PATH>/agent_skills/asset_qa/cg_video/game-cg-director/scripts/vali
 调用子流程前需先选择输入工作区：
 
 ```text
-test_data/test_samples/<game_id>/cg_video/
+outputs/samples/<game_id>/cg_video/
 ├── requirement.txt
 ├── ref_images/                  # 可选
 ├── ref_videos/                  # 可选
@@ -77,7 +77,7 @@ Runner会根据流程分别选择模型和宽高比。当JSONL文件中包含多
 
 ```bash
 python pipeline/assets_gen/gen_cg_video/run.py \
-  --tasks test_data/test_samples/<game_id>/cg_video/cg_tasks.jsonl \
+  --tasks outputs/samples/<game_id>/cg_video/cg_tasks.jsonl \
   --task-id <task_id> \
   --run-id <run_id> \
   <backend-and-format-options>
@@ -116,7 +116,7 @@ python pipeline/assets_gen/gen_cg_video/run.py \
   --task-id paper_dragon \
   --game gameA_cyberpunk_shooter \
   --run-id auto \
-  --cache-dir test_data/outputs/_api_cache
+  --cache-dir outputs/runs/_api_cache
 ```
 
 帧输入与参考模式：
@@ -160,7 +160,7 @@ python pipeline/assets_gen/gen_cg_video/run.py \
 JSONL格式的任务示例：
 
 ```json
-{"game_id":"gameA_cyberpunk_shooter","task_id":"shot_001","mode":"first_frame_to_video","prompt":"摄像机缓慢靠近。","duration_sec":5,"seed":42,"first_frame_path":"test_data/test_samples/gameA_cyberpunk_shooter/cg_video/ref_images/shot_001.png"}
+{"game_id":"gameA_cyberpunk_shooter","task_id":"shot_001","mode":"first_frame_to_video","prompt":"摄像机缓慢靠近。","duration_sec":5,"seed":42,"first_frame_path":"outputs/samples/gameA_cyberpunk_shooter/cg_video/ref_images/shot_001.png"}
 ```
 
 仓库相对路径的图像会通过`pipeline.common.paths`解析，而非通过Shell工作目录。
@@ -172,7 +172,7 @@ JSONL格式的任务示例：
 ```bash
 pip install -r requirements.txt
 export ARK_API_KEY="你的API密钥"
-export GAMEFACTORY3A_API_CACHE=test_data/outputs/_api_cache
+export GAMEFACTORY3A_API_CACHE=outputs/runs/_api_cache
 ```
 
 可选配置：
@@ -204,7 +204,7 @@ python pipeline/assets_gen/gen_cg_video/run.py \
   --timeout 1800 \
   --poll-interval 3 \
   --max-retries 3 \
-  --cache-dir test_data/outputs/_api_cache \
+  --cache-dir outputs/runs/_api_cache \
   --prompt "一座悬浮城市的电影级全景镜头。"
 ```
 

@@ -31,12 +31,12 @@ done
 ## 生成输出可追溯性
 
 | --- | --- |
-| `NeonDodge2D` | `test_data/outputs/game101/godot/` |
-| `SolarRally3D` | `test_data/outputs/game202/godot/` |
-| `OrbitPinball2D` | `test_data/outputs/game303/godot/` |
-| `FpsArena3D` | `test_data/outputs/game404/godot/` |
-| `ArenaDuel3D` | `test_data/outputs/game505/godot/` |
-| `RpgExplorer3D` | `test_data/outputs/game606/godot/` |
+| `NeonDodge2D` | `outputs/runs/game101/godot/` |
+| `SolarRally3D` | `outputs/runs/game202/godot/` |
+| `OrbitPinball2D` | `outputs/runs/game303/godot/` |
+| `FpsArena3D` | `outputs/runs/game404/godot/` |
+| `ArenaDuel3D` | `outputs/runs/game505/godot/` |
+| `RpgExplorer3D` | `outputs/runs/game606/godot/` |
 
 生成的输出副本属于交付产物，并非这些参考项目的运行时依赖项。请使用上述原生命令重新验证源代码；生成审核用副本时，需采用每个项目对应的`generated_output`值。
 

@@ -137,7 +137,7 @@ Gen<Task>Operator —— 接收一个已加载的<模型类型>，将输入字�
 该运算符刻意设计为与模型无关：可注入任何实现了<预期接口>的对象。
 
 输出布局有两种模式，由是否指定 `output_dir` 决定：
-  * 按游戏划分（默认）：test_data/outputs/<game_id>/<run_id>/assets/<种类>/<task_id>/
+  * 按游戏划分（默认）：outputs/runs/<game_id>/<run_id>/assets/<种类>/<task_id>/
   * 扁平模式（传统方式）：<output_dir>/<task_id>.<扩展名>
 
 使用示例：

@@ -9,4 +9,4 @@ godot4 --headless --path . --import
 godot4 --headless --path . --script res://scripts/smoke.gd
 ```
 
-评审演示版本生成于 `test_data/outputs/game202/godot/` 目录下；除Godot忽略的 `.godot/` 导入缓存外，其文件结构与本项目一致。
+评审演示版本生成于 `outputs/runs/game202/godot/` 目录下；除Godot忽略的 `.godot/` 导入缓存外，其文件结构与本项目一致。

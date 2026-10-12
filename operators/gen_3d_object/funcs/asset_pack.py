@@ -10,7 +10,7 @@ CC0 and engine-neutral. Nothing here touches an engine: the model lands in the
 task output directory as an ordinary artifact with a `meta.json` beside it, so
 whatever imports it later is a separate decision.
 
-Downloads are cached under `test_data/outputs/_asset_pack_cache/` by asset id,
+Downloads are cached under `outputs/runs/_asset_pack_cache/` by asset id,
 so a re-run costs no network and cannot drift: the bytes that passed QA once are
 the bytes every later run sees.
 """

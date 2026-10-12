@@ -19,7 +19,7 @@ FIXTURE_DIRECTORY = Path(__file__).parent / "vibe_motion_examples"
 FIXTURE_NAMES = ("horse_gallop_stop_kick", "turn_jump_chop", "synthetic_chain")
 VIDEO_OUTPUT_DIRECTORY = (
     Path(__file__).resolve().parents[1]
-    / "test_data/outputs/_GPT6_astra_test/vibe_motion_refine260927"
+    / "outputs/runs/_GPT6_astra_test/vibe_motion_refine260927"
 )
 
 

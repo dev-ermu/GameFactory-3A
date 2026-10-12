@@ -1,6 +1,6 @@
 # Blender参考机制
 
-这些脚本是基于`engine_adapters/blender/game`构建的可选具体示例。它们与`ue5/examples/`和`unity3d/examples/`并列存放，以便每个引擎都能拥有自己的示例。共享的`test_data/test_samples/`在后续合并前保持与引擎无关的状态。
+这些脚本是基于`engine_adapters/blender/game`构建的可选具体示例。它们与`ue5/examples/`和`unity3d/examples/`并列存放，以便每个引擎都能拥有自己的示例。共享的`outputs/samples/`在后续合并前保持与引擎无关的状态。
 
 | 示例 | 类型 | 演示内容 |
 | --- | --- | --- |

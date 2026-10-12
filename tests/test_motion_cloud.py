@@ -61,8 +61,8 @@ def check(name: str, condition: bool, detail: str = "") -> bool:
 #: 3AGameFactory knight demo, not fixtures — absent from a fresh checkout, which
 #: is why the test falls back to a URL-only run when none is present.
 _MESH_CANDIDATES = (
-    "test_data/outputs/*/*/assets/3d_object/*/parts/tpose_body_lo.glb",
-    "test_data/outputs/*/*/assets/3d_object/*/parts/tpose_body.glb",
+    "outputs/runs/*/*/assets/3d_object/*/parts/tpose_body_lo.glb",
+    "outputs/runs/*/*/assets/3d_object/*/parts/tpose_body.glb",
 )
 
 
@@ -502,7 +502,7 @@ def main() -> int:
     parser.add_argument("--out-format", default="glb", choices=("glb", "fbx"),
                         help="Container the provider should return")
     parser.add_argument("--out", default=None,
-                        help="Output directory (default: test_data/outputs/...)")
+                        help="Output directory (default: outputs/runs/...)")
     args = parser.parse_args()
 
     mode = "REAL API" if args.real else "STUB (no network, no cost)"
@@ -535,7 +535,7 @@ def main() -> int:
     print(f"out_format: {args.out_format}\n")
 
     out_dir = Path(args.out) if args.out else (
-        _REPO_ROOT / "test_data" / "outputs" / "_cloud_motion_test")
+        _REPO_ROOT / "outputs" / "runs" / "_cloud_motion_test")
     out_dir.mkdir(parents=True, exist_ok=True)
 
     task = {
@@ -574,8 +574,8 @@ def main() -> int:
     print(f"{len(PASSED)} passed, {len(FAILED)} failed  ({elapsed:.1f}s)")
     print(f"artifacts: {out_dir}")
     print("Review them locally:\n"
-          f"  python3 test_data/outputs/_viewer_lib/install_rig_viewers.py {out_dir}\n"
-          "  cd test_data/outputs && python3 -m http.server 8765")
+          f"  python3 outputs/runs/_viewer_lib/install_rig_viewers.py {out_dir}\n"
+          "  cd outputs/runs && python3 -m http.server 8765")
     if FAILED:
         for name, detail in FAILED:
             print(f"  FAILED: {name}" + (f" — {detail}" if detail else ""))

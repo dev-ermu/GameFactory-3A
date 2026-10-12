@@ -16,9 +16,9 @@
 - 任务与产物处理逻辑：`<REPO_PATH>/operators/gen_audio/`
 - 运行器与批量执行逻辑：`<REPO_PATH>/pipeline/assets_gen/gen_audio/`
 - 免费 Smoke 测试入口：`<REPO_PATH>/tests/harness/`
-- 生成结果存储路径：`<REPO_PATH>/test_data/outputs/<game_id>/<run_id>/assets/audio/<task_id>/`
+- 生成结果存储路径：`<REPO_PATH>/outputs/runs/<game_id>/<run_id>/assets/audio/<task_id>/`
 
-输出路径可通过 `<REPO_PATH>/pipeline/common/paths.py` 获取。机械音效和UI相关音频应存放在对应游戏的运行目录下，而非根目录下的 `<REPO_PATH>/test_data/outputs/mechanic/` 或 `<REPO_PATH>/test_data/outputs/ui/` 目录中。
+输出路径可通过 `<REPO_PATH>/pipeline/common/paths.py` 获取。机械音效和UI相关音频应存放在对应游戏的运行目录下，而非根目录下的 `<REPO_PATH>/outputs/runs/mechanic/` 或 `<REPO_PATH>/outputs/runs/ui/` 目录中。
 
 ## 二、生成前的规划
 
@@ -73,7 +73,7 @@ python pipeline/assets_gen/gen_audio/run.py --only-audio-type sound_effect --no-
 
 ```bash
 export SEED_AUDIO_API_KEY=<你的火山引擎Seed Audio API密钥>
-export AAAGF_API_CACHE=test_data/outputs/_api_cache
+export AAAGF_API_CACHE=outputs/runs/_api_cache
 
 # 可选配置：
 export SEED_AUDIO_MODEL=seed-audio-1.0

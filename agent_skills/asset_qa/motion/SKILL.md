@@ -61,7 +61,7 @@ IK实现代码路径：`<repo_path>/operators/gen_motion/funcs/vibe_motion_utils
 5. **生成皮肤权重。** 应用调用方选定的影响集与软先验，再针对实际网格边缘进行筛选扩散处理，并以精确锚点作为约束。将这些参数以 `allowed_bones`、`weight_bias`、`anchors` 的形式传入 `skinning.skin_mesh`，或通过 `config.skin_constraints` 配置。需明确指定 `screening` 和 `edge_epsilon_ratio` 参数；绝不要在不相连的曲面之间添加邻近关联。示例中针对特定资产的物体选择器和接缝选择器属于任务约束，并非模型预测结果。
 6. **利用动作调整骨骼朝向。** 若启用 `--with-motion` 参数，调用 `<repo_path>/tests/test_vibe_motion.py` 来生成明确的位置/节奏/IK动作数据。在比较静止极点候选位置和预弯曲候选位置时，需保持皮肤权重与动作设置不变。只有能同时满足几何约束与重投影误差要求的优化结果才会被采纳。一旦静止关节发生变化，需重新计算绑定矩阵。导出相关结果。读取GLB格式的几何数据、权重及动画信息；保留未通过的QA指标。
 
-将`<repo_path>/test/vibe_motion_examples/rigging_example.json`作为简短的任务请求：其中包含视图生成设置、所需的骨骼链名称及其含义、拟合与蒙皮参数、动作约束及容差要求。所要求的骨骼链名称属于输出模式的约束条件，并非推断出的骨架结构。请勿在此输入目录中存储实际的校准数据、估算的像素坐标、置信度数值、推断出的拓扑结构或生成的3D关节信息。所有这类中间结果、原始模型响应、解析后的设置、权重数据、诊断信息及视频文件应存储在`<repo_path>/test_data/outputs/`目录下。仅将旧有的估算结果作为有明确标识的历史输出保留；切勿将回放数据或测试存根标记为全新的VLM运行结果。VLM的估算结果并不等同于解剖学上的真实情况。
+将`<repo_path>/test/vibe_motion_examples/rigging_example.json`作为简短的任务请求：其中包含视图生成设置、所需的骨骼链名称及其含义、拟合与蒙皮参数、动作约束及容差要求。所要求的骨骼链名称属于输出模式的约束条件，并非推断出的骨架结构。请勿在此输入目录中存储实际的校准数据、估算的像素坐标、置信度数值、推断出的拓扑结构或生成的3D关节信息。所有这类中间结果、原始模型响应、解析后的设置、权重数据、诊断信息及视频文件应存储在`<repo_path>/outputs/runs/`目录下。仅将旧有的估算结果作为有明确标识的历史输出保留；切勿将回放数据或测试存根标记为全新的VLM运行结果。VLM的估算结果并不等同于解剖学上的真实情况。
 
 ### 1.3 运行或检查估算阶段
 
@@ -73,7 +73,7 @@ IK实现代码路径：`<repo_path>/operators/gen_motion/funcs/vibe_motion_utils
 
 数值计算运行时需要 NumPy 和 SciPy；输入网格文件还需用到 trimesh。运行运动回归测试套件，可执行：`python -m unittest discover -s "<repo_path>/test" -t "<repo_path>" -p 'test_vibe_motion.py' -v`。
 
-若要导出骨骼测试视频，可使用：`python -m test.test_vibe_motion export-videos --ffmpeg "<ffmpeg_path>"`。这种明确的预览模式需要 Pillow，不会干扰普通测试的产物生成，生成的MP4文件和数值报告会保存在`<repo_path>/test_data/outputs/_GPT6_astra_test/vibe_motion_refine260927` 目录下。可通过 `--output-dir` 指定其他的测试输出位置。这些骨骼预览并非带皮肤的角色模型，也无法代表物理模拟的真实性。
+若要导出骨骼测试视频，可使用：`python -m test.test_vibe_motion export-videos --ffmpeg "<ffmpeg_path>"`。这种明确的预览模式需要 Pillow，不会干扰普通测试的产物生成，生成的MP4文件和数值报告会保存在`<repo_path>/outputs/runs/_GPT6_astra_test/vibe_motion_refine260927` 目录下。可通过 `--output-dir` 指定其他的测试输出位置。这些骨骼预览并非带皮肤的角色模型，也无法代表物理模拟的真实性。
 
 请查看 `vibe_report_path`，若是网格相关任务，还需查看 `skin_report_path` 和 `rig_report_path`。报告中会记录完整的程序运行信息、事件时间、原始目标残差、接触速度、骨长误差、地面穿透情况以及优化器故障信息。质量阈值由输入参数决定。无法到达的目标会被投影到关节限制范围内并予以记录，绝不会通过拉伸骨骼来掩盖问题。这些属于运动学检查，并非平衡性、自碰撞或视觉质量的验证依据；接受结果前需在真实网格上重新播放动画确认。
 

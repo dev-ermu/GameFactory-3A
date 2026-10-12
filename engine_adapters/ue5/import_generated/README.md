@@ -16,12 +16,12 @@
 ```bash
 # 导入单个资产
 python scripts/import_generated_asset.py \
-    --src test_data/outputs/<game>/<run>/assets/3d_object/<task>/model.glb \
+    --src outputs/runs/<game>/<run>/assets/3d_object/<task>/model.glb \
     --engine ue5 --uproject D:/proj/MyGame/MyGame.uproject
 
 # 导入某次生成任务产生的所有资产
 python scripts/import_generated_asset.py --engine ue5 \
-    --summary test_data/outputs/<game>/<run>/3d_object_results_summary.json
+    --summary outputs/runs/<game>/<run>/3d_object_results_summary.json
 ```
 
 也可直接调用引擎。参数会通过名为`AAAGF_IMPORT_JOB`的**作业文件**传递，因为`-script="file.py --a b"`这种写法需要同时兼容Shell和UE自身的参数解析器，且路径中的引号会在传输过程中丢失：

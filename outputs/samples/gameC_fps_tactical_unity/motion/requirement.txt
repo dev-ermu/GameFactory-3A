@@ -1,0 +1,51 @@
+================================================================================
+ Motion Generation Requirements — gameC_fps_tactical_unity
+================================================================================
+
+生成方式: text_to_motion → BVH → retarget (云端动作生成 + 云端绑骨生成)
+任务类型 (task_type):
+  - humanoid: 静态 GLB + prompt → rig + text_to_motion + retarget (完整链)
+  - text_to_motion: prompt → BVH (仅动作生成)
+
+敌人角色动作使用 `humanoid` task_type，目标网格 (target_mesh_path) 指向恐怖分子
+3D 模型 (demoFPS_004/model.glb)。每条任务独立执行 rig → motion → retarget 全链。
+
+玩家第一人称手部动作使用 `text_to_motion` task_type，仅生成 BVH，后续可
+retarget 到第一人称手臂网格。
+
+--------------------------------------------------------------------------------
+ 敌人动作 (Enemy Motions) — task_type: humanoid
+--------------------------------------------------------------------------------
+
+  1. idle          — 持枪战斗待机，身体微动，枪口略向下
+  2. walk          — 持枪战术行走，步伐稳健
+  3. run           — 持枪快速奔跑，身体前倾
+  4. shoot         — 站立射击，枪口上扬有后坐力
+  5. hit_react     — 受击反应，身体后仰
+  6. death_fall_forward — 被击毙向前倒地
+  7. death_fall_back    — 被击毙向后倒地
+
+  target_mesh_path: outputs/runs/gameC_fps_tactical_unity/default/assets/3d_object/demoFPS_004/model.glb
+
+--------------------------------------------------------------------------------
+ 玩家手部动作 (Player First-Person Hand Motions) — task_type: text_to_motion
+--------------------------------------------------------------------------------
+
+  8.  pistol_idle    — 第一人称手枪待机，双手持枪轻微晃动
+  9.  pistol_shoot   — 第一人称手枪射击，手腕后坐
+  10. pistol_reload  — 第一人称手枪换弹，弹匣取出再插入
+  11. rifle_idle     — 第一人称步枪待机，双手握持稳定
+  12. rifle_shoot    — 第一人称步枪射击，持续后坐力
+  13. rifle_reload   — 第一人称步枪换弹，拉动枪栓
+  14. shotgun_idle   — 第一人称霰弹枪待机，双手握持
+  15. shotgun_pump   — 第一人称霰弹枪上膛，泵动护木
+  16. weapon_switch  — 第一人称切换武器，手部快速移动
+
+--------------------------------------------------------------------------------
+ 技术参数 (Technical Parameters)
+--------------------------------------------------------------------------------
+  - FPS: 30
+  - motion_length: 0 (自动检测时长)
+  - use_ik: true (使用逆运动学，脚部/手部更自然)
+  - in_place: true (原地动作，无全局位移)
+  - seed: 各任务不同以确保多样性

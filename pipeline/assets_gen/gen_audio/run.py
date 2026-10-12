@@ -14,7 +14,7 @@ Examples:
     python pipeline/assets_gen/gen_audio/run.py --audio-type sound_effect \
         --prompt "a single futuristic rifle shot" --task-id rifle_shot
     python pipeline/assets_gen/gen_audio/run.py --audio-type dialogue \
-        --text "发现目标" --cache-dir test_data/outputs/_api_cache
+        --text "发现目标" --cache-dir outputs/runs/_api_cache
 """
 
 import argparse

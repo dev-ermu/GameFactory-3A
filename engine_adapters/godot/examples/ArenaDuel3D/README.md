@@ -17,4 +17,4 @@ godot4 --path . -- --manual
 ```
 
 审核演示路径为
-`test_data/outputs/game505/godot/`。
+`outputs/runs/game505/godot/`。

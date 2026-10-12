@@ -1,0 +1,60 @@
+# Motion Generation Requirements - gameA_fighting_arena_unity
+
+## Overview
+
+Generate seven core animations per character (14 total) with 云端动作生成, then
+retarget them to the 云端绑骨生成的 character rigs. Keep the motion set
+small, visually consistent, and easy to validate.
+
+## Character Rigging And Retargeting
+
+- 云端绑骨生成 predicts the character skeleton and skinning weights from the
+  generated GLB mesh.
+- 云端生成器生成 a generic 22-joint BVH motion at 20 FPS from each prompt.
+- The bpy world-delta retarget stage maps the BVH joints to the 云端绑骨
+  and exports `animation.fbx` and `retargeted.fbx`.
+- All tasks use `task_type: humanoid` to execute those stages end to end.
+
+## Shared Base Pose
+
+Every clip starts from the character's own chest-level combat guard and every
+one-shot returns to that same guard. Idle and block are stationary loops.
+Locomotion adds only a simple alternating step cycle beneath a stable guard.
+Unity owns root movement, so all clips are generated in place.
+
+## Motion Set
+
+| Motion | Runtime use | Constraint |
+|---|---|---|
+| idle | no movement input | feet fixed; hands guard upper chest |
+| move | any grounded movement | short alternating steps; guard unchanged |
+| light_punch | light-punch trigger | one compact jab; small body rotation |
+| heavy_punch | heavy-punch trigger | one broad strike; larger body rotation |
+| kick | both kick triggers | one direct front kick; return foot to origin |
+| block | block held | both forearms remain in front of chest |
+| ultimate | ultimate trigger | one character-specific unarmed charged strike |
+
+The warrior uses a wide, heavy, grounded stance with deliberate motion. The
+ninja uses a narrower, lower stance with quicker, lighter motion. Neither
+character performs spins, flips, continuous combos, locomoting attacks, or
+extra strikes. Prompts describe body motion only: no weapons, held objects,
+particles, elemental effects, sound, camera direction, or scene content.
+
+## Generation Parameters
+
+- FPS: 20, matching 生成器的原生帧率.
+- Motion length: explicit per task; never use automatic length zero.
+- IK: enabled.
+- In place: enabled; remove root X/Z translation.
+- Height lock: disabled so breathing and kicks retain vertical mechanics.
+- Export animation-only FBX: enabled.
+- Loops: idle, move, and block only.
+
+## Output
+
+Each task writes to:
+
+`outputs/runs/gameA_fighting_arena_unity/<run_id>/assets/motion/<task_id>/`
+
+Review `preview.mp4` first. Only retarget and import a task when its generic
+BVH preview contains one clean requested action and returns to the base guard.

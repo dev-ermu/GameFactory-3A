@@ -37,16 +37,16 @@ Thumbs.db
 *.fbx
 *.glb
 *.obj
-!test_data/test_samples/**/ref_*/**
-!test_data/test_samples/**/source_motions/**
-!test_data/test_samples/**/target_skeletons/**
+!outputs/samples/**/ref_*/**
+!outputs/samples/**/source_motions/**
+!outputs/samples/**/target_skeletons/**
 !assets/**
 
 # Generated artifacts — keep the per-game skeleton and the README, ignore contents
-test_data/outputs/**
-!test_data/outputs/README.md
-!test_data/outputs/**/
-!test_data/outputs/**/.gitkeep
+outputs/runs/**
+!outputs/runs/README.md
+!outputs/runs/**/
+!outputs/runs/**/.gitkeep
 
 # Godot editor/import cache
 .godot/

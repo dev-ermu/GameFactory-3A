@@ -69,9 +69,9 @@ class EngineTestBase(unittest.TestCase):
     """
 
     def setUp(self) -> None:
-        test_data_dir = Path(settings.test_data_dir)
-        test_data_dir.mkdir(exist_ok=True)
-        self.temporary = tempfile.TemporaryDirectory(prefix="godot-adapter-test-", dir=test_data_dir)
+        outputs_dir = Path(settings.outputs_dir)
+        outputs_dir.mkdir(exist_ok=True)
+        self.temporary = tempfile.TemporaryDirectory(prefix="godot-adapter-test-", dir=outputs_dir)
         self.addCleanup(self.temporary.cleanup)
 
         # 给paths.OUTPUT_ROOT进行patch

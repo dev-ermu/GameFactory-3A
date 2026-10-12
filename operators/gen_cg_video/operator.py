@@ -10,7 +10,7 @@ semantics and local path loading; the model owns provider transport encoding.
 Output layout — two modes, chosen by whether ``output_dir`` is supplied:
 
 * per-game (default):
-  ``test_data/outputs/<game>/<run>/assets/cg_video/<task>/video.mp4``
+  ``outputs/runs/<game>/<run>/assets/cg_video/<task>/video.mp4``
 * legacy flat mode: ``<output_dir>/<task_id>.mp4``
 """
 

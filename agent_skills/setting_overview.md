@@ -16,7 +16,7 @@
 |---|---|
 | `<REPO_PATH>/agent_skills/engine_context/ue5_api.md` | 一个技能模块，位于技能树内 |
 | `<REPO_PATH>/engine_adapters/ue5/` | 引擎参考代码——与`agent_skills/`同级，并非其内部子目录 |
-| `<REPO_PATH>/pipeline/`、`<REPO_PATH>/operators/`、`<REPO_PATH>/models/`、`<REPO_PATH>/scripts/`、`<REPO_PATH>/test/`、`<REPO_PATH>/test_data/`、`<REPO_PATH>/third_party/` | 同样与`agent_skills/`同级 |
+| `<REPO_PATH>/pipeline/`、`<REPO_PATH>/operators/`、`<REPO_PATH>/models/`、`<REPO_PATH>/scripts/`、`<REPO_PATH>/test/`、`<REPO_PATH>/outputs/`、`<REPO_PATH>/third_party/` | 同样与`agent_skills/`同级 |
 
 ## 三、配置说明
 
@@ -96,7 +96,7 @@
 
 必须严格遵守任务验收标准；不得为了便于运行而替换成其他游戏或引擎。
 
-- 生成产物的路径需使用`<REPO_PATH>/pipeline/common/paths.py`来定义；切勿手动编写`<REPO_PATH>/test_data/outputs/`下的路径。
+- 生成产物的路径需使用`<REPO_PATH>/pipeline/common/paths.py`来定义；切勿手动编写`<REPO_PATH>/outputs/runs/`下的路径。
 - 在通过相应验证前，生成的资源、游戏玩法、用户界面以及引擎集成内容需作为独立的交付物分别管理。
 - 绝不能仅仅因为源代码已编写完成就宣称游戏可玩。构建、启动、代表性玩家操作测试以及视觉审查都是独立的验证依据。
 - 针对游戏交付任务，需完成第九章节验证、游玩与迭代流程，留存审核流程记录。在宣布游戏资源制作完成前，需确认网格方向、变换参数、附着点、动画、碰撞检测、摄像机、操控逻辑、视觉特效、用户界面、光照效果以及风格是否符合要求。

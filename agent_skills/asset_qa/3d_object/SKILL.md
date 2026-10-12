@@ -47,7 +47,7 @@ fetch_asset_pack(game_id="gameA_cyberpunk_shooter",
 | `xbot` | avatar | 3,896 | 已绑定骨骼的中性人偶 |
 | `robot_expressive` | avatar | 23,358 | 含表情形变通道 |
 
-下载缓存在 `test_data/outputs/_asset_pack_cache/` 下，因此重跑不产生网络请求，也不会发生漂移——通过一次检查的字节就是之后每次运行看到的字节。需要完全离线复现时传 `offline=True`，缓存未命中会直接报错而不是静默联网。
+下载缓存在 `outputs/runs/_asset_pack_cache/` 下，因此重跑不产生网络请求，也不会发生漂移——通过一次检查的字节就是之后每次运行看到的字节。需要完全离线复现时传 `offline=True`，缓存未命中会直接报错而不是静默联网。
 
 **资产包不会伪装成生成结果。** `meta.json` 里的 `source` 字段是 `asset_pack` 而非模型名，审核时看到它就应当知道：这个网格不是为本项目新做的，若概念与它不符就换资产或改走生成路径。
 

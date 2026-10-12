@@ -13,7 +13,7 @@ Output layout — two modes, chosen by whether `output_dir` is given:
   * **per-game (default, `output_dir=None`)** — resolved by
     `pipeline.common.paths`, so artifacts are grouped by generated game project::
 
-        test_data/outputs/<game_id>/<run_id>/assets/3d_object/<task_id>/
+        outputs/runs/<game_id>/<run_id>/assets/3d_object/<task_id>/
             ├── model.glb
             └── meta.json
 
@@ -82,7 +82,7 @@ class Gen3DObjectOperator:
         output_dir (str, optional): **Legacy flat mode.** When given, every GLB is
                written as `<output_dir>/<task_id>.glb`, exactly as before. When
                omitted (default), the per-game layout under
-               `test_data/outputs/<game_id>/<run_id>/assets/3d_object/<task_id>/`
+               `outputs/runs/<game_id>/<run_id>/assets/3d_object/<task_id>/`
                is used instead.
         run_id (str): Groups all artifacts of one generation run. Per-game mode only.
         default_game_id (str, optional): Fallback game project for tasks that carry

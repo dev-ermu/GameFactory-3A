@@ -291,7 +291,7 @@ def drain_pending(self, max_ops=32):    # 主线程：在此处使用bpy
 ```bash
 python -m pipeline.code_gen.playtest.run \
     --engine blender \
-    --project test_data/outputs/<game>/<run>/mechanic/<task> \
+    --project outputs/runs/<game>/<run>/mechanic/<task> \
     --duration 10 --fps 20 \
     --no-render
 

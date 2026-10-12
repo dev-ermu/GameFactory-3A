@@ -107,7 +107,7 @@ else:                                  # 按游戏划分的模式
 
 ```python
 TASK_LAYER["motion"]         = "assets"            # assets | mechanic | ui | pipeline
-TASK_INPUT_DIR["motion"]     = "motion"            # test_samples/<game>/ 下的目录
+TASK_INPUT_DIR["motion"]     = "motion"            # samples/<game>/ 下的目录
 TASK_JSONL["motion"]         = "motion_tasks.jsonl"
 TASK_COLLECT_JSONL["motion"] = "motion_gen_collect.jsonl"
 ```

@@ -6,12 +6,12 @@ Single source of truth for every input / output path in 3AGameFactory.
 The benchmark is authored **per game project**, so outputs are organized the same
 way. An artifact is uniquely addressed by ``(game_id, run_id, task_kind, task_id)``::
 
-    test_data/test_samples/<game_id>/<TaskDir>/...                        # inputs (read-only)
-    test_data/outputs/<game_id>/<run_id>/<layer>/<task_kind>/<task_id>/   # outputs
+    outputs/samples/<game_id>/<TaskDir>/...                        # inputs (read-only)
+    outputs/runs/<game_id>/<run_id>/<layer>/<task_kind>/<task_id>/   # outputs
 
 Full output tree::
 
-    test_data/outputs/                         # OUTPUT_ROOT ($AAAGF_OUTPUT_ROOT)
+    outputs/runs/                         # OUTPUT_ROOT ($AAAGF_OUTPUT_ROOT)
     └── gameA_cyberpunk_shooter/               # one dir per generated game project
         ├── latest -> 20260731_1032/           # symlink to the most recent run
         └── <run_id>/                          # "default", or a timestamp
@@ -64,11 +64,11 @@ _config.load()
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
-TEST_DATA_ROOT = REPO_ROOT / "test_data"
-TEST_SAMPLES_ROOT = TEST_DATA_ROOT / "test_samples"
+OUTPUTS_ROOT = REPO_ROOT / "outputs"
+SAMPLES_ROOT = OUTPUTS_ROOT / "samples"
 
 #: Output root — 即 `Settings.output_root`（`.env` 里的 `AAAGF_OUTPUT_ROOT`），
-#: 默认 `<repo>/test_data/outputs`。
+#: 默认 `<repo>/outputs/runs`。
 OUTPUT_ROOT = Path(_config.settings.output_root).expanduser()
 
 #: Used when a task carries no game association (ad-hoc single-image demos).
@@ -91,7 +91,7 @@ TASK_LAYER: dict[str, str] = {
     "audio": "assets",
 }
 
-#: task_kind -> directory name inside ``test_samples/<game_id>/``.
+#: task_kind -> directory name inside ``samples/<game_id>/``.
 TASK_INPUT_DIR: dict[str, str] = {
     "3d_object": "3D_object",
     "tpose": "tpose",
@@ -109,7 +109,7 @@ TASK_JSONL: dict[str, str] = {
     "audio": "audio_tasks.jsonl",
 }
 
-#: task_kind -> cross-game aggregate jsonl under ``test_samples/``.
+#: task_kind -> cross-game aggregate jsonl under ``samples/``.
 TASK_COLLECT_JSONL: dict[str, str] = {
     "3d_object": "3D_object_gen_collect.jsonl",
     "tpose": "tpose_gen_collect.jsonl",
@@ -135,23 +135,23 @@ def check_kind(task_kind: str) -> str:
 # ── Input paths ───────────────────────────────────────────────────────────────
 
 def game_input_dir(game_id: str) -> Path:
-    """``test_data/test_samples/<game_id>/``"""
-    return TEST_SAMPLES_ROOT / game_id
+    """``outputs/samples/<game_id>/``"""
+    return SAMPLES_ROOT / game_id
 
 
 def task_input_dir(game_id: str, task_kind: str) -> Path:
-    """``test_data/test_samples/<game_id>/<TaskDir>/``"""
+    """``outputs/samples/<game_id>/<TaskDir>/``"""
     return game_input_dir(game_id) / TASK_INPUT_DIR[check_kind(task_kind)]
 
 
 def task_jsonl(game_id: str, task_kind: str) -> Path:
-    """``test_data/test_samples/<game_id>/<TaskDir>/<kind>_tasks.jsonl``"""
+    """``outputs/samples/<game_id>/<TaskDir>/<kind>_tasks.jsonl``"""
     return task_input_dir(game_id, task_kind) / TASK_JSONL[check_kind(task_kind)]
 
 
 def collect_jsonl(task_kind: str) -> Path:
-    """``test_data/test_samples/<kind>_collect.jsonl`` — cross-game task list."""
-    return TEST_SAMPLES_ROOT / TASK_COLLECT_JSONL[check_kind(task_kind)]
+    """``outputs/samples/<kind>_collect.jsonl`` — cross-game task list."""
+    return SAMPLES_ROOT / TASK_COLLECT_JSONL[check_kind(task_kind)]
 
 
 def resolve_tasks_path(task_kind: str, tasks: str | None = None,
@@ -173,11 +173,11 @@ def resolve_tasks_path(task_kind: str, tasks: str | None = None,
 
 def list_games() -> list[str]:
     """Every game project directory present in the test set."""
-    if not TEST_SAMPLES_ROOT.is_dir():
+    if not SAMPLES_ROOT.is_dir():
         return []
     return sorted(
         p.name
-        for p in TEST_SAMPLES_ROOT.iterdir()
+        for p in SAMPLES_ROOT.iterdir()
         if p.is_dir() and not p.name.startswith((".", "_"))
     )
 
@@ -187,18 +187,18 @@ def infer_game_id(task: dict, fallback: Optional[str] = None) -> str:
     Resolve which game project a task belongs to.
 
     Priority: explicit ``game_id`` / ``game`` field  →  any path-like field that
-    sits under ``test_samples/<game_id>/``  →  ``fallback``  →  ``UNASSIGNED_GAME``.
+    sits under ``samples/<game_id>/``  →  ``fallback``  →  ``UNASSIGNED_GAME``.
     """
     for key in ("game_id", "game"):
         if task.get(key):
             return str(task[key])
 
     for value in task.values():
-        if not isinstance(value, str) or "test_samples" not in value:
+        if not isinstance(value, str) or "samples" not in value:
             continue
         parts = Path(value).parts
-        if "test_samples" in parts:
-            idx = parts.index("test_samples")
+        if "samples" in parts:
+            idx = parts.index("samples")
             if idx + 1 < len(parts):
                 return parts[idx + 1]
 
@@ -236,12 +236,12 @@ def new_run_id(prefix: str = "") -> str:
 
 
 def game_output_dir(game_id: str) -> Path:
-    """``test_data/outputs/<game_id>/``"""
+    """``outputs/runs/<game_id>/``"""
     return OUTPUT_ROOT / game_id
 
 
 def run_dir(game_id: str, run_id: str = DEFAULT_RUN_ID) -> Path:
-    """``test_data/outputs/<game_id>/<run_id>/`` — root of one generation run."""
+    """``outputs/runs/<game_id>/<run_id>/`` — root of one generation run."""
     return game_output_dir(game_id) / run_id
 
 
@@ -253,7 +253,7 @@ def task_output_dir(
     create: bool = True,
 ) -> Path:
     """
-    ``test_data/outputs/<game_id>/<run_id>/<layer>/[<task_kind>/]<task_id>/``
+    ``outputs/runs/<game_id>/<run_id>/<layer>/[<task_kind>/]<task_id>/``
 
     One directory per task, so an artifact ships alongside its preview,
     intermediates and ``meta.json`` without filename mangling.
@@ -277,7 +277,7 @@ def eval_output_dir(
     run_id: str = DEFAULT_RUN_ID,
     create: bool = True,
 ) -> Path:
-    """``test_data/outputs/<game_id>/<run_id>/eval/<task_kind>/<task_id>/``"""
+    """``outputs/runs/<game_id>/<run_id>/eval/<task_kind>/<task_id>/``"""
     check_kind(task_kind)
     path = run_dir(game_id, run_id) / "eval" / task_kind / task_id
     if create:
@@ -286,19 +286,19 @@ def eval_output_dir(
 
 
 def eval_summary_path(game_id: str, run_id: str = DEFAULT_RUN_ID) -> Path:
-    """``test_data/outputs/<game_id>/<run_id>/eval/summary.json``"""
+    """``outputs/runs/<game_id>/<run_id>/eval/summary.json``"""
     return run_dir(game_id, run_id) / "eval" / "summary.json"
 
 
 def results_summary_path(game_id: str, task_kind: str,
                          run_id: str = DEFAULT_RUN_ID) -> Path:
-    """``test_data/outputs/<game_id>/<run_id>/<task_kind>_results_summary.json``"""
+    """``outputs/runs/<game_id>/<run_id>/<task_kind>_results_summary.json``"""
     check_kind(task_kind)
     return run_dir(game_id, run_id) / f"{task_kind}_results_summary.json"
 
 
 def run_meta_path(game_id: str, run_id: str = DEFAULT_RUN_ID) -> Path:
-    """``test_data/outputs/<game_id>/<run_id>/run_meta.json``"""
+    """``outputs/runs/<game_id>/<run_id>/run_meta.json``"""
     return run_dir(game_id, run_id) / "run_meta.json"
 
 

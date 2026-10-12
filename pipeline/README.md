@@ -74,7 +74,7 @@ print(result["tpose_rgba_path"])
 4. 不执行评分操作，也不计算指标
 
 ### `eval.py`
-1. 遍历 `test_data/test_samples/<game>/<task>/*_tasks.jsonl` 中的测试集
+1. 遍历 `outputs/samples/<game>/<task>/*_tasks.jsonl` 中的测试集
    （或跨游戏的 `*_collect.jsonl` 文件）
 2. 从已有的 `game_id` / `run_id` 中获取结果文件；绝不要导入 `run.py`、
    加载生成模型或触发生成过程

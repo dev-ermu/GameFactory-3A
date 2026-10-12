@@ -5,10 +5,10 @@ T-pose image generation demo runner.
 
 Loads SeedreamModel (cloud API) and injects it into
 GenTPoseImageOperator, reads tasks from
-test_data/test_samples/tpose_gen_collect.jsonl (or a single game's
+outputs/samples/tpose_gen_collect.jsonl (or a single game's
 tpose_tasks.jsonl), and writes PNG outputs grouped per game project:
 
-    test_data/outputs/<game_id>/<run_id>/assets/tpose/<task_id>/tpose_fg.png
+    outputs/runs/<game_id>/<run_id>/assets/tpose/<task_id>/tpose_fg.png
 
 Usage:
     # Run all tasks in the default jsonl

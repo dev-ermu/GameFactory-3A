@@ -83,7 +83,7 @@ class UnityAssetsClient:
         Each source is still a canonical generated-output descriptor.  The
         Editor receives absolute materialized paths only after this client has
         resolved and validated every descriptor, so this operation cannot
-        silently import files directly from ``test_samples`` or ``asset``.
+        silently import files directly from ``samples`` or ``asset``.
         """
         if isinstance(sources, (str, bytes)) or not sources:
             return UnityOperationResult.failure(

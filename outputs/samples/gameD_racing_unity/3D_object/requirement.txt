@@ -1,0 +1,69 @@
+# 3D Object Generation Requirements — gameD_racing_unity
+
+## Overview
+
+Racing vehicles, one visible rigged driver, and track-side props. A separate
+T-pose generation stage is not required because the driver is supplied as an
+already-rigged FBX. Generated objects use the Tripo / Meshy
+Hunyuan3D-2.1 pipeline.
+
+## Generation Pipeline
+
+```
+ref image → 3D model (Tripo) → decimate → bake PBR textures → GLB
+```
+
+## Quality Targets
+
+| Asset | Max Tris | Texture | Notes |
+|-------|----------|---------|-------|
+| Player F1 car | ≤50,000 | 4096×4096 | Detailed interior, open cockpit |
+| AI car variants | ≤50,000 | 4096×4096 | Same body, alternate livery |
+| Rigged driver | ≤50,000 | 2048×2048 | Helmeted humanoid, reusable by all cars |
+| Track-side props | ≤5,000 | 1024×1024 | Cones, barriers, gantry |
+
+## Car Detail Requirements
+
+- Aerodynamic, streamlined single-seater body (F1 / formula style)
+- Open-wheel design — four independently rotatable wheels (separate mesh
+  nodes or pivots so the engine can spin them)
+- Visible interior: steering wheel, racing seat, dashboard, halo device
+  or roll bar
+- Front and rear wings (adjustable-looking aero surfaces)
+- Body livery painted in PBR albedo; metallic clear-coat in roughness/metallic
+  maps
+- Wheels as separate sub-meshes with their own pivot at the axle centre so
+  the CarController can rotate them independently
+
+## Driver Requirements
+
+- One helmeted, full-body racing driver with a valid humanoid or generic
+  skeleton
+- Seated inside the player and AI cars by the generated Unity mechanic
+- Hands follow steering-wheel targets through procedural IK; feet remain on
+  pedal targets
+- No generated motion clip is required for the MVP
+- The same driver prefab may be reused for every car
+
+## AI Car Variants
+
+Same geometry as the player car; only the livery / colour scheme changes:
+- Blue with silver accents
+- Yellow with black accents
+- Green with white accents (optional fourth AI)
+
+## Track-Side Props
+
+- Traffic cone (orange, reflective stripe)
+- Tire stack barrier (stacked black tires)
+- Start/finish gantry (overhead structure with light panel)
+
+## Task Fields
+
+Each entry in `object_tasks.jsonl` carries:
+`game_id`, `task_id`, `image_path`, `prompt`, `seed`,
+`decimation_target`, `texture_size`.
+
+`image_path` points to a reference image under
+`outputs/samples/gameD_racing_unity/3D_object/ref_images/`.
+All paths are relative to the repository root.

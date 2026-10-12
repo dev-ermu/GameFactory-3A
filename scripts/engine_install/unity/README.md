@@ -7,7 +7,7 @@
 项目选择由Agent负责。Agent必须传入流水线生成的确切Unity项目根目录，例如：
 
 ```text
-test_data/outputs/<game_id>/<run_id>/pipeline/<task_id>/unity_project/<ProjectName>
+outputs/runs/<game_id>/<run_id>/pipeline/<task_id>/unity_project/<ProjectName>
 ```
 
 其中`<ProjectName>`是指直接包含`Assets/`、`Packages/`和`ProjectSettings/`的目录。切勿传入`pipeline/`、`unity_project/`或项目的`Assets/`目录。这些脚本不会发现、猜测、拼接或重写该路径，也不会自行复制源资源。所有资源和生成的代码输入都必须是经`UnityClient`解析后的标准基准描述符。
@@ -39,7 +39,7 @@ scripts/engine_install/unity/generate_game.sh \
 
 `UnityClient.generate_game()`会在项目本地路径下的`Library/GameFactory3A/jobs/`中写入一个清单文件。随后，单个Unity编辑器会话会按顺序执行Unity原生操作：安装已定型的机制/UI程序集，通过`AssetDatabase`导入角色/武器/动作/场景，拼接场景，刷新并编译脚本，运行`BuildPipeline`，必要时还会进入播放模式。这样就能避免为每个阶段都启动一个Unity进程。
 
-该任务必须使用能通过标准路径`test_data/outputs/<game_id>/<run_id>/...`解析的描述符。公开客户端不接受来自`test_samples`或`asset/`的原始路径。
+该任务必须使用能通过标准路径`outputs/runs/<game_id>/<run_id>/...`解析的描述符。公开客户端不接受来自`samples`或`asset/`的原始路径。
 
 ### create-project
 

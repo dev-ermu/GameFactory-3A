@@ -92,7 +92,7 @@ D:\Desktop\game\3AGameFactory
 当前已实现的生成里程碑如下：
 
 ```text
-test_samples
+samples
     |
     v
     |
@@ -304,7 +304,7 @@ main()
 当前的运行器支持Stub和Codex后端，仅用于生成操作，会拒绝未实现的Claude后端。引擎执行相关的参数不应包含在该运行器中。
 
 ### 阶段F – 运行并保存`fps_core_001`
-1. 从`test_data/test_samples`中读取`fps_core_001`及其相关要求。
+1. 从`outputs/samples`中读取`fps_core_001`及其相关要求。
 2. 使用来自`fps_baseline_v1`的A层描述符。
 3. 生成一个完整的UE项目，将`AAAGamePlayable`源码拷贝进去，并生成/安装独立的FPS玩法插件。
 4. 仅将`FPSExample`作为可选的只读实现参考。
@@ -361,7 +361,7 @@ Stub运行模式仍作为源契约的基准。Codex验证运行完成了步骤1-
 ### 生成的游戏插件流程
 
 机械师Operator与注入的Agent模型遵循以下流程：
-1. 流水线从`test_data/test_samples`中读取一个任务，将其传递给Operator，且不会修改输入文件。
+1. 流水线从`outputs/samples`中读取一个任务，将其传递给Operator，且不会修改输入文件。
 2. Operator会读取需求、资产描述、`game_generation.md`、提示词、选定的引擎API参考路径，以及可选的只读示例路径。完整的API文档并不会嵌入到提示词模板中。
 3. Agent根据所引用的公共API，生成对应选定引擎的游戏专属扩展模块以及引擎原生测试源码。
 4. Agent根据需求设计游戏专属的输入映射、移动逻辑、动画绑定、动作、AI、规则及状态。
@@ -401,7 +401,7 @@ Operator方法：run(inp)、run_batch(inputs)
 所有文件均存放在以下路径中：
 
 ```text
-test_data/outputs/<game_id>/<run_id>/mechanic/<task_id>/
+outputs/runs/<game_id>/<run_id>/mechanic/<task_id>/
 ```
 
 预期的文件布局如下：

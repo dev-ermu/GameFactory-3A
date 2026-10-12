@@ -112,7 +112,7 @@ from engine_adapters.browser_serving import BrowserServingClient
 - `client.cg_video.generate`：根据代码库任务标识将CG视频生成任务加入队列，并返回请求ID。
 - `client.cg_video.status`：读取已排队、正在运行、已完成或失败的任务状态。
 
-该请求会解析`test_data/test_samples/<game_id>/cg_video/cg_tasks.jsonl`文件，且不会接收来自浏览器的提示词或凭证信息。生成的视频片段会存储在标准的CG视频输出目录下，并通过网关控制的媒体URL对外提供访问。
+该请求会解析`outputs/samples/<game_id>/cg_video/cg_tasks.jsonl`文件，且不会接收来自浏览器的提示词或凭证信息。生成的视频片段会存储在标准的CG视频输出目录下，并通过网关控制的媒体URL对外提供访问。
 
 请求体中包含`game_id`、`task_id`、可选的`run_id`、`backend`、`engine`、`session_id`、`trigger_id`、`idempotency_key`、`options`和`playback`字段。响应中会返回任务状态（`queued`、`running`、`ready`或`failed`）；若任务状态为`ready`，响应中还会包含`video.artifact_id`、`video.media_type`和`video.url`，这些值与`artifacts`中列出的公共描述符一致。
 

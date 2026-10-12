@@ -88,11 +88,11 @@ GameFactory-3A/
 │   └── engine_install/         # UE5、Blender、Unity、Godot 的安装与启动脚本
 ├── requirements.txt            # Python 依赖（精确版本），配合 .venv 使用
 ├── test/                       # 用于验证流程实际可运行的契约、集成与 smoke 脚本
-├── test_data/                  # 示例需求；生成的游戏结果位于 outputs/
+├── outputs/                  # 示例需求；生成的游戏结果位于 outputs/
 └── third_party/                # 检出的外部仓库，例如 trimesh 与引擎材质/资产库
 ```
 
-生成产物位于`test_data/outputs/`，并按照游戏、运行、任务类别和任务 ID
+生成产物位于`outputs/runs/`，并按照游戏、运行、任务类别和任务 ID
 组织。Agent 与贡献者应使用 `pipeline/common/paths.py`，不要手工拼接输出路径。
 
 ---

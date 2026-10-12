@@ -21,7 +21,7 @@
 | `blender/` | `engine_adapters/blender/game`（Python工具包） | 项目本地的`game.py`；参考副本存放在`blender/examples/`中 |
 
 
-Blender的分类玩法示例存放在`blender/examples/`下，与`ue5/examples/`和`unity3d/examples/`并列。这样能避免引擎专属示例混入共享的`test_data/test_samples/`目录，直到后续合并时再处理。
+Blender的分类玩法示例存放在`blender/examples/`下，与`ue5/examples/`和`unity3d/examples/`并列。这样能避免引擎专属示例混入共享的`outputs/samples/`目录，直到后续合并时再处理。
 
 要求大语言模型*引用/扩展*这些文件，而非从头编写引擎代码，此举既能提升编译效率，又能减少虚构API的情况。
 
@@ -37,7 +37,7 @@ Blender的分类玩法示例存放在`blender/examples/`下，与`ue5/examples/`
 
 ```bash
 python scripts/import_generated_asset.py --engine both \
-    --summary test_data/outputs/<game>/<run>/3d_object_results_summary.json
+    --summary outputs/runs/<game>/<run>/3d_object_results_summary.json
 ```
 
 其中，`--engine both` 表示同时处理UE5和Unity的数据；`--engine all` 则会额外包含Godot和Blender的数据。兼容性启动器同样接受`--usage {asset,vfx_standalone,vfx_particle}`这类参数，并生成特定于引擎的JSON报告。Godot会输出暂存的`res://`资源信息、实际原生类名称、加载/实例化结果、动画与骨骼路径、源文件大小、可用的GLB三角形数据、警告信息以及编辑器进程的相关记录。具体细节可查看各目录下的README文档。

@@ -87,8 +87,8 @@ python tests/harness/smoke.py --kind motion
 
 ## 五、生成结果与测试文件的存放位置
 
-- 所有生成的游戏结果均存放在 `<REPO_PATH>/test_data/outputs/` 目录下，按游戏、运行实例、任务类型及任务ID进行分类。请使用 `<REPO_PATH>/pipeline/common/paths.py` 来获取路径，切勿手动构造输出路径。
-- 游戏机制与用户界面相关内容存放在各游戏的运行目录中，例如：`<REPO_PATH>/test_data/outputs/gameA_cyberpunk_shooter/default/mechanic/<task_id>/` 和 `<REPO_PATH>/test_data/outputs/gameA_cyberpunk_shooter/default/ui/<task_id>/`。请勿在根目录下创建 `<REPO_PATH>/test_data/outputs/mechanic/` 或 `<REPO_PATH>/test_data/outputs/ui/` 这类目录。
+- 所有生成的游戏结果均存放在 `<REPO_PATH>/outputs/runs/` 目录下，按游戏、运行实例、任务类型及任务ID进行分类。请使用 `<REPO_PATH>/pipeline/common/paths.py` 来获取路径，切勿手动构造输出路径。
+- 游戏机制与用户界面相关内容存放在各游戏的运行目录中，例如：`<REPO_PATH>/outputs/runs/gameA_cyberpunk_shooter/default/mechanic/<task_id>/` 和 `<REPO_PATH>/outputs/runs/gameA_cyberpunk_shooter/default/ui/<task_id>/`。请勿在根目录下创建 `<REPO_PATH>/outputs/runs/mechanic/` 或 `<REPO_PATH>/outputs/runs/ui/` 这类目录。
 - `<REPO_PATH>/test/` 目录下存放的是可运行的、当前正在使用的测试脚本与冒烟测试脚本。相关人员应使用这些测试脚本来验证生成的资源、游戏代码或适配器流程是否能够正常运行；仅凭生成的文件本身并不能证明测试成功。
 - `<REPO_PATH>/third_party/` 目录用于存放从外部克隆的仓库，比如 `trimesh` 以及引擎材质/资源包。这些内容属于外部依赖项：切勿修改或重新分发，使用前需仔细查看其上游许可协议及安装说明。
 

@@ -8,4 +8,4 @@ godot4 --headless --path . --script res://scripts/smoke.gd
 godot4 --path . -- --manual
 ```
 
-评审演示路径为 `test_data/outputs/game404/godot/`。
+评审演示路径为 `outputs/runs/game404/godot/`。

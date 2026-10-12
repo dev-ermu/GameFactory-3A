@@ -16,12 +16,12 @@
 ```bash
 # 通过启动器导入单个资产
 python scripts/import_generated_asset.py --engine blender \
-    --src test_data/outputs/<game>/<run>/assets/3d_object/<task>/model.glb \
+    --src outputs/runs/<game>/<run>/assets/3d_object/<task>/model.glb \
     --blender-preview
 
 # 导入某次生成任务产生的所有资产
 python scripts/import_generated_asset.py --engine blender \
-    --summary test_data/outputs/<game>/<run>/3d_object_results_summary.json
+    --summary outputs/runs/<game>/<run>/3d_object_results_summary.json
 ```
 
 也可以直接调用Blender。参数会通过名为`AAAGF_IMPORT_JOB`的**作业文件**传递——该文件名与UE5导入器使用的名称一致，因此启动器会为每种引擎生成对应格式的作业文件：

@@ -4,10 +4,10 @@ pipeline/assets_gen/gen_3d_object/run.py
 3D object generation demo runner.
 
 Loads a cloud backend, injects it into Gen3DObjectOperator, reads tasks from
-test_data/test_samples/3D_object_gen_collect.jsonl (or a single game's
+outputs/samples/3D_object_gen_collect.jsonl (or a single game's
 object_tasks.jsonl), and writes GLB outputs grouped per game project:
 
-    test_data/outputs/<game_id>/<run_id>/assets/3d_object/<task_id>/model.glb
+    outputs/runs/<game_id>/<run_id>/assets/3d_object/<task_id>/model.glb
 
 Two interchangeable cloud backends fill the model slot (model_require.md R6):
 
@@ -22,7 +22,7 @@ Usage:
     export TRIPO_API_KEY=...
     python pipeline/assets_gen/gen_3d_object/run.py --backend tripo \
         --game gameA_cyberpunk_shooter --run-id auto \
-        --cache-dir test_data/outputs/_api_cache
+        --cache-dir outputs/runs/_api_cache
 
     # Only one game project (prefers that game's own object_tasks.jsonl)
     python pipeline/assets_gen/gen_3d_object/run.py --game gameA_cyberpunk_shooter
@@ -36,7 +36,7 @@ Usage:
 
     # Run from a different jsonl
     python pipeline/assets_gen/gen_3d_object/run.py \
-        --tasks test_data/test_samples/3D_object_gen_collect.jsonl
+        --tasks outputs/samples/3D_object_gen_collect.jsonl
 
     # Legacy flat output (bypasses the per-game layout; debugging only)
     python pipeline/assets_gen/gen_3d_object/run.py --out-dir outputs/3d_object
