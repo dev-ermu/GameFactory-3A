@@ -89,21 +89,26 @@ Agent、Pipeline代码、执行/评估组合根、仓库脚本以及平台服务
 
 公共资产方法接收的是仓库任务标识或文档中规定的公共描述符格式，不会接受调用方随意拼凑的生成输出文件路径。请通过客户端解析源信息，并保留其返回的结构化结果与工件标识。
 
-### 导入生命周期`<REPO_PATH>/scripts/engine_install/ue5/import_asset.sh` 是一个围绕同一公共`UEClient`的生命周期封装脚本，它并非第二个或更快的资产API。主机端的批量执行应复用已配置好的客户端和正在运行的编辑器会话，而非为每个资产单独启动一个Unreal进程。
+### 导入生命周期
+
+`<REPO_PATH>/scripts/engine_install/ue5/import_asset.sh` 是一个围绕同一公共`UEClient`的生命周期封装脚本，它并非第二个或更快的资产API。主机端的批量执行应复用已配置好的客户端和正在运行的编辑器会话，而非为每个资产单独启动一个Unreal进程。
 
 直接的资产和世界操作要求Unreal Python执行环境已准备就绪。执行代码应针对一批任务复用同一个`UEClient`和正在运行的编辑器会话，而非为每个资产重新创建或重启它们。
 
 仓库导入启动器会检查准备状态，仅在必要时启动编辑器；即便可选的远程控制功能不可用，只要Python执行环境就绪，它就能继续运行。
 
 ## 动画相关
+
 - `ue.animation.import_motion`：通过Animation命名空间导入动作数据。
 - `ue.animation.resolve_skeleton`：解析与已注册虚拟形象或导入资产关联的骨骼信息。
 - `ue.animation.validate_compatibility`：检查动作数据与骨骼资源是否兼容。
 
 ## 绑定相关
+
 - `ue.bindings.bind_pbr_material`：为导入的资产创建或更新PBR材质绑定。
 
 ## 世界相关
+
 - `ue.world.build`：根据已注册的场景资源构建或导入世界。
 - `ue.world.create_draft`：创建一个可持久编辑的世界草稿。
 - `ue.world.validate_draft`：验证世界草稿及其引用的资源是否有效。
@@ -113,6 +118,7 @@ Agent、Pipeline代码、执行/评估组合根、仓库脚本以及平台服务
 当任务提供原生项目或地图包时，世界操作会保留Unreal原生内容。
 
 ## 插件相关
+
 - `ue.plugin.install`：将已注册的生成型游戏插件安装到项目中，并同步声明的框架依赖项。
 - `ue.plugin.install_framework`：安装由适配器提供的`A3GamePlayable`运行时框架。
 - `ue.plugin.list`：列出已安装的项目插件。
@@ -120,18 +126,23 @@ Agent、Pipeline代码、执行/评估组合根、仓库脚本以及平台服务
 生成的游戏插件仅能依赖`A3GamePlayable`的公共头文件。
 
 ## 构建相关
+
 - `ue.build.project`：构建Unreal项目目标，并返回结构化的命令及诊断信息。
 
 ## 测试相关
+
 - `ue.testing.run_automation_tests`：运行Unreal自动化测试，解析最新的测试报告，并返回匹配、通过和失败测试的准确数量。
 
 游戏生成代理不得调用此命名空间，只有后续的执行/组装模块才能通过`UEClient`调用它。
 
 ## 运行时相关
+
 - `ue.runtime.launch_editor`：启动配置好的Unreal编辑器或游戏运行时进程。
 - `ue.runtime.stop_editor`：停止由同一运行时客户端启动的编辑器进程。
 
-## 运行时会话- `ue.runtime.sessions.join`：创建或更新通用的参与者、控制器、实体及控制绑定会话。
+## 运行时会话
+
+- `ue.runtime.sessions.join`：创建或更新通用的参与者、控制器、实体及控制绑定会话。
 - `ue.runtime.sessions.leave`：从运行时会话中移除某个参与者。
 - `ue.runtime.sessions.heartbeat`：刷新参与者的活跃状态。
 - `ue.runtime.sessions.apply_input`：将标准化后的控制输入应用到绑定的运行时实体上。
@@ -142,22 +153,27 @@ Agent、Pipeline代码、执行/评估组合根、仓库脚本以及平台服务
 运行时会话与游戏类型无关，不会定义格斗类、第一人称射击类或赛车类的相关指令。
 
 ## 反射功能
+
 - `ue.reflection.inspect_artifact`：通过Unreal反射机制检查已注册的导入构件，并返回结构化的元数据。
 
 ## 观测功能
+
 - `ue.observe.check_status`：报告远程控制、Python执行、项目、运行时以及观测功能的就绪状态。
 
-## A3GamePlayable公共C++接口规范
+## A3GamePlayable Public C++接口规范
+
 生成的游戏玩法插件只能包含以下路径下的头文件：
 ```text
 A3GamePlayable/Source/A3GamePlayable/Public/
 ```
 
 ### 枚举类型
+
 - `EA3GameControlMode`：标识分配给实体的通用控制模式。
 - `EA3GameLocomotionState`：表示运行时快照中的通用移动状态。
 
 ### 数据类型
+
 - `FA3GameRuntimeInputState`：携带标准化的移动、视角、动作及输入时序状态。
 - `FA3GameEntitySpawnRequest`：描述通用的实体生成请求。
 - `FA3GameParticipantInfo`：描述单个运行时参与者信息。
@@ -166,6 +182,7 @@ A3GamePlayable/Source/A3GamePlayable/Public/
 - `FA3GameEntitySnapshot`：汇报可观测的通用实体状态。
 
 ### 接口
+
 - `IA3GameControllableEntity`：由游戏自有的可操控实体实现的接口。
 - `IA3GameEntityFactory`：由游戏自有的实体工厂实现的接口。
 - `IA3GameRuntimeMessageHandler`：用于游戏自有的运行时消息处理的接口。
@@ -179,6 +196,7 @@ A3GamePlayable/Source/A3GamePlayable/Public/
 - `UA3GameWorldSessionSubsystem`：负责管理通用的参与者、控制器、实体、绑定、输入及快照会话状态。
 
 ## 框架边界说明
+
 A3GamePlayable仅提供运行时接口，不提供具体的角色、Pawn、控制器、游戏模式、HUD、武器、载具、战斗规则或游戏专属的输入映射功能。
 
 生成的项目负责实现具体的游戏玩法逻辑。可选的Preview、Arena Fighter、FPS及Racing插件仅为只读引用，既不属于依赖项，也不作为项目成功的标准。这个原生C++合约特意与上述的宿主端`UEClient`合约分开。`UEClient`负责准备并执行项目；它并非生成后的Unreal模块内的依赖项。
@@ -194,7 +212,9 @@ class A3GAMEPLAYABLE_API UA3GameMediaSubsystem : public UWorldSubsystem
 
 目前UE5仅实现了音频和视频CG的绑定；动画CG和VFX的绑定仍由游戏自身负责，直到该子系统后续扩展相关功能。游戏机制负责决定游戏事件发生的时机，并提供稳定的snake_case格式的事件键，例如`hit_confirmed`或`ultimate_cg`。该子系统负责管理UE播放对象和媒体相关数据。它不应涉及伤害规则、攻击时机、UI布局、管线编排、Browser Play传输或基准测试评分等逻辑。
 
-### 公开操作| UE5方法 | 用途 | 原生绑定 |
+### 公开操作
+
+| UE5方法 | 用途 | 原生绑定 |
 |---|---|---|
 | `RegisterAudio(eventKey, sourcePath)` | 注册本地音频文件，并创建对应的播放器与声音组件 | `UMediaPlayer` + `UMediaSoundComponent` |
 | `TriggerAudio(eventKey, triggerSource="gameplay")` | 播放已注册的音频事件并记录相关证据 | `UMediaPlayer::Play()` |
@@ -231,4 +251,6 @@ class A3GAMEPLAYABLE_API UA3GameMediaSubsystem : public UWorldSubsystem
   "playback_call_issued": true,
   "asset_path": "Movies/ultimate.mp4"
 }
-```每条记录会通过 `OnMediaEvent` 进行广播，并被追加到由 `GetEventLogJson()` 返回的日志中。请务必将事件日志与原生测试追踪信息一同保存；若要确认视觉/音频效果是否正常，仍需观察正在运行的 UE5 项目。UE 游戏代码应仅依赖这一公共子系统接口，绝不要依赖适配器私有的注册表、传输机制、编辑器脚本或生成的输出路径。
+```
+
+每条记录会通过 `OnMediaEvent` 进行广播，并被追加到由 `GetEventLogJson()` 返回的日志中。请务必将事件日志与原生测试追踪信息一同保存；若要确认视觉/音频效果是否正常，仍需观察正在运行的 UE5 项目。UE 游戏代码应仅依赖这一公共子系统接口，绝不要依赖适配器私有的注册表、传输机制、编辑器脚本或生成的输出路径。

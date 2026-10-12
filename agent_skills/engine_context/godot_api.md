@@ -41,7 +41,9 @@ scripts\engine_install\godot\install.cmd --version 4.5.1 --json
 
 安装程序和适配器使用Python 3.14+标准库，无需pip包或引擎SDK包。兼容性由Python 3.14上的完整Godot适配器套件保障。平台详情、参数及故障处理逻辑详见`scripts/engine_install/godot/README.md`。
 
-请配置返回的路径，并通过公共客户端进行验证：```bash
+请配置返回的路径，并通过公共客户端进行验证：
+
+```bash
 export A3GAME_GODOT_EXECUTABLE=/绝对路径/to/godot4
 export A3GAME_GODOT_PROJECT=/projects/MyGame
 python3 -m engine_adapters.godot \
@@ -104,7 +106,9 @@ godot = GodotClient(
 
 下述签名对 `v1` 版本具有权威性。`E0`–`E8` 对应第4节中的可运行示例。
 
-### 根目录与项目相关操作| 调用 | 用途及成功返回结果 | 失败表现 | 示例 |
+### 根目录与项目相关操作
+
+| 调用 | 用途及成功返回结果 | 失败表现 | 示例 |
 | --- | --- | --- | --- |
 | `godot.api_version -> str` | 返回字面量 `v1` | 构造函数会拒绝不支持的API版本 | E0 |
 | `godot.get_environment_info(*, probe_version=True)` | 返回项目/可执行文件路径、路径是否存在、引擎版本支持情况、运行时端点及注册表路径 | 若可执行文件缺失/版本错误，或路径不安全，会在结果中体现 | E0 |
@@ -114,7 +118,9 @@ godot = GodotClient(
 
 ### 资产
 
-`source`是一个映射，包含`{game_id, run_id, task_kind, task_id, artifact_key}`字段。每个标识都是仓库`OUTPUT_ROOT`下的一个安全路径组成部分；调用方无法指定任意生成的输出路径。`options`是转发给导入处理模块的严格JSON格式元数据；常见的选项包括`replace_existing`以及导入提示。| 调用函数 | 功能及成功返回值 | 失败时的表现 | 示例 |
+`source`是一个映射，包含`{game_id, run_id, task_kind, task_id, artifact_key}`字段。每个标识都是仓库`OUTPUT_ROOT`下的一个安全路径组成部分；调用方无法指定任意生成的输出路径。`options`是转发给导入处理模块的严格JSON格式元数据；常见的选项包括`replace_existing`以及导入提示。
+
+| 调用函数 | 功能及成功返回值 | 失败时的表现 | 示例 |
 | --- | --- | --- | --- |
 | `godot.assets.import_asset(source, asset_type, *, destination="", options=None)` | 解析、暂存、导入指定类型的资产，对其进行原生层面的检测并注册；最终生成的产物包含真实的 `res://` 路径、类信息及功能属性。 | 若资产类型/标识无法识别、源路径存在逃逸风险、格式不匹配、存在冲突、导入/加载出错，或不符合原生合约要求，则会回滚已生成的文件、缓存及注册信息。 | E2 |
 | `godot.assets.import_batch(sources, *, options=None, timeout=None, dry_run=False)` | 预先校验资产描述信息，按任务ID命名资产，先导入虚拟形象/网格数据，再处理动作与场景数据；返回每个资产的导入结果以及所有已注册的资产信息。 | 描述信息无效的资产会在导入前直接判定为失败；一旦某个资产导入失败，后续处理会立即停止，同时会报告此前已成功导入的资产情况。 | E2 |
@@ -144,7 +150,9 @@ godot = GodotClient(
 | `godot.animation.validate_compatibility(motion, skeleton)` | 重新加载动作并验证其动画及骨骼轨迹是否能匹配实时骨架或已注册的角色引用 | 若结构不匹配则操作失败；该操作不保证视觉上的重定向效果 | E3 |
 | `godot.bindings.bind_pbr_material(*, asset_id, source, mesh_assets, destination="assets/imported/materials", options=None)` | 导入/创建材质，通过Godot将`material_override`应用到每个目标网格上，保存绑定的场景，原子性地更新记录并返回清单/工件 | 若目标/材质缺失、无网格被更改、引擎出错、状态不安全、目标重复，或任何提交步骤失败，系统会恢复材质/场景/纹理/清单/注册表 | E3 |
 
-### 世界| 调用方法 | 用途及成功返回结果 | 失败表现 | 示例 |
+### 世界
+
+| 调用方法 | 用途及成功返回结果 | 失败表现 | 示例 |
 | --- | --- | --- | --- |
 | `godot.world.build(source, *, options=None)` | 导入场景后，根据选项创建、验证并可选发布一个World | 任何资产/草稿/原生验证失败的情况都会被返回；不会生成虚构的包 | E4 |
 | `godot.world.create_draft(spec, *, draft_id="", project_id="", metadata=None)` | 写入一个指向已注册就绪场景的带版本号的草稿；显式指定的ID会覆盖规范中的设定，显式指定的元数据会与规范中的元数据合并 | 若架构/JSON错误、注册表不安全、场景缺失/无法实例化/非`PackedScene`类型，或原生加载失败，则无法生成有效的草稿 | E4 |
@@ -165,14 +173,18 @@ godot = GodotClient(
 规范化输入、会话/实体绑定、场景加载、动画调度、射线/球体碰撞探测、
 HUD遥测以及材质/光照辅助功能。原生的Godot角色/刚体物理、特效/音频及游戏规则仍由游戏逻辑层自行管理。
 
-### 构建与测试| 调用 | 用途及成功返回结果 | 失败行为 | 示例 |
+### 构建与测试
+
+| 调用 | 用途及成功返回结果 | 失败行为 | 示例 |
 | --- | --- | --- | --- |
 | `godot.build.project(*, preset, output_path, debug=False, pack_only=False, extra_args=(), allow_external_output=False, timeout=None, dry_run=False)` | 执行名为 `--export-release`、`--export-debug` 或 `--export-pack` 的导出命令；返回完整的已提交兄弟文件集及所有权凭证 | 预设/输出路径缺失、超时、引擎诊断出错、受保护/外部/未受管理/被篡改的输出文件、清单/证明文件有误，或嵌套链接出错，同时会保留之前的构建结果 | E6 |
 | `godot.testing.run_automation_tests(test_filter="", *, script="", test_root="res://tests", report_path="", timeout=None, dry_run=False)` | 运行适配器/默认测试套件或指定的SceneTree运行器；返回匹配/通过/失败/跳过测试用例的数量及验证通过的用例信息 | 运行器/报告路径/根目录不合法、超时、报告过期/缺失/不符合严格格式要求、模式/状态无效，或任何测试用例失败都会导致操作终止 | E6 |
 
 所选根目录下名为 `test_*.gd` 的本地测试文件必须继承自可实例化的Godot类型，且需从 `run_test()` 方法返回布尔值或包含布尔型字段 `ok` 的字典。对于超出契约规定的返回值，绝不会依据其“真值”来判断。只有经过模式验证后，报告才会从私有的临时暂存路径发布。
 
-### 运行时与会话| 调用函数 | 功能及成功返回值 | 失败表现 | 示例 |
+### 运行时与会话
+
+| 调用函数 | 功能及成功返回值 | 失败表现 | 示例 |
 | --- | --- | --- | --- |
 | `godot.runtime.launch_editor(*, scene_path="", extra_args=(), dry_run=False)` | 在独立的进程组中启动已配置的编辑器；返回被管理的进程ID | 若项目/可执行文件缺失、场景不合法或启动出错，则操作失败 | E7 |
 | `godot.runtime.stop_editor(process_id)` | 仅停止由当前客户端启动的编辑器 | 若进程ID未知/错误，或正常终止操作失败，则返回错误信息 | E7 |
@@ -208,7 +220,9 @@ class_name A3GameMediaDirector
 
 机制模块负责决定游戏玩法事件发生的时机，并提供稳定的snake_case格式的事件键，例如`hit_confirmed`或`ultimate_cg`。媒体导演则负责管理Godot播放对象和媒体相关数据。它不应负责伤害规则、攻击时序、UI布局、管线编排、浏览器播放传输或基准测试计分等逻辑。
 
-### 公开操作| 操作 | 用途 | 原生绑定 |
+### 公开操作
+
+| 操作 | 用途 | 原生绑定 |
 |---|---|---|
 | `register_audio(event_key, stream, volume_db=0.0, pitch_scale=1.0)` | 注册Godot的`AudioStream`并创建`AudioStreamPlayer` | `AudioStreamPlayer.play()` |
 | `trigger_audio(event_key, trigger_source="gameplay", metadata={})` | 播放已注册的音频事件并返回证据记录 | `AudioStreamPlayer` |
@@ -235,7 +249,9 @@ class_name A3GameMediaDirector
 
 ### 运行时证据
 
-每条触发记录均采用`schema gamefactory3a.media_runtime_event.v1`，且至少包含以下内容：```json
+每条触发记录均采用`schema gamefactory3a.media_runtime_event.v1`，且至少包含以下内容：
+
+```json
 {
   "schema_version": "gamefactory3a.media_runtime_event.v1",
   "seq": 1,
@@ -270,7 +286,9 @@ validated = godot.project.validate(check_engine=True)
 assert validated["ok"], validated["errors"]
 ```
 
-### E2 — 解析、验证、导入、查询或注册资源```python
+### E2 — 解析、验证、导入、查询或注册资源
+
+```python
 source = {
     "game_id": "game101",
     "run_id": "run_001",
@@ -370,7 +388,9 @@ assert build["ok"], build["errors"]
 ```python
 launched = godot.runtime.launch_game(headless=False)
 assert launched["ok"], launched["errors"]
-``````python
+```
+
+```python
 joined = godot.runtime.sessions.join(
     world_id="arena",
     participant_id="player_1",

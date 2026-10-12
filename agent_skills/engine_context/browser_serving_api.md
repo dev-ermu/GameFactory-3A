@@ -93,7 +93,9 @@ from engine_adapters.browser_serving import BrowserServingClient
 - `client.worlds.upload`：暂存场景文件，并触发后端世界的构建/发布流程。
 - `client.worlds.list`：列出后端可见的运行时世界包。
 
-## 会话- `client.sessions.create`：启动由浏览器端控制的引擎/流会话。
+## 会话
+
+- `client.sessions.create`：启动由浏览器端控制的引擎/流会话。
 - `client.sessions.list`：列出活跃的会话。
 - `client.sessions.get`：读取某个会话的信息。
 - `client.sessions.recover`：重新注册仍可访问的会话。
@@ -122,7 +124,9 @@ from engine_adapters.browser_serving import BrowserServingClient
 
 ## 浏览器HTTP API
 
-浏览器端的游玩功能调用的是网关HTTP API，而非导入Python客户端或引擎客户端。公共路由直接对应上述的客户端操作：- `GET /api/health`：用于报告网关的就绪状态。
+浏览器端的游玩功能调用的是网关HTTP API，而非导入Python客户端或引擎客户端。公共路由直接对应上述的客户端操作：
+
+- `GET /api/health`：用于报告网关的就绪状态。
 - `GET /api/engines`：列出已注册的引擎及其功能。
 - `GET /api/engines/{engine}/capabilities`：读取某个引擎的能力集。
 - `GET /api/engines/{engine}/status`：读取某个后端服务的就绪状态。
@@ -168,7 +172,6 @@ HTTP响应结果遵循上述的Result Contract规范。浏览器代码会从`pay
 
 浏览器UI根据能力而非引擎名称来启用对应功能。浏览器游玩功能会调用`stream_url`；特定传输方式的URL别名并不属于跨引擎的通用规范。虽然可以将`engine`作为参数来指定后端，但基于特定引擎的UI逻辑并不被允许。实际选择已注册的后端服务的是网关，而非浏览器页面。
 
-
 - `descriptor`：返回后端身份与功能。
 - `status`：报告后端就绪状态。
 - `import_asset`：导入已暂存的资源。
@@ -212,8 +215,9 @@ UE5会话采用像素流技术，通过UE运行时会话传递标准化输入指
 
 生成的浏览器播放功能会读取与引擎无关的`stream_url`，将输入指令同步到引擎帧中，并上报会话或流媒体相关的错误信息。它不会配置后端、调用引擎客户端、注入游戏专属命令，也不会复制引擎原生的交互界面。
 
-## UI生成边界引擎原生UI会使用选定的引擎API并生成Mechanic合约。  
-浏览器播放功能仅通过浏览器服务API来实现流媒体、会话、焦点、全屏、错误处理以及通用输入控制。
+## UI生成边界
+
+引擎原生UI会使用选定的引擎API并生成Mechanic合约。浏览器播放功能仅通过浏览器服务API来实现流媒体、会话、焦点、全屏、错误处理以及通用输入控制。
 
 浏览器服务不会向Web端暴露带有版本号的Mechanic状态/事件/命令桥接接口。生成的浏览器播放模块不得自行创建诸如生命值、弹药量、分数、游戏目标、暂停、胜利判定或游戏专属命令等API。游戏专属操作仍由引擎原生UI和Mechanic合约来处理。CG视频生成是浏览器服务API所提供的唯一通用媒体操作；何时生成视频片段以及如何展示，仍由游戏逻辑来决定。
 

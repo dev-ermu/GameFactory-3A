@@ -51,7 +51,9 @@ Agent、生成代码、Pipeline代码以及平台Serving代码不得执行以下
 - `unity.get_environment_info`：返回配置的项目、Unity编辑器、传输层及运行时环境信息。
 - `unity.generate_game`：运行生成游戏的流程，涵盖项目设置、机制/UI安装、批量资源导入、场景编排、构建，以及可选的编辑器播放模式。
 
-## 项目- `unity.project.get_info`：返回已配置的Unity项目路径及编辑器路径。
+## 项目
+
+- `unity.project.get_info`：返回已配置的Unity项目路径及编辑器路径。
 - `unity.project.create`：创建一个不含具体游戏逻辑默认设置的简易Unity宿主项目。
 - `unity.project.validate`：检查项目设置、包清单以及必要的项目结构。
 - `unity.project.synchronize_packages`：将适配器所需的Unity包及内置模块添加到项目清单中。
@@ -134,7 +136,9 @@ public sealed class A3GameMediaDirector : MonoBehaviour
 
 切勿将Unity文件重命名为`media_director.cs`；保持MonoBehaviour文件和公共类的命名一致是Unity的稳定规范。游戏机制负责决定游戏玩法事件何时触发，并提供稳定的snake_case格式的事件键，例如`hit_confirmed`或`ultimate_cg`。Media Director则负责管理Unity播放对象和媒体资源，它不应负责伤害规则、攻击时机、UI布局、管线编排、浏览器播放传输或基准测试评分等逻辑。
 
-### 公开操作| 操作 | 用途 | 原生绑定 |
+### 公开操作
+
+| 操作 | 用途 | 原生绑定 |
 |---|---|---|
 | `RegisterAudio(eventKey, clip)` | 注册Unity的`AudioClip` | `AudioSource.PlayOneShot()` |
 | `TriggerAudio(eventKey, triggerSource="gameplay")` | 播放已注册的音频事件并返回证据记录 | `AudioSource` |
@@ -222,8 +226,9 @@ A3GameRuntime/Runtime/
 
 生成的项目负责实现具体的游戏逻辑。可选的ArenaFighterExample、FPSExample和RacingExample程序集仅为只读引用，既非依赖项，也不作为功能达成的评判标准。
 
-## 传输机制Unity没有Unreal那样的Python远程执行或HTTP远程控制功能。
-`UnityClient`采用子进程传输方式。每次启动编辑器时，都会将子进程的工作目录设置为生成的Unity项目根目录。这么做是必要的，因为Unity编辑器脚本会使用诸如`Assets/Imported/Weapons`这类相对于项目的路径；如果没有这一工作目录约定，相对文件操作可能会写入项目外部，导致AssetDatabase无法识别新导入的资源：
+## 传输机制
+
+Unity没有Unreal那样的Python远程执行或HTTP远程控制功能。`UnityClient`采用子进程传输方式。每次启动编辑器时，都会将子进程的工作目录设置为生成的Unity项目根目录。这么做是必要的，因为Unity编辑器脚本会使用诸如`Assets/Imported/Weapons`这类相对于项目的路径；如果没有这一工作目录约定，相对文件操作可能会写入项目外部，导致AssetDatabase无法识别新导入的资源：
 
 1. 必要时，将所需的捆绑C#编辑器脚本复制到项目的`Assets/Editor/`文件夹中；
 2. 将操作参数写入临时JSON作业文件；
@@ -232,6 +237,7 @@ A3GameRuntime/Runtime/
 5. Python传输层读取该JSON报告并返回结果。
 
 ### Unity授权前提条件
+
 Unity授权属于外部主机的前提条件，并非3AGameFactory的操作范畴。在调用会修改数据的客户端方法之前，必须通过对应的Unity Hub/Tuanjie Hub账号安装并激活所选编辑器；或者需有已打开且已授权的编辑器可用。`UnityClient`不会自动获取凭证、激活许可席位，也不会替换Hub授权守护进程。
 
 直接批量传输机制特意不强制使用`-licensingIpc`参数：Unity及其Hub会自动选择正确的本地LicensingClient通道。如果主机上存在冲突的Hub守护进程或未完成授权，Unity可能会在加载项目前就退出（常见退出代码为199）。这种情况下，传输层会返回`blocked=true`、`blocked_stage="licensing"`、`license_status`以及日志尾部信息，以便调用方能快速因外部前提条件不满足而报错，而非误以为导入、编译或构建操作已成功。
@@ -239,12 +245,16 @@ Unity授权属于外部主机的前提条件，并非3AGameFactory的操作范�
 项目创建、游戏生成、资源导入以及运行时启动命令需使用`<REPO_PATH>/scripts/engine_install/unity/`路径。顶层的`import-batch`公共客户端命令用于批量导入资源；若要执行完整流程，可使用`generate-game`命令，该命令会在单个编辑器会话中完成插件安装、资源导入、材质重新映射、场景搭建、编译、构建以及可选的Play模式运行等操作。
 
 ### 运行时输入传输
+
 对于运行时会话，`RuntimeUDPBridge`会将JSON数据包发送至`A3GameRuntimeInputReceiver` C#组件（UDP端口30030），这一机制与UE5中通过UDP桥接发送至`A3GameRuntimeInputPort`（端口30020）的方式类似。
 
 ## 坐标系
+
 glTF和Unity均采用Y轴向上的坐标系，且单位均为米，但两者的左右手规则有所不同。Unity的模型导入器会负责格式转换；适配器或游戏逻辑代码不应再额外进行统一的轴向转换。FBX文件的创作轴和单位可能存在差异，因此导入后的模型方向、缩放比例、骨骼结构以及武器朝向仍需进一步检查或通过导入器配置调整。
 
-# Unity VFX API对于烟雾、火焰、爆炸、尘埃以及粒子生命周期相关的效果制作，请使用[`create-vfx-effects`](create-vfx-effects/SKILL.md)技能，以及`<REPO_PATH>/engine_adapters/unity3d/vfx/Runtime/A3Game_VFX.cs`。
+# Unity VFX API
+
+对于烟雾、火焰、爆炸、尘埃以及粒子生命周期相关的效果制作，请使用[`create-vfx-effects`](create-vfx-effects/SKILL.md)技能，以及`<REPO_PATH>/engine_adapters/unity3d/vfx/Runtime/A3Game_VFX.cs`。
 
 建议通过`SpawnPrefab`调用已有的、经过审核的粒子或VFX Graph预制体。那些名为ParticleSystem的函数属于无资源备用方案，它们采用Unity世界空间单位来定位。
 
