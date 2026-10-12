@@ -35,7 +35,7 @@ cp .env.example .env          # Windows：copy .env.example .env
 |---|---|
 | 图像/T-pose | 请参阅`<REPO_PATH>/agent_skills/asset_qa/image/SKILL.md` |
 | 3D物体 | — |
-| 动作数据 | 重定向需要Blender：`<REPO_PATH>/scripts/engine_install/blender/install.sh` |
+| 动作数据 | 重定向需要Blender：用户需要自行安装。 |
 | 音频 | — |
 | CG视频 | — |
 

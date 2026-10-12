@@ -4,11 +4,11 @@
 
 请将`<...>`形式的路径占位符替换为实际路径；`<repo_path>`代表代码库根目录。
 
-入口文件：`<repo_path>/pipeline/assets_gen/gen_motion/run.py`。
-操作符文件：`<repo_path>/operators/gen_motion/operator.py`。
-修改任何内容前需先阅读的参考文档：本文件，以及`<repo_path>/operators/gen_motion/funcs/`下的模块文档说明。
+* 入口文件：`<repo_path>/pipeline/assets_gen/gen_motion/run.py`。
+* 操作符文件：`<repo_path>/operators/gen_motion/operator.py`。
+* 修改任何内容前需先阅读的参考文档：本文件，以及`<repo_path>/operators/gen_motion/funcs/`下的模块文档说明。
 
-## 优先使用Vibe Motion功能
+## 一、优先使用Vibe Motion功能
 
 优先调用`<repo_path>/operators/gen_motion/funcs/vibe_motion_utils/`中的函数；仅当模型拓扑结构或动作不受支持，或经过质量检查（QA）未达标时，才考虑改用Mixamo、MoMask或Tripo生成工具。
 
@@ -16,7 +16,7 @@
 2. 需检查骨骼长度、地面穿透情况、接触速度、IK残差以及蒙皮权重；在目标网格上回放生成结果。若`vibe_motion_utils`中存在可复现的功能漏洞，需先修复，再通过`GenMotionOperator`重新运行。
 3. 若模型拓扑结构或动作仍不受支持，或结果仍未通过QA检查，可使用**Mixamo/本地动作捕捉数据**或**直接生成工具**（MoMask/Tripo）。需记录下采用替代方案的原因、参数以及数据源/授权信息。切勿悄悄用其他预设动作替换用户请求的动作。
 
-### 入口点与适用范围
+### 1.1 入口点与适用范围
 
 | 功能 | 用途 |
 |---|---|
@@ -28,9 +28,11 @@
 
 需将多阶段动作表述为包含命名事件和接触窗口的连续位置程序。`program.action`是一个标签，而非预设动作选择器。
 
-IK实现代码路径：`<repo_path>/operators/gen_motion/funcs/vibe_motion_utils/motion_utils/generate.py`。对于屈曲受限的双骨链，使用`solve_two_bone_ik`函数；对于肩部/肘部受限情况的优化，使用`solve_arm_ik`函数；`task_space.solve_part`用于提供采样后的目标点。
+IK实现代码路径：`<repo_path>/operators/gen_motion/funcs/vibe_motion_utils/motion_utils/generate.py`。对于屈曲受限的双骨链，使用`solve_two_bone_ik`函数；对于肩部，肘部受限情况的优化，使用`solve_arm_ik`函数；`task_space.solve_part`用于提供采样后的目标点。
 
-使用时需指定`task_type="vibe"`，并传入包含相关参数的`config`对象：- `骨架`：包含明确的`名称`、`名称列表`、`父节点`以及世界空间中的`静止`位置。
+使用时需指定`task_type="vibe"`，并传入包含相关参数的`config`对象：
+
+- `骨架`：包含明确的`名称`、`名称列表`、`父节点`以及世界空间中的`静止`位置。
 - `节奏`：包含`持续时间`、`帧率`，以及归一化时间下的命名`事件`。持续时间对应的帧率必须为整数；动画片段包含起始和结束端点，总帧数为`持续时间 × 帧率 + 1`。
 - `程序`：包含`动作`、`水平前进`方向、根节点位置曲线、命名的`部件`、`求解器`设置以及`质量`阈值。缺失的设置属于错误，而非默认值。
 
@@ -46,12 +48,13 @@ IK实现代码路径：`<repo_path>/operators/gen_motion/funcs/vibe_motion_utils
 
 关节链是根据提供的骨架解析而成，而非基于硬编码的人体名称。双足和四足动物的示例，包括所有运动参数和合成骨架数据，分别存放在`<repo_path>/test/vibe_motion_examples/horse_gallop_stop_kick.json`和`<repo_path>/test/vibe_motion_examples/turn_jump_chop.json`中。后者将飞行过程编码为显式的Hermite位置关键帧，而非内置的跳跃算法。可将示例JSON加载到`config`中，再将其与`task_type="vibe"`、`game_id`和`task_id`一同传给`GenMotionOperator.run`。
 
-对于真实网格，需提供`target_mesh_path`、`rig_quality`和`export.text`（包含`精度`、`求和容差`、`最大影响数`参数）。既可提供对应的骨架，也可设置`skeleton=null`并搭配完整的`rigging`配置。若要生成带蒙皮的GLB文件，还需额外提供`skinning`、`skin_quality`以及`export.glb`（包含`绑定容差`、`求和容差`、`材质`、`插值`参数）。
-不会自动加载任何生物几何体、骨骼预设或蒙皮预设。对于FBX文件，可使用`vibe_retarget`，配合相同的网格/蒙皮设置、整数节奏帧率以及bpy运行时环境。网格测试代码位于`<repo_path>/tests/test_vibe_rigging.py`。
+对于真实网格，需提供`target_mesh_path`、`rig_quality`和`export.text`（包含`精度`、`求和容差`、`最大影响数`参数）。既可提供对应的骨架，也可设置`skeleton=null`并搭配完整的`rigging`配置。若要生成带蒙皮的GLB文件，还需额外提供`skinning`、`skin_quality`以及`export.glb`（包含`绑定容差`、`求和容差`、`材质`、`插值`参数）。不会自动加载任何生物几何体、骨骼预设或蒙皮预设。对于FBX文件，可使用`vibe_retarget`，配合相同的网格/蒙皮设置、整数节奏帧率以及bpy运行时环境。网格测试代码位于`<repo_path>/tests/test_vibe_rigging.py`。
 
-### 必需的视觉骨骼绑定工作流程对于未绑定骨骼的模型，请按照以下顺序处理：
+### 1.2 必需的视觉骨骼绑定工作流程对于未绑定骨骼的模型，请按照以下顺序处理：
 
-**3D模型 → 投影图像 → 基于VLM的顺序识别与标注 → 3D骨骼 → 蒙皮 → 根据运动效果优化骨骼方向。**1. **加载原始网格。** 利用任务输入对其进行归一化处理，记录其摘要、归一化参数以及实际处理后的几何形态标识。切勿用参考骨骼替换原始网格、把已绑定资源的模型谎称为未绑定模型，也不得修改源数据。
+**3D模型 → 投影图像 → 基于VLM的顺序识别与标注 → 3D骨骼 → 蒙皮 → 根据运动效果优化骨骼方向**。
+
+1. **加载原始网格。** 利用任务输入对其进行归一化处理，记录其摘要、归一化参数以及实际处理后的几何形态标识。切勿用参考骨骼替换原始网格、把已绑定资源的模型谎称为未绑定模型，也不得修改源数据。
 2. **渲染校准后的投影图像。** 调用 `rigging_utils.estimation.prepare_projection`。根据网格边界、指定的视图轴、图像尺寸和填充参数，计算出实际的相机中心、像素原点以及通用的像素/单位比值。使用带深度缓冲的原始三角形来生成图像。将生成的图像以及 `projection/calibration.json` 文件保存到运行输出目录下。切勿要求视觉语言模型（VLM）自行猜测相机矩阵。
 3. **按顺序识别并标注。** 调用 `estimate_rigging`，传入具备真实视觉能力的估算器。需传入的是经过标注的实际视图图像以及计算出的校准参数，而非仅文件名或文本。首先根据指定的控制链约束推断父子关节的关联关系；随后按输入顺序为每个关节链发起一次请求。将此前验证通过的结果传递给下一次请求。估算内部关节中心位置，保留几何不对称性，针对每个观测到的视图记录对应的像素坐标、置信度以及推断结果。不支持的视图予以忽略；每个关节至少需要两个独立的观测视图数据支撑。绝不要凭空编造可见性信息，也不得镜像呈现被遮挡的肢体。将每次请求的内容及原始回复分别保存为 `estimation_00.json`、`estimation_01.json` 等文件。若回复内容被拒绝、截断、无效、退化或不一致，直接驳回，不得回退到旧坐标值。在推进流程前，需验证拓扑结构、像素边界、加权重建的秩/条件数以及每个视图的重投影误差是否符合要求。只有所有阶段均通过后，才能生成并发布 `annotations.json` 和 `resolved_rigging.json`。
 4. **重构并拟合骨骼。** 将解析完成的结果传入 `skeleton.fit_skeleton`。拟合过程需在输入的窗口范围内进行；若存在几何/标注冲突需明确报告。需区分闭合凸多面体认证、开放网格封装以及启发式奇偶性验证三类情况。切勿为了凑合而强行将关节吸附到皮肤表面。
@@ -60,34 +63,30 @@ IK实现代码路径：`<repo_path>/operators/gen_motion/funcs/vibe_motion_utils
 
 将`<repo_path>/test/vibe_motion_examples/rigging_example.json`作为简短的任务请求：其中包含视图生成设置、所需的骨骼链名称及其含义、拟合与蒙皮参数、动作约束及容差要求。所要求的骨骼链名称属于输出模式的约束条件，并非推断出的骨架结构。请勿在此输入目录中存储实际的校准数据、估算的像素坐标、置信度数值、推断出的拓扑结构或生成的3D关节信息。所有这类中间结果、原始模型响应、解析后的设置、权重数据、诊断信息及视频文件应存储在`<repo_path>/test_data/outputs/`目录下。仅将旧有的估算结果作为有明确标识的历史输出保留；切勿将回放数据或测试存根标记为全新的VLM运行结果。VLM的估算结果并不等同于解剖学上的真实情况。
 
-### 运行或检查估算阶段
+### 1.3 运行或检查估算阶段
 
 使用现有的命令行工具，每条命令需写在单行中：
+
 - 无需网络调用即可准备图像：`python -m test.test_vibe_rigging rig-mesh --input "<mesh_path>" --output-dir "<output_dir>" --prepare-only`。此操作应记为投影准备阶段，而非已完成的估算或绑定流程。
 - 运行真正的估算流程及后续动作：`python -m test.test_vibe_rigging rig-mesh --input "<mesh_path>" --output-dir "<output_dir>" --with-motion --ffmpeg "<ffmpeg_path>"`。也可选择性地通过`--config "<repo_path>/test/vibe_motion_examples/rigging_example.json"`指定简短的任务请求。该命令行工具仅会添加`<repo_path>/tests/test_vibe_rigging.py`中已声明的测试端QA/导出设置；生产环境中的功能并不会提供默认的资产参数。
 - 显式回放已完成的估算结果：添加参数`--annotations "<annotations_path>"`，填入实际已完成的注释文件路径即可，无需指定固定的父目录。同时保留其同级的`projection/`相关文件，并选择新的`<output_dir>`。需验证源网格与处理后的网格摘要、归一化参数、任务信息、投影设置、校准数据及图像哈希值。若更改了模型或任务内容，则需重新进行估算。此操作属于回放，并非新的模型调用。请配置 `VIBE_VLM_BASE_URL`（如需的话需包含 `/v1` 的兼容OpenAI协议的HTTPS API地址）、`VIBE_VLM_MODEL`（支持JSON对象聊天输出的视觉模型）以及 `VIBE_VLM_API_KEY`。前两个参数可通过 `--vlm-base-url`/`--vlm-model` 覆盖；若想使用已有的凭证变量，则使用 `--vlm-key-env`。切勿随意选择提供商或模型、将密钥存入JSON文件，也勿打印凭证值。API传输依赖 `models.common.cloud_api`，且需要安装 `requests`；投影功能则需要 Pillow。上传本地投影数据或产生API费用前，请先获取必要授权。正常的API运行流程为一次拓扑请求加上每条链条对应的一次请求。若缺少相关配置，应输出可操作性的错误信息并终止程序，或选择仅准备模式；切勿凭离线测试结果宣称实现了真正的视觉验证。运行失败时请保留部分回复内容，修正后再将结果写入新的输出目录，切勿覆盖已有的输出文件。若下游质量检测未达标，程序将返回非零退出码，同时保留相关产物。
 
-数值计算运行时需要 NumPy 和 SciPy；输入网格文件还需用到 trimesh。
-运行运动回归测试套件，可执行：
-`python -m unittest discover -s "<repo_path>/test" -t "<repo_path>" -p 'test_vibe_motion.py' -v`。
+数值计算运行时需要 NumPy 和 SciPy；输入网格文件还需用到 trimesh。运行运动回归测试套件，可执行：`python -m unittest discover -s "<repo_path>/test" -t "<repo_path>" -p 'test_vibe_motion.py' -v`。
 
-若要导出骨骼测试视频，可使用：
-`python -m test.test_vibe_motion export-videos --ffmpeg "<ffmpeg_path>"`。
-这种明确的预览模式需要 Pillow，不会干扰普通测试的产物生成，生成的MP4文件和数值报告会保存在
-`<repo_path>/test_data/outputs/_GPT6_astra_test/vibe_motion_refine260927` 目录下。
-可通过 `--output-dir` 指定其他的测试输出位置。这些骨骼预览并非带皮肤的角色模型，也无法代表物理模拟的真实性。
+若要导出骨骼测试视频，可使用：`python -m test.test_vibe_motion export-videos --ffmpeg "<ffmpeg_path>"`。这种明确的预览模式需要 Pillow，不会干扰普通测试的产物生成，生成的MP4文件和数值报告会保存在`<repo_path>/test_data/outputs/_GPT6_astra_test/vibe_motion_refine260927` 目录下。可通过 `--output-dir` 指定其他的测试输出位置。这些骨骼预览并非带皮肤的角色模型，也无法代表物理模拟的真实性。
 
 请查看 `vibe_report_path`，若是网格相关任务，还需查看 `skin_report_path` 和 `rig_report_path`。报告中会记录完整的程序运行信息、事件时间、原始目标残差、接触速度、骨长误差、地面穿透情况以及优化器故障信息。质量阈值由输入参数决定。无法到达的目标会被投影到关节限制范围内并予以记录，绝不会通过拉伸骨骼来掩盖问题。这些属于运动学检查，并非平衡性、自碰撞或视觉质量的验证依据；接受结果前需在真实网格上重新播放动画确认。
 
-### 备选方案
+### 1.4 备选方案
 
-- **Mixamo / 本地动作捕捉：** 若有匹配的剪辑可使用该方案。下载 Mixamo FBX Binary格式文件，选择“无皮肤”选项，然后设置 `task_type=retarget`、`motion_source=mixamo`，对于厘米单位的剪辑初始可设 `global_scale=0.01`。
-- **MoMask / Tripo：** 若缺少库动作数据或需要临时替代方案，可选择该方案；交付前请检查生成的姿势、时序、接触情况和循环逻辑是否符合要求。
+- **Mixamo/本地动作捕捉**：若有匹配的剪辑可使用该方案。下载 Mixamo FBX Binary格式文件，选择“无皮肤”选项，然后设置`task_type=retarget`、`motion_source=mixamo`，对于厘米单位的剪辑初始可设`global_scale=0.01`。
+- **MoMask/Tripo**：若缺少库动作数据或需要临时替代方案，可选择该方案；交付前请检查生成的姿势、时序、接触情况和循环逻辑是否符合要求。
 - 请遵守访问限制和许可协议；对于需要登录才能访问的资源，请手动下载。每种备选方案都要记录其来源信息。
 
-## 云端备选方案（Tripo）
+## 二、云端备选方案（Tripo）
 
-设置 `task_type=cloud_rig` / `cloud_humanoid` 可在 TokenHub / Tripo 后端执行骨骼绑定和动画生成操作。
+设置`task_type=cloud_rig` / `cloud_humanoid` 可在TokenHub/Tripo后端执行骨骼绑定和动画生成操作。
+
 相关代码位于：`<repo_path>/operators/gen_motion/funcs/cloud_rig_animate.py`、
 `<repo_path>/models/gen_motion/tripo_rigging_model.py`。仅在Vibe Motion不适用或未能通过QA时，才使用此路由。每次生成的骨骼绑定可能有所不同，动画则采用固定的预设库。请直接在目标网格上检查骨骼绑定和动画片段，而不要想当然地认为API调用成功就代表动画质量合格。
 
@@ -103,7 +102,7 @@ IK实现代码路径：`<repo_path>/operators/gen_motion/funcs/vibe_motion_utils
 
 **切勿**对运动相关的FBX文件使用静态网格导入器（`<repo_path>/engine_adapters/blender/import_generated/import_mesh.py`或`<repo_path>/engine_adapters/ue5/import_generated/import_mesh.py`），因为这些工具会合并网格并丢弃骨骼信息，从而导致动画无法播放。
 
-## 格式说明（为何运动数据特殊）
+## 三、格式说明（为何运动数据特殊）
 
 | 阶段 | 常用格式 | 备注 |
 |---|---|---|
@@ -116,7 +115,9 @@ IK实现代码路径：`<repo_path>/operators/gen_motion/funcs/vibe_motion_utils
 
 如果操作人员无法处理合法的剪辑格式、缩放规则或重定位相关需求，应在代码库中扩展`fetch_motion`、`formats`、`mapping_auto`或`world_delta`模块，并将相关任务保留在流水线中——切勿使用未经审核的自定义Blender脚本，这类脚本不会纳入`<repo_path>/operators/`目录。
 
-## 任务类型| `task_type` | 所需输入 | 生成结果 |
+## 四、任务类型
+
+| `task_type` | 所需输入 | 生成结果 |
 |---|---|---|
 | `vibe` | 配置：骨骼 + 节奏 + 位置程序；可选网格/蒙皮数据 | BVH文件、关节数据、QA报告；包含几何信息的绑定好的模型/OBJ文件/蒙皮报告 |
 | `vibe_retarget` | 相同的配置 + 网格数据 + 蒙皮/导出设置 + 整数帧率 + bpy库 | Vibe生成的动画产物 + 重定位后的FBX文件/动画/映射数据 |
@@ -127,7 +128,7 @@ IK实现代码路径：`<repo_path>/operators/gen_motion/funcs/vibe_motion_utils
 | `cloud_rig` | `mesh_url` | 绑定好骨骼的网格数据 + `rig_report.json`报告 |
 | `cloud_humanoid` | `mesh_url` + 预设参数 | 绑定好骨骼且带有动画的网格数据 + 相关报告 |
 
-CLI演示（单个任务）。首先加载运行时环境，然后传入[运行时环境](#6-运行时环境)中列出的明确模型参数：
+CLI演示（单个任务）。首先加载运行时环境，然后传入明确模型参数：
 
 ```bash
 # 备用方案：将Mixamo下载的动画适配到已有的绑定骨骼上
@@ -154,35 +155,72 @@ python "<repo_path>/pipeline/assets_gen/gen_motion/run.py" --list-mappings
 python "<repo_path>/pipeline/assets_gen/gen_motion/run.py" --list-motion-sources
 ```
 
-## 1. 骨骼绑定
+### 4.1 加载运行环境
+
+骨骼绑定与动画通过云端AI大模型完成；重定向则通过`bpy`在本地运行。需要Blender可执行文件，需用户提前从Blender官网（<https://www.blender.org/download/>）安装Blender，然后在`.env`中填入配置项A3GAME_BLENDER_ROOT，即blender安装路径。
+
+配置完成后可在项目根目录验证：
+
+```bash
+"$env:A3GAME_BLENDER_ROOT/blender.exe" --version
+```
+
+云端任务类型只需在`.env`中配置凭证：
+
+| 任务类型 | 后端 | 所需条件 |
+|---|---|---|
+| `cloud_rig`、`cloud_humanoid` | TokenHub云端模型 | `$TOKENHUB_API_KEY` |
+| `retarget` | 本地`bpy` | 上文配置的`$A3GAME_BLENDER_ROOT` |
+
+```bash
+python "<repo_path>/pipeline/assets_gen/gen_motion/run.py" \
+  --task-type cloud_humanoid \
+  --target-mesh "<mesh_path>" \
+  --prompt "一个人向前走并挥手。" \
+  --in-place
+```
+
+测试步骤：
+
+```bash
+python -m unittest tests.test_gen_motion
+```
+
+合成人类角色测试模型（包含网格、命名符合Mixamo规范的BVH文件以及匹配的绑定rig），无需授权资产即可在本地复现流程。可从仓库根目录找到`<repo_path>/tests/test_rigging_retarget.py`脚本并使用：
+
+```python
+from tests.test_rigging_retarget import build_all
+build_all("<output_dir>", mesh_format=".glb")
+```
+
+## 五、骨骼绑定
 
 骨骼绑定通过Tripo云端模型完成。对于兼容的几何数据，仍优先使用Vibe的`fit_skeleton`和`skin_mesh`进行程序化拟合。
 
-**模型路径：** `<repo_path>/models/gen_motion/tripo_rigging_model.py`（云端API，需要`$TRIPO_API_KEY`）。
-**操作步骤：** `<repo_path>/operators/gen_motion/funcs/rig_character.py`。
+**模型路径**：`<repo_path>/models/gen_motion/tripo_rigging_model.py`（云端API，需要`$TRIPO_API_KEY`）。
+**操作步骤**：`<repo_path>/operators/gen_motion/funcs/rig_character.py`。
 
 支持的网格格式：`.glb`、`.gltf`、`.obj`、`.ply`、`.stl`（重定位时支持`.fbx`格式）。该操作器同时接受`target_mesh_path`和旧版的`target_glb_path`参数。
 
-**不可破坏的约定：** `skin`数据是通过网格中顶点的索引来定位顶点的。因此绑定的产物会包含对应的OBJ文件。重定位过程是基于相同的顶点顺序来分配权重——任何在绑定骨骼和重定位阶段导致顶点顺序变化的转换，都会直接破坏蒙皮效果。
+**不可破坏的约定**：`skin`数据是通过网格中顶点的索引来定位顶点的。因此绑定的产物会包含对应的OBJ文件。重定位过程是基于相同的顶点顺序来分配权重——任何在绑定骨骼和重定位阶段导致顶点顺序变化的转换，都会直接破坏蒙皮效果。
 
 无需凭证即可进行的简易测试：从`<repo_path>/tests/harness/stubs.py`中引入对应的桩即可。
 
-## 2. 动画生成
+## 六、动画生成
 
 动画生成同样通过Tripo云端模型完成。
 
-**模型路径：** `<repo_path>/models/gen_motion/tripo_rigging_model.py`。
-**操作步骤：** `<repo_path>/operators/gen_motion/funcs/generate_motion.py`。
+**模型路径**：`<repo_path>/models/gen_motion/tripo_rigging_model.py`。
+**操作步骤**：`<repo_path>/operators/gen_motion/funcs/generate_motion.py`。
 
-在经过参数调整和QA检测后，如果[Vibe Motion](#prefer-vibe-motion-functions)仍无法满足任务需求，可采用该云端方案。若现有的动作捕捉片段能满足性能要求，则优先选用该片段。
+在经过参数调整和QA检测后，如果[Vibe Motion](#一优先使用vibe-motion功能)仍无法满足任务需求，可采用该云端方案。若现有的动作捕捉片段能满足性能要求，则优先选用该片段。
+
 - 请确认服务商返回的原生帧率，并将该帧率直接传递给重定位模块；未做重采样的情况下改变帧率会导致播放速度变化。
 - 优先使用句子式提示词（如"一个人向前走并挥手"），而非标签列表。
 - 当游戏本身负责控制角色移动，而该动画剪辑仅需呈现行走外观时，需设置`in_place=True`。
 - 不要指望能针对动画的时序、风格、脚部接触效果或循环逻辑进行提示词级别的控制。如果某个方案需要特定的动画表现，应直接下载对应结果，而非重新生成随机种子。
 
-<a id="when-generation-quality-is-not-enough"></a>
-
-### 动作来源（Vibe Motion之后的备用选项）
+### 6.1 动作来源（Vibe Motion之后的备用选项）
 
 与其纠结于提示词设置，不如直接使用`<repo_path>/operators/gen_motion/funcs/fetch_motion.py`来获取动作。
 
@@ -194,7 +232,7 @@ python "<repo_path>/pipeline/assets_gen/gen_motion/run.py" --list-motion-sources
 | `bandai_namco` | 通过直接URL下载 | — | 遵循CC BY-NC-ND协议——仅可用于研究 |
 | `local` | 从本地磁盘路径读取 | 若为BVH格式可自动识别 | 应急备用方案 |
 
-需要登录才能访问的动作源**禁止被爬虫抓取**（会触发`PermissionError`错误，并附带下载说明）。这是有意为之：爬虫抓取Mixamo的动作违反其许可协议。
+需要登录才能访问的动作源**禁止被爬虫抓取**（会触发`PermissionError`错误，并附带下载说明）。这是有意为之：比如爬虫抓取Mixamo的动作违反其许可协议。
 
 务必记录动作的来源信息（`*_motion_source.json`）。无论是来自MoMask还是Mixamo的重定位后FBX文件，外观上并无差异；是否可正式发布需在后续阶段判断。
 
@@ -214,9 +252,9 @@ python "<repo_path>/pipeline/assets_gen/gen_motion/run.py" --list-motion-sources
 }
 ```
 
-## 3. 动作重定位与骨骼映射
+## 七、动作重定位与骨骼映射
 
-**主机驱动脚本：** `<repo_path>/operators/gen_motion/funcs/retarget_motion.py`。
+**主机驱动脚本：** `<repo_path>/operators/gen_motion/funcs/retarget_motion.py`
 **Blender插件包：** `<repo_path>/operators/gen_motion/funcs/retarget_utils/`。
 
 | 模块 | 运行环境 | 作用 |
@@ -228,17 +266,17 @@ python "<repo_path>/pipeline/assets_gen/gen_motion/run.py" --list-motion-sources
 | `rig_io` | bpy环境 | 将Puppeteer格式的`.txt`文件转换为骨骼数据 |
 | `inspect_fbx` | bpy环境 | 验证重新导入后的FBX文件是否能正常播放动画 |
 
-### 为何映射关系通常是自动生成的，而非复用现有配置
+### 7.1 为何映射关系通常是自动生成的，而非复用现有配置
 
 Puppeteer中关节的名称按**预测顺序**命名为`joint0…jointN`。这些名称并不具备解剖学意义：同一个`joint23`在某一角色中可能代表髋部，在另一角色中却可能是手指。因此，一份骨骼映射仅对其生成时所针对的特定骨骼模型有效——本代码库并未提供Mixamo/MoMask到Puppeteer的预设JSON配置文件。真正可复用的是**源骨骼**部分（Mixamo始终使用`mixamorig:Hips`）。它存放在`<repo_path>/operators/gen_motion/funcs/retarget_utils/mapping_presets.py`文件中的`SOURCE_SKELETONS`变量里。你可以省略映射设置，让`mapping_auto`自动生成映射关系；也可以传入显式的`mapping_path`参数或`--mapping`选项来按需定制映射。
 
 当任务名称中未指定映射时，默认的处理流程是：自动生成映射 → 在FBX文件旁写入`mapping.json` → 运行两次world-delta工具（分别处理完整数据和新动画数据）。
 
-### 当操作符无法处理某种重定向情况时
+### 7.2 当操作符无法处理某种重定向情况时
 
 动作重定向存在很多合理的特殊情况，比如奇特的BVH骨骼层级、引擎自定义的轴向规则、IK脚部节点、非人形道具、新型动作捕捉库等。如果某个真实资产在通过`mapping_auto`、`world_delta`或导入流程时出错，且问题出在我们的代码层面而非输入数据有误，那么相关开发人员应在`<repo_path>/operators/gen_motion/funcs/`目录下**修补重定向功能模块**（对应的测试用例需写在`<repo_path>/tests/test_gen_motion.py`和`<repo_path>/tests/test_rigging_retarget.py`中），以确保下次运行时能正常通过操作符处理。此外，还需保持`<repo_path>/operators/gen_motion/funcs/retarget_utils/formats.py`中的格式常量与数据获取、骨骼绑定及命令行验证逻辑保持一致。
 
-### 映射JSON的结构
+### 7.3 映射JSON的结构
 
 ```json
 {
@@ -256,9 +294,9 @@ Puppeteer中关节的名称按**预测顺序**命名为`joint0…jointN`。这�
 
 加载时会将旧的`mixamo`、`target`键值对标准化为上述结构。
 
-## 4. 导入到各引擎中
+## 八、导入到各引擎中
 
-### Blender（已在本仓库的bpy 4.2版本中验证）
+### Blender
 
 ```bash
 # 通过主机启动器调用
@@ -294,7 +332,8 @@ python "<repo_path>/scripts/import_generated_asset.py" \
   --engine ue5 --kind motion \
   --uproject "<uproject_path>" \
   --ue-motion-dest /Game/Generated/Motion
-```# 将仅含动画的FBX文件绑定到现有骨骼上
+
+# 将仅含动画的FBX文件绑定到现有骨骼上
 python "<repo_path>/scripts/import_generated_asset.py" \
   --src "<animation_fbx_path>" \
   --engine ue5 --kind motion --ue-anim-only \
@@ -302,8 +341,7 @@ python "<repo_path>/scripts/import_generated_asset.py" \
   --uproject "<uproject_path>"
 ```
 
-引擎脚本：`<repo_path>/engine_adapters/ue5/import_generated/import_motion.py`。
-该脚本会强制设置`import_as_skeletal=True`和`import_animations=True`——此处不可使用静态路径`<repo_path>/engine_adapters/ue5/import_generated/import_mesh.py`。
+引擎脚本：`<repo_path>/engine_adapters/ue5/import_generated/import_motion.py`。该脚本会强制设置`import_as_skeletal=True`和`import_animations=True`——此处不可使用静态路径`<repo_path>/engine_adapters/ue5/import_generated/import_mesh.py`。
 
 导入后，请在内容浏览器中确认以下内容：
 1. 一个`SkeletalMesh`（完整的FBX文件）或者仅一个`AnimSequence`（仅含动画的文件）。
@@ -313,6 +351,7 @@ python "<repo_path>/scripts/import_generated_asset.py" \
 更高层的UE客户端调用方式为：`<repo_path>/engine_adapters/ue5/animation/client.py`中的`ue.animation.import_motion(...)`。
 
 ### Godot 4
+
 使用生成的任务描述符调用公共客户端；它会将FBX或glTF/GLB文件暂存至`res://`目录下，且需要成功运行一次Godot的`--import`命令：
 
 ```python
@@ -336,51 +375,13 @@ result = godot.animation.import_motion(
 
 `result.ok`表明Godot 4已加载导入的资源，找到了动画、Skeleton3D以及以骨骼为目标的轨迹，并在注册前匹配了所请求的Skeleton3D路径。glTF/GLB格式的动画仍会被识别为`PackedScene`；适配器不会将其误标为`AnimationLibrary`。请先运行Blender结构检查，随后在Godot中查看/播放导入的动画：这些原生检查无法证明姿势是否美观或重定位质量是否达标。
 
-## 5. 质量检查清单（代码无法单独判定的内容）
-在`inspect_fbx`运行完毕且Blender导入报告显示`ok=True`后，请执行以下检查：1. **姿势而非仅根节点。** 双腿和双臂需有摆动动作。如果角色仅能平移却始终保持T型姿势，说明骨骼映射时丢失了肢体链信息。
+## 九、质量检查清单（代码无法单独判定的内容）
+
+在`inspect_fbx`运行完毕且Blender导入报告显示`ok=True`后，请执行以下检查：
+
+1. **姿势而非仅根节点。** 双腿和双臂需有摆动动作。如果角色仅能平移却始终保持T型姿势，说明骨骼映射时丢失了肢体链信息。
 2. **左右侧区分。** 左臂不应控制右臂。自动映射功能会依据世界坐标系的X轴正负号来判断；若源动画是镜像的，需传入`--left-sign`参数或重新生成映射关系。
 3. **脚部处理。** 针对Vibe工具，需检查接触目标与IK残差，随后调整对应参数或切换处理方式。可使用MoMask IK（`use_ik=True`）或动作捕捉数据作为备选方案。
 4. **缩放比例。** 导入后人类角色的身高约为1.6–2.0米。设置`global_scale`参数前需先确认源文件的单位；Vibe BVH使用的是米为单位，而非Mixamo所用的厘米单位。
 5. **朝向问题。** Vibe BVH会保留其模板的坐标轴设定（默认Y轴向上、+Z轴向前）。需分别验证导出的FBX文件与引擎中的角色朝向；如有偏差需记录修正方案（详见`<repo_path>/agent_skills/asset_qa/3d_object/orientation_review.md`）。
 6. **授权许可。** 发布模型前需确认模型、数据集及源动作的授权条款。Mixamo、MoCap Online、万代各自有不同的授权规则；务必将`*_motion_source.json`文件与成品一同留存。
-
-## 6. 运行时环境
-
-骨骼绑定与动画通过TokenHub云端模型完成；重定向则通过`bpy`在本地运行。动作任务没有安装脚本：本地权重后端（骨骼绑定用的Puppeteer、文生动作用的MoMask）已被移除，本仓库也不下载权重。
-
-配置`bpy`以实现FBX重定向：
-
-```bash
-bash <repo_path>/scripts/engine_install/blender/install.sh
-source "$HOME/.aaagf/blender_env.sh"
-```
-
-云端任务类型只需在`.env`中配置凭证：
-
-| 任务类型 | 后端 | 所需条件 |
-|---|---|---|
-| `cloud_rig`、`cloud_humanoid` | TokenHub云端模型 | `$TOKENHUB_API_KEY` |
-| `retarget` | 本地`bpy` | 上文安装的Blender |
-
-```bash
-python "<repo_path>/pipeline/assets_gen/gen_motion/run.py" \
-  --task-type cloud_humanoid \
-  --target-mesh "<mesh_path>" \
-  --prompt "一个人向前走并挥手。" \
-  --in-place
-```
-
-`--task-type humanoid` 与 `rig` 属于已移除的本地权重路线，现在会直接报未知任务类型错误，而不会静默降级。
-
-测试步骤：
-
-```bash
-python -m unittest tests.test_gen_motion
-```
-
-合成人类角色测试模型（包含网格、命名符合Mixamo规范的BVH文件以及匹配的绑定rig），无需授权资产即可在本地复现流程。可从仓库根目录找到`<repo_path>/tests/test_rigging_retarget.py`脚本并使用：
-
-```python
-from tests.test_rigging_retarget import build_all
-build_all("<output_dir>", mesh_format=".glb")
-```

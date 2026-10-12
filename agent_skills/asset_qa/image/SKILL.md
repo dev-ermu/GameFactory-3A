@@ -21,12 +21,7 @@
 | 任务执行器 | `<REPO_PATH>/operators/gen_tpose_image/operator.py` | 读取任务指令，生成T型姿势图像，保存相关产物与元数据 |
 | 运行器 | `<REPO_PATH>/pipeline/assets_gen/gen_tpose_image/run.py` | 加载模型，接收命令行/JSONL格式的任务指令，输出结果摘要 |
 
-
 ## 安装图像生成环境
-
-
-```bash
-```
 
 仅需安装本仓库声明的依赖：
 
@@ -128,7 +123,7 @@ test_data/outputs/<game_id>/<run_id>/assets/tpose/<task_id>/
 └── meta.json       # 包含源数据、所用模型、随机种子、处理步骤、图像尺寸及任务元数据
 ```
 
-请使用 `<REPO_PATH>/pipeline/common/paths.py` 并保留这种任务类型目录结构。该“技能”在智能体路由中命名为 `image`；它不会更改现有的流水线 API 或产出文件路径。
+请使用 `<REPO_PATH>/pipeline/common/paths.py` 并保留这种任务类型目录结构。该“技能”在智能体路由中命名为`image`；它不会更改现有的流水线 API 或产出文件路径。
 
 ## 验证与质量保证
 
@@ -137,13 +132,13 @@ test_data/outputs/<game_id>/<run_id>/assets/tpose/<task_id>/
 ```bash
 python tests/harness/smoke.py --kind tpose
 python tests/harness/smoke.py --kind tpose --backend seedream
-```
-
-
-```bash
+# 单元测试
 python -m unittest test.test_gen_tpose_image -v
 ```
 
+仅当明确请求时，才对同一规范任务JSONL和同一RMBG阶段运行付费Seedream集成：
+
+```bash
 export ARK_API_KEY="你的密钥"
 export AAAGF_RUN_SEEDREAM_LIVE=1
 export SEEDREAM_MODEL="doubao-seedream-5-0-260128"
