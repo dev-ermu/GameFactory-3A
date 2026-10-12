@@ -1,7 +1,6 @@
 """Stable build operations for UnityClient v1."""
 
 import re
-import sys
 from pathlib import Path
 from typing import Any, Sequence
 
@@ -46,17 +45,12 @@ def _default_output(project_path: Path, target: str) -> Path:
     names = {
         "StandaloneWindows": "Game.exe",
         "StandaloneWindows64": "Game.exe",
-        "StandaloneOSX": "Game.app",
-        "StandaloneLinux64": "Game.x86_64",
     }
     return root / names[target] if target in names else root
 
 
 def _host_target() -> str:
-    if sys.platform == "darwin":
-        return "StandaloneOSX"
-    if sys.platform.startswith("linux"):
-        return "StandaloneLinux64"
+    """本项目只构建 Windows 版本，因此目标固定。"""
     return "StandaloneWindows64"
 
 

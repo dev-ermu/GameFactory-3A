@@ -12,7 +12,6 @@ This transport uses the ``-batchmode -quit -executeMethod`` CLI pattern:
 import glob
 import json
 import os
-import platform
 import subprocess
 import tempfile
 import time
@@ -44,17 +43,10 @@ def find_unity_binary(
     if env_value:
         return Path(env_value)
 
-    patterns = {
-        "Windows": [
-            r"C:\Program Files\Unity\Hub\Editor\*\Editor\Unity.exe",
-        ],
-        "Darwin": [
-            "/Applications/Unity/Hub/Editor/*/Unity.app/Contents/MacOS/Unity",
-        ],
-        "Linux": [
-            str(Path.home() / "Unity" / "Hub" / "Editor" / "*" / "Editor" / "Unity"),
-        ],
-    }.get(platform.system(), [])
+    # 本项目只支持 Windows，因此只查找 Unity Hub 的默认安装位置。
+    patterns = [
+        r"C:\Program Files\Unity\Hub\Editor\*\Editor\Unity.exe",
+    ]
     found = sorted(
         p for pattern in patterns for p in glob.glob(pattern)
     )

@@ -225,13 +225,6 @@ def _load_ownership_key(path: Path, *, create: bool) -> bytes:
             raise ValueError(
                 f"Godot export ownership key must be a regular file: {path}"
             )
-        if os.name == "posix" and (
-            metadata.st_uid != os.geteuid() or stat.S_IMODE(metadata.st_mode) & 0o077
-        ):
-            raise ValueError(
-                "Godot export ownership key must be owned by the current user "
-                f"and accessible only to that user: {path}"
-            )
         key = os.read(descriptor, EXPORT_OWNERSHIP_KEY_BYTES + 1)
     finally:
         os.close(descriptor)

@@ -11,32 +11,18 @@ from ..contracts import UEDiagnostic, UEOperationResult
 
 
 def _build_script(ue_root: Path) -> tuple[list[str], str]:
-    if os.name == "nt":
-        return (
-            [
-                str(
-                    ue_root
-                    / "Engine"
-                    / "Build"
-                    / "BatchFiles"
-                    / "Build.bat"
-                )
-            ],
-            "Win64",
-        )
+    # 本项目只支持 Windows，因此只有 Build.bat 一条路径。
     return (
         [
-            "bash",
             str(
                 ue_root
                 / "Engine"
                 / "Build"
                 / "BatchFiles"
-                / "Linux"
-                / "Build.sh"
-            ),
+                / "Build.bat"
+            )
         ],
-        "Linux",
+        "Win64",
     )
 
 

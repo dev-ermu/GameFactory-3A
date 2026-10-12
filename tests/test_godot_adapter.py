@@ -860,52 +860,44 @@ class GodotEngineLogicTests(EngineTestBase):
                     self.assertEqual("nan", normalized["nested"]["not_finite"])
 
 
-    def test_runtime_process_launch_group_settings_are_cross_platform(self) -> None:
+    def test_runtime_process_launch_group_settings_are_windows_only(self) -> None:
+        """本项目只支持 Windows，进程组只有 CREATE_NEW_PROCESS_GROUP 一种。"""
         from engine_adapters.godot._internal import transport as transport_module
 
-        with mock.patch.object(transport_module.os, "name", "posix"):
-            self.assertEqual(
-                {"start_new_session": True},
-                transport_module.managed_process_kwargs(),
-            )
-        with mock.patch.object(transport_module.os, "name", "nt"):
-            windows = transport_module.managed_process_kwargs()
+        windows = transport_module.managed_process_kwargs()
         self.assertEqual(
-            int(
-                getattr(
-                    transport_module.subprocess,
-                    "CREATE_NEW_PROCESS_GROUP",
-                    0x00000200,
+            {
+                "creationflags": int(
+                    getattr(
+                        transport_module.subprocess,
+                        "CREATE_NEW_PROCESS_GROUP",
+                        0x00000200,
+                    )
                 )
-            ),
-            windows["creationflags"],
+            },
+            windows,
         )
 
 
     def test_install_directory_contains_only_install_entry_points(self) -> None:
         wrapper_root = Path("scripts/engine_install/godot")
-        # 本仓库只保留单份文档（文件名不再带语言后缀）。
+        # Godot 由使用者自行安装，目录里不再有下载器，只剩说明文档。
         self.assertEqual(
-            {"README.md", "install.cmd", "install.py", "install.sh"},
+            {"README.md"},
             {item.name for item in wrapper_root.iterdir() if item.is_file()},
         )
         for removed in (
+            "install.py",
+            "install.cmd",
+            "install.sh",
             "create_project.cmd",
-            "create_project.sh",
             "import_asset.cmd",
-            "import_asset.sh",
             "run.cmd",
-            "run.sh",
         ):
             self.assertFalse((wrapper_root / removed).exists())
         readme = (wrapper_root / "README.md").read_text(encoding="utf-8")
         self.assertIn("engine_adapters.godot", readme)
-        self.assertIn("create-project", readme)
-        self.assertIn("import-asset", readme)
-        self.assertIn("launch-game", readme)
-        self.assertNotIn("godot/create_project.sh", readme)
-        self.assertNotIn("godot/import_asset.sh", readme)
-        self.assertNotIn("godot/run.sh", readme)
+        self.assertIn("A3GAME_GODOT_EXECUTABLE", readme)
 
 
     def test_compatibility_godot_executable_priority_matches_client(self) -> None:

@@ -143,35 +143,18 @@ def find_unreal_editor(explicit: str | None = None) -> Path | None:
     if explicit or os.environ.get("AAAGF_UE_EDITOR"):
         return _prefer_cmd_binary(Path(explicit or os.environ["AAAGF_UE_EDITOR"]))
 
-    if platform.system() == "Windows":
-        # Engines are installed anywhere: the Epic default, or a bare UE_5.x on
-        # whatever drive had room.
-        patterns = [
-            r"C:\Program Files\Epic Games\UE_*\Engine\Binaries\Win64\UnrealEditor-Cmd.exe"
-        ]
-        patterns += [
-            f"{d}:/UE_*/Engine/Binaries/Win64/UnrealEditor-Cmd.exe" for d in "CDEFG"
-        ]
-        patterns += [
-            f"{d}:/Epic Games/UE_*/Engine/Binaries/Win64/UnrealEditor-Cmd.exe"
-            for d in "CDEFG"
-        ]
-    elif platform.system() == "Darwin":
-        patterns = [
-            "/Users/Shared/Epic Games/UE_*/Engine/Binaries/Mac/UnrealEditor-Cmd"
-        ]
-    else:
-        patterns = [
-            str(
-                Path.home()
-                / "UnrealEngine"
-                / "*"
-                / "Engine"
-                / "Binaries"
-                / "Linux"
-                / "UnrealEditor-Cmd"
-            )
-        ]
+    # 本项目只支持 Windows：引擎可能装在 Epic 默认位置，也可能是任意盘符上
+    # 单独放的 UE_5.x。
+    patterns = [
+        r"C:\Program Files\Epic Games\UE_*\Engine\Binaries\Win64\UnrealEditor-Cmd.exe"
+    ]
+    patterns += [
+        f"{d}:/UE_*/Engine/Binaries/Win64/UnrealEditor-Cmd.exe" for d in "CDEFG"
+    ]
+    patterns += [
+        f"{d}:/Epic Games/UE_*/Engine/Binaries/Win64/UnrealEditor-Cmd.exe"
+        for d in "CDEFG"
+    ]
 
     found = sorted(p for pattern in patterns for p in glob.glob(pattern))
     return Path(found[-1]) if found else None
@@ -192,13 +175,7 @@ def find_unity(explicit: str | None = None) -> Path | None:
     if os.environ.get("AAAGF_UNITY"):
         return Path(os.environ["AAAGF_UNITY"])
 
-    patterns = {
-        "Windows": [r"C:\Program Files\Unity\Hub\Editor\*\Editor\Unity.exe"],
-        "Darwin": ["/Applications/Unity/Hub/Editor/*/Unity.app/Contents/MacOS/Unity"],
-        "Linux": [
-            str(Path.home() / "Unity" / "Hub" / "Editor" / "*" / "Editor" / "Unity")
-        ],
-    }.get(platform.system(), [])
+    patterns = [r"C:\Program Files\Unity\Hub\Editor\*\Editor\Unity.exe"]
     found = sorted(p for pattern in patterns for p in glob.glob(pattern))
     return Path(found[-1]) if found else None
 
@@ -219,15 +196,7 @@ def find_blender(explicit: str | None = None) -> Path | None:
     if on_path:
         return Path(on_path)
 
-    if platform.system() == "Windows":
-        patterns = [r"C:\Program Files\Blender Foundation\Blender *\blender.exe"]
-    elif platform.system() == "Darwin":
-        patterns = ["/Applications/Blender.app/Contents/MacOS/Blender"]
-    else:
-        patterns = [
-            "/usr/share/blender/*/blender",
-            str(Path.home() / "blender-*" / "blender"),
-        ]
+    patterns = [r"C:\Program Files\Blender Foundation\Blender *\blender.exe"]
     found = sorted(p for pattern in patterns for p in glob.glob(pattern))
     if found:
         return Path(found[-1])
@@ -250,11 +219,7 @@ def find_godot(explicit: str | None = None) -> Path | None:
         discovered = shutil.which(name)
         if discovered:
             return Path(discovered).resolve()
-    patterns = {
-        "Windows": [r"C:\Program Files\Godot\Godot*.exe"],
-        "Darwin": ["/Applications/Godot.app/Contents/MacOS/Godot"],
-        "Linux": ["/usr/local/bin/godot", "/usr/bin/godot4"],
-    }.get(platform.system(), [])
+    patterns = [r"C:\Program Files\Godot\Godot*.exe"]
     found = sorted(p for pattern in patterns for p in glob.glob(pattern))
     return Path(found[-1]) if found else None
 

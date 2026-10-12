@@ -1,20 +1,19 @@
 """Filesystem primitives for adapter-managed persistent state."""
 
 import os
-import platform
 import stat
 import tempfile
 from pathlib import Path
 
 
 def is_system_directory_alias(path: Path) -> bool:
-    """Return whether path is one of macOS's fixed aliases into /private."""
+    """Return whether `path` is one of macOS's fixed aliases into /private.
 
-    return (
-        platform.system() == "Darwin"
-        and path in {Path("/var"), Path("/tmp"), Path("/etc")}
-        and path.resolve(strict=False) == Path("/private") / path.name
-    )
+    本项目只支持 Windows，该情形不存在，因此恒为 ``False``。函数保留是因为
+    路径校验链路上有五处调用，删除它比让它恒假更容易出错。
+    """
+
+    return False
 
 
 def unresolved_absolute_path(path: str | Path) -> Path:

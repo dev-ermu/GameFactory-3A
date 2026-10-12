@@ -15,29 +15,13 @@ from ..config import GodotClientConfig
 
 
 def managed_process_kwargs() -> dict[str, Any]:
-    """Create an independently stoppable process group on each platform."""
+    """Create an independently stoppable process group."""
 
-    if os.name == "nt":
-        return {
-            "creationflags": int(
-                getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0x00000200)
-            )
-        }
-    return {"start_new_session": True}
-
-
-def _signal_posix_process_group(
-    process: subprocess.Popen[Any],
-    signal_number: int,
-) -> None:
-    try:
-        os.killpg(process.pid, signal_number)
-    except ProcessLookupError:
-        if process.poll() is None:
-            process.send_signal(signal_number)
-    except OSError:
-        if process.poll() is None:
-            process.send_signal(signal_number)
+    return {
+        "creationflags": int(
+            getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0x00000200)
+        )
+    }
 
 
 def _terminate_windows_process_tree(
@@ -79,19 +63,7 @@ def terminate_process_tree(
 ) -> int:
     """Terminate a managed process and all descendants in its launch group."""
 
-    if os.name == "nt":
-        return _terminate_windows_process_tree(process, timeout, kill_timeout)
-
-    _signal_posix_process_group(process, signal.SIGTERM)
-    try:
-        process.wait(timeout=max(0.0, timeout))
-    except subprocess.TimeoutExpired:
-        _signal_posix_process_group(process, signal.SIGKILL)
-        process.wait(timeout=max(0.0, kill_timeout))
-    else:
-        # The group leader can exit before a descendant that ignores SIGTERM.
-        _signal_posix_process_group(process, signal.SIGKILL)
-    return int(process.returncode)
+    return _terminate_windows_process_tree(process, timeout, kill_timeout)
 
 
 def find_godot_binary(configured: str | Path | None = None) -> Path | None:
@@ -114,23 +86,17 @@ def find_godot_binary(configured: str | Path | None = None) -> Path | None:
         discovered = shutil.which(name)
         if discovered:
             return Path(discovered)
-    candidates: list[Path] = []
-    if platform.system() == "Windows":
-        candidates.extend(
-            [
-                Path(os.environ.get("ProgramFiles", "C:/Program Files"))
-                / "Godot"
-                / "Godot.exe",
-                Path(os.environ.get("LOCALAPPDATA", ""))
-                / "Programs"
-                / "Godot"
-                / "Godot.exe",
-            ]
-        )
-    elif platform.system() == "Darwin":
-        candidates.append(Path("/Applications/Godot.app/Contents/MacOS/Godot"))
-    else:
-        candidates.extend([Path("/usr/local/bin/godot"), Path("/usr/bin/godot4")])
+    # 本项目只支持 Windows：Godot 由使用者自行安装，这里只做常见位置的兜底
+    # 查找；非默认安装位置请通过 .env 的 A3GAME_GODOT_EXECUTABLE 告知。
+    candidates = [
+        Path(os.environ.get("ProgramFiles", "C:/Program Files"))
+        / "Godot"
+        / "Godot.exe",
+        Path(os.environ.get("LOCALAPPDATA", ""))
+        / "Programs"
+        / "Godot"
+        / "Godot.exe",
+    ]
     return next((item for item in candidates if item.is_file()), None)
 
 
