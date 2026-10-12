@@ -1050,7 +1050,6 @@ def blender_command(
         command = [str(binary), str(importer)]
     return command, {
         "AAAGF_IMPORT_JOB": str(job_path),
-        "AAAGF_BLENDER_EXIT_ON_DONE": "1",
     }
 
 

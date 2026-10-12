@@ -394,11 +394,17 @@ def write_report(path: str | Path, report: dict) -> str:
 
 def exit_code(ok: bool) -> None:
     """
-    Make the shell see the result.
+    Make the shell see the result of a headless run.
 
     `blender --background --python x.py` exits 0 whatever the script did, so a
-    caller checking the return code sees success after a total failure. Gated on
-    an environment variable so an interactive run does not kill the application.
+    caller checking the return code sees success after a total failure.
+
+    `bpy.app.background` is Blender's own headless flag — True for
+    `--background`, False when someone is sitting in the UI. Raising
+    `SystemExit` in that second case would quit the application out from
+    under them, so the return value is carried by the report file instead.
     """
-    if os.environ.get("AAAGF_BLENDER_EXIT_ON_DONE"):
+    import bpy  # noqa: PLC0415 - only available inside Blender
+
+    if bpy.app.background:
         raise SystemExit(0 if ok else 1)

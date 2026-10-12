@@ -708,7 +708,13 @@ def main(argv: Optional[list] = None) -> int:
 
 if __name__ == "__main__":
     code = main()
-    # `blender --background --python x.py` exits 0 whatever the script returned;
-    # the launcher sets this so a failed import is a failed process.
-    if os.environ.get("AAAGF_BLENDER_EXIT_ON_DONE"):
+    # `blender --background --python x.py` exits 0 whatever the script returned,
+    # so a launcher checking only the return code sees success after a total
+    # failure. `bpy.app.background` is Blender's own headless flag: True for
+    # --background, False when a person is sitting in the UI. Only the headless
+    # run may end the process — raising SystemExit interactively would quit the
+    # application out from under the user.
+    import bpy  # noqa: PLC0415 - only available inside Blender
+
+    if bpy.app.background:
         raise SystemExit(code)

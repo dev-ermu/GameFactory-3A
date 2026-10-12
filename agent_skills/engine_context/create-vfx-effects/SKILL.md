@@ -7,14 +7,16 @@ description: 在Unreal Engine 5或Unity中创建并控制可复用的游戏视�
 
 从经过审核的Niagara系统、粒子预制体或VFX Graph资源入手。适配器提供了通用的特效生成与清理接口；对于没有合适资源的项目，Unity的程序化特效可作为备选方案。
 
-## 选择引擎
+## 一、选择引擎
+
 - 针对UE5，请阅读`<REPO_PATH>/engine_adapters/ue5/vfx/vfx_functions.py`，并在Unreal Editor中调用其Python API。
 - 针对Unity，请阅读`<REPO_PATH>/engine_adapters/unity3d/vfx/Runtime/A3Game_VFX.cs`。在引用该类之前，需将其复制到目标项目的`Assets/`目录下。
 - 引擎相关的代码切勿写入宿主Python模块以及模型/运算符模块中。
 
 对于机械类任务，`UEClient`仍是唯一的宿主端Unreal API。可将视觉特效模块作为生成引擎代码的参考，或用于编辑器端的审核步骤；切勿从宿主Agent导入这些模块，也不要绕过`UEClient`的传输边界。
 
-## 优先复用现有模板
+## 二、优先复用现有模板
+
 1. 在项目内搜索轮廓和时长符合要求的特效。在Unity中，可查看`Assets/`目录以及`%APPDATA%/Unity/Asset Store-5.x/`路径下的内容。
 2. 对实例的参数、变换属性、材质实例或颜色进行调整，切勿修改源模板。
 3. 如果文档中指定的默认资源未安装，可传入项目专用的资源路径或预制体。
@@ -22,7 +24,8 @@ description: 在Unreal Engine 5或Unity中创建并控制可复用的游戏视�
 
 切勿用发光球体或无纹理的白色粒子来替代烟雾或火焰特效。
 
-## UE5相关函数
+## 三、UE5相关函数
+
 - 针对已命名的特效，调用`spawn_smoke`、`spawn_fire`、`spawn_explosion`或`spawn_dust`函数。
 - 针对项目专用的模板，调用`spawn_niagara(system_path, ...)`函数。
 - 当需要动态选择特效类别时，调用`spawn_effect(kind, ...)`函数。
@@ -40,7 +43,9 @@ description: 在Unreal Engine 5或Unity中创建并控制可复用的游戏视�
 | 爆炸 | `/Game/NiagaraExamples/FX_Explosions/NS_Explosion_Small` |
 | 尘土 | `/Game/NiagaraExamples/FX_Explosions/NS_Dirt_Explosion_Small` |
 
-风格化特效的默认设置及图层规范：| 风格 | Niagara系统 | 所需图层 | 材质与调色板 |
+风格化特效的默认设置及图层规范：
+
+| 风格 | Niagara系统 | 所需图层 | 材质与调色板 |
 |---|---|---|---|
 | 墨迹 | `/Game/VFXGenEngine/SwapFX/NS_sp_ink` | 量化实体、流体扭曲效果层、液滴层 | 四阶数值变化；缓慢的两相流动效果；接近黑色与纸张质感灰色 |
 | 冰霜 | `/Game/VFXGenEngine/SwapFX/NS_sp_ice` | 低温核心层、水晶碎片层、镜头反光层 | 世界空间噪声反光效果；低扭曲度；青白色与深蓝色 |
@@ -65,7 +70,8 @@ stop_effect(fire, destroy=True)
 
 仅能设置所选Niagara系统暴露的参数。Unreal引擎允许向未使用的参数写入数据，因此在批量修改前，建议先预览单个实例的效果。
 
-## Unity相关功能
+## 四、Unity相关功能
+
 - 对于已有的粒子预制体或编译后的VFX Graph预制体，调用`SpawnPrefab`即可生成。
 - 若没有对应的资产，可调用`SpawnSmoke`、`SpawnFire`、`SpawnExplosion`或`SpawnDust`来生成默认的ParticleSystem效果。
 - 针对烟雾翻页特效，需设置`SmokeOptions.particleMaterial`和`textureSheetTiles`。仅在修正转换后的URP材质时才需使用`forceAlphaBlend`；切勿更改插件自带的材质。
@@ -88,7 +94,9 @@ GameObject fire = firePrefab != null
 A3GameVFX.Stop(fire);
 ```
 
-## 结果验证- 至少预览1秒，确保世界时钟正常运转。
+## 五、结果验证
+
+- 至少预览1秒，确保世界时钟正常运转。
 - 验证在游戏摄像机的拍摄距离下，特效呈现的效果符合所要求的类别。
 - 验证循环类特效会停止播放，一次性特效会自行清理。
 - 验证透明烟雾特效使用了Alpha混合渲染，火焰核心则根据情况采用叠加或自发光渲染方式。
@@ -97,9 +105,10 @@ A3GameVFX.Stop(fire);
 - 在UE 5.7中，若集成测试需要生成编辑器Actor，请勿使用`-nullrhi`参数，应选用常规RHI。Null-RHI编辑器脚本路径可能会在Python报告异常前就崩溃。
 - 在检查颜色、密度、时序、游戏内比例及附着效果前，先以灰度模式查看风格化特效。静态图片无法验证特效的运动节奏。
 
-## 需通过视觉审核
+## 六、需通过视觉审核
 
 在将烟雾或火焰预设设为基准之前：
+
 1. 渲染一段包含启动阶段和稳定运行状态的固定摄像机视频。
 2. 在视频旁记录Niagara/预制体路径、序列、渲染配置、帧率、分辨率和时长信息。
 3. 请特效负责人审核其轮廓、颜色、密度、时序和比例是否符合要求。

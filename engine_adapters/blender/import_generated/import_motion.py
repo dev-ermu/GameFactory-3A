@@ -484,5 +484,9 @@ def main(argv: Optional[list[str]] = None) -> int:
 
 if __name__ == "__main__":
     code = main()
-    if os.environ.get("AAAGF_BLENDER_EXIT_ON_DONE"):
+    # See import_mesh.py for why the headless flag, not an environment variable,
+    # decides this: only a `--background` run may end the process.
+    import bpy  # noqa: PLC0415 - only available inside Blender
+
+    if bpy.app.background:
         raise SystemExit(code)

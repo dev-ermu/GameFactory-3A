@@ -2,7 +2,6 @@
 
 本文是为使用Blender Python编写代码的开发者准备的API说明。Blender并非游戏发行时所针对的目标引擎；它是**生成器与引擎之间的中立中转站**——在本代码库中，只有它负责读取`.ply`和`.usd`文件，修正生成器产生的轴心点或缩放错误，且无需项目文件、许可证或GPU即可渲染出结果图片。
 
-
 推荐参考现有实现进行扩展而非重新编写：
 `<REPO_PATH>/engine_adapters/blender/`。
 
@@ -17,7 +16,7 @@
 | Blender应用程序 | `blender --background --factory-startup --python x.py -- ...` | 完整的无头模式应用程序 |
 | pip安装包 | `pip install bpy` 后执行 `python x.py ...` | API完全一致；不含GUI相关代码路径，不依赖ffmpeg，Cycles作为插件运行 |
 
-该安装包对解释器版本有严格限制：`bpy` 5.0及4.x版本需要**Python 3.11**，3.6版本对应Python 3.10，其他版本均无对应构建包。在Python 3.9环境下执行`pip install bpy`时，会提示“没有匹配的分发版”，而非版本相关的错误信息。
+`bpy`对python版本有严格要求，比如最新bpy5.2.2版本必须要python3.13版本，且包占用空间200MB以上。**所以尽量不要使用bpy，而是通过Blender应用程序调用，除非用户Python版本恰好是python3.13版本**。
 
 编写代码时必须考虑以下三点：
 
@@ -31,9 +30,9 @@ def _script_argv() -> list:
     return [a for a in sys.argv[1:] if a != Path(__file__).name]
 ```
 
-**退出码不可信。** 无论脚本返回或抛出了什么异常，执行`blender --background --python x.py`后进程退出码始终为`0`。调用方若仅检查退出码，会在脚本完全失败时误以为运行成功。因此需在脚本末尾显式抛出`SystemExit(code)`——在本代码库中，该逻辑受`AAAGF_BLENDER_EXIT_ON_DONE`变量控制，以避免交互式运行时意外终止应用。
+**退出码不可信**。无论脚本返回或抛出什么异常，执行`blender --background --python x.py`后进程退出码始终为`0`。调用方若仅检查退出码，会在脚本完全失败时误以为运行成功。因此需在脚本末尾显式抛出`SystemExit(code)`。是否抛出由Blender官方的`bpy.app.background`标志决定：该值为`True`（即`--background`无头模式）时抛出；交互式运行时为`False`，此时抛出`SystemExit`会直接关闭用户的应用，因此改为以磁盘上的报告文件为准。
 
-**Windows系统下，`--`边界处的长参数或带引号的参数可能无法被正确识别。** 此时应传入一个**作业文件**，文件名由环境变量（`此处为AAAGF_IMPORT_JOB`）指定，程序启动时读取该文件内容。UE5导入器也采用同样的机制，因此主机端的启动器会为每种引擎生成统一的作业格式。
+**Windows系统下，`--`边界处的长参数或带引号的参数可能无法被正确识别**。此时应传入一个**作业文件**，文件名由环境变量（`此处为AAAGF_IMPORT_JOB`）指定，程序启动时读取该文件内容。UE5导入器也采用同样的机制，因此主机端的启动器会为每种引擎生成统一的作业格式。
 
 **延迟导入`bpy`模块。** 将导入操作封装在函数中，这样即使未安装Blender，主机端启动器和`<REPO_PATH>/test/`目录下的代码也能读取该模块的常量：
 
@@ -44,7 +43,9 @@ def _bpy():
     except ImportError as e:
         raise RuntimeError("该模块必须在bpy解释器中运行...") from e
     return bpy
-```**务必将所有输出路径设为绝对路径。** 这一点会耗费你一个小时的时间。
+```
+
+**务必将所有输出路径设为绝对路径。** 这一点会耗费你一个小时的时间。
 Blender会根据Blend文件来解析相对输出路径，而无头模式运行时没有Blend文件。glTF导出器恰好会回退到工作目录，但`bpy.ops.render.render()`不会：它什么也不会写入，仅返回`{'FINISHED'}`，不会记录任何错误，最终生成的文件根本不存在。在将目标路径写入报告前，请先调用`.resolve()`，并确认`path.is_file()`为真。
 
 **pip安装的wheel包并非完整的应用程序。** 它根本不包含FFMPEG写入器——`file_format`枚举中也没有对应条目——因此任何视频路径都会退化为PNG序列，切勿想当然地认为Blender“内置了ffmpeg”。此外，Cycles是以插件形式而非内置组件提供的；详见第5节。
@@ -104,7 +105,9 @@ finally:
 
 ## 3. 4.0版本中操作名称发生了变化
 
-Blender 4.x将Python编写的OBJ/PLY/STL导入器替换为了C++版本的导入器，且新名称有所不同，旧版本的导入器还会保留一段时间。具体存在哪种导入器取决于构建版本，因此不要硬编码名称，而应同时检测两者：| 格式 | 4.x版本 | 4.0之前的版本 |
+Blender 4.x将Python编写的OBJ/PLY/STL导入器替换为了C++版本的导入器，且新名称有所不同，旧版本的导入器还会保留一段时间。具体存在哪种导入器取决于构建版本，因此不要硬编码名称，而应同时检测两者：
+
+| 格式 | 4.x版本 | 4.0之前的版本 |
 |--------|-----|---------|
 | `.obj` | `wm.obj_import` | `import_scene.obj` |
 | `.ply` | `wm.ply_import` | `import_mesh.ply` |
@@ -165,7 +168,9 @@ bpy.ops.export_scene.fbx(filepath=..., use_selection=True,
 
 `.ply`导入器不会进行任何坐标转换，因为PLY文件本身不携带可用于转换的坐标元数据。若需导出Z轴朝上的世界数据，必须预先通过`scripts/prepare_world_asset.py --up z`进行一次旋转处理，而非每次打开文件时都重复旋转操作。
 
-由于Blender采用Z轴朝上的坐标系，因此`"bottom"`枢轴点对应的是**Z轴最小值**；而`--normalize-scale`参数所设定的目标缩放值为**1.0**（UE5导入器对同样情况的定义是100，因为其以厘米为单位）。## 5. 无头渲染
+由于Blender采用Z轴朝上的坐标系，因此`"bottom"`枢轴点对应的是**Z轴最小值**；而`--normalize-scale`参数所设定的目标缩放值为**1.0**（UE5导入器对同样情况的定义是100，因为其以厘米为单位）。
+
+## 5. 无头渲染
 
 pip安装的`bpy` wheel包通过GL/EGL上下文驱动EEVEE和Workbench渲染引擎。没有显示器的机器不存在GL/EGL上下文，此时会触发`libEGL`**中止**错误——进程直接终止，无法捕获异常。因此：
 
@@ -255,9 +260,11 @@ Hunyuan-WorldPlay导出的内容并非网格文件。它包含Gaussian-splat格�
 
 ---
 
-## 10. 实时会话`<REPO_PATH>/engine_adapters/blender/runtime/` 是该适配器中不属于批处理流程的部分：它是一个持续运行的Blender进程，通过UDP接收JSON指令，因此在对引擎介入之前就能在场景中自由探索。当涉及“空间内的行为”相关问题时，就可以用它来查询——比如某个门能否通行、角色生成点是否在地面上——这些信息是任何导入报告都无法给出的。
+## 10. 实时会话
 
-**关键规则：`bpy`模块不是线程安全的。** 套接字线程绝对不能直接操作Blender。需要先解析数据报并将其放入队列，再由主循环来处理——只有在这里，命令才能调用`bpy.ops`。在该代码库中，接收器甚至不会导入`bpy`，因此这种边界划分是结构性的，而非需要人为记忆的约定。
+`<REPO_PATH>/engine_adapters/blender/runtime/`是该适配器中不属于批处理流程的部分：它是一个持续运行的Blender进程，通过UDP接收JSON指令，因此在对引擎介入之前就能在场景中自由探索。当涉及“空间内的行为”相关问题时，就可以用它来查询——比如某个门能否通行、角色生成点是否在地面上——这些信息是任何导入报告都无法给出的。
+
+**关键规则：`bpy`模块不是线程安全的**。套接字线程绝对不能直接操作Blender。需要先解析数据报并将其放入队列，再由主循环来处理——只有在这里，命令才能调用`bpy.ops`。在该代码库中，接收器甚至不会导入`bpy`，因此这种边界划分是结构性的，而非需要人为记忆的约定。
 
 ```python
 def _enqueue(self, command, payload):   # 接收线程：仅负责入队
@@ -281,15 +288,14 @@ def drain_pending(self, max_ops=32):    # 主线程：在此处使用bpy
 
 ## 11. 试玩测试
 
-
 ```bash
+python -m pipeline.code_gen.playtest.run \
     --engine blender \
     --project test_data/outputs/<game>/<run>/mechanic/<task> \
     --duration 10 --fps 20 \
     --no-render
 
 ```
-
 
 ### 这不是屏幕录制
 
@@ -299,10 +305,9 @@ def drain_pending(self, max_ops=32):    # 主线程：在此处使用bpy
 
 ### 不可协商的限制条件
 
-
 1. **输入必须是真实的`Controls`对象。**按键信号会通过`ScriptedSource`/`from_held`传递，这是键盘操作对应的处理表。**没有任何程序会直接操控角色**，因为若录制内容直接定位角色位置，那只能说明存在补间动画，而非游戏具备可玩性。`report.json`中的`game_state`字段可用于验证这一点——真实的游戏运行会显示`shots_fired`/`kills`数值变化，或汽车离开起始线。
 2. **时钟以时间步长为基准。**捕获的一帧对应一次模拟步骤。按相同速率编码能保证视频的准确性，无论Cycles渲染耗时多久。若依靠系统时钟推进模拟，渲染缓慢时就会出现画面“瞬移”现象。
-3. **退出码不可信。**无论脚本执行结果如何，运行`blender --background --python x.py`都会返回0。最终结果需以磁盘上的报告为准。`AAAGF_BLENDER_EXIT_ON_DONE`参数能让Shell也识别到这一结果。
+3. **退出码不可信。**无论脚本执行结果如何，运行`blender --background --python x.py`都会返回0。脚本需以`bpy.app.background`为判据：无头模式下显式`raise SystemExit(code)`让Shell也能识别结果；交互式运行时该标志为`False`，结果以磁盘上的报告为准。
 4. **输出路径必须为绝对路径。**Blender会根据blend文件解析相对渲染路径，而无头模式下不存在blend文件：此时渲染操作不会写入任何内容，却会返回`FINISHED`状态，看似执行成功。
 5. **pip安装的包中不含FFMPEG写入器。**视频路径必须降级为PNG序列，不能想当然地认为Blender自带ffmpeg。当`PATH`环境变量中包含`ffmpeg`时，才会从MP4文件中提取JPEG格式的`frames/`帧。**要调整视频效果，只需修改录制内容，切勿改动游戏本身。** 第一人称视角下角色盯着墙壁的画面，需要在录制器中设置镜头扫描，而非在`tick()`函数里用`player.yaw =`来操控。
 
@@ -318,7 +323,6 @@ def drain_pending(self, max_ops=32):    # 主线程：在此处使用bpy
 录制器会遵循两条规则，因为一旦违反这些规则，录制的游戏画面就会显得没有响应：
 - **移动操作需持续按住；动作指令需轻点触发。** 持续一帧的`forward`指令只能让角色移动几厘米；反之，离散的动作指令必须释放后才能生效——比如半自动武器若未释放扳机就不会连续发射。
 - **重复的操作会被忽略。** 绑定设置中可能会同时把`W`和`UP_ARROW`都设为前进指令；若依次按下这两个键，只会录制一次相同的操作。
-
 
 ### 无声的早期返回会导致整段录制作废
 

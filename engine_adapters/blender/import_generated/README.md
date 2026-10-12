@@ -29,11 +29,11 @@ python scripts/import_generated_asset.py --engine blender \
 ```bash
 echo '{"src":"/out/model.glb","dest":"/out/library","name":"Sword_001",
        "usage":"asset","export":["glb"],"report":"/out/blender_import.json"}' > /out/job.json
-AAAGF_IMPORT_JOB=/out/job.json AAAGF_BLENDER_EXIT_ON_DONE=1 \
+AAAGF_IMPORT_JOB=/out/job.json \
 blender --background --factory-startup --python import_mesh.py
 ```
 
-`AAAGF_BLENDER_EXIT_ON_DONE`参数至关重要：执行`blender --background --python x.py`时，无论脚本返回什么结果，进程都会退出并返回0；如果没有该参数，导入失败的情况会被检查退出码的用户误认为是成功。
+**退出码为何可信**：执行`blender --background --python x.py`时，无论脚本返回什么结果，进程都会退出并返回0。导入脚本因此以Blender官方的`bpy.app.background`标志为判据——无头模式下该值为`True`，脚本显式`raise SystemExit(code)`，使导入失败能被检查退出码的用户正确识别。交互式运行时该标志为`False`，此时不终止应用，结果以`report.json`为准。该判断由脚本自身完成，无需传入任何环境变量。
 
 也可以使用普通的命令行参数，只需在Blender的`--`之后传入即可：
 
