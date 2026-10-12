@@ -44,5 +44,5 @@ operators/<任务类型>/
 | 命令 | 功能说明 |
 |---|---|
 | `eval.py --self-check` | 用已知答案的合成场景与上游过滤机制进行对比测试 |
-| `eval.py --contract-check` | 检查`WorldPlayModel`的调用是否与HY-WorldPlay版本相匹配 |
+| `eval.py --contract-check` | 检查`TripoModel`的调用是否满足云端 API 契约 |
 | `render.py scene.glb` | 将网格离屏渲染，以便查看其中的孔洞及变形情况 |

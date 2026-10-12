@@ -15,7 +15,6 @@ Blender（`bpy`）参考代码——用于资产导入、无头预览以及可�
 | `examples/` | `bpy`解释器 | 该适配器支持的各类游戏类型机制（第一人称射击/赛车/格斗/RPG） |
 | `runtime/` | `bpy`解释器 | 通过UDP传输JSON指令驱动的实时会话——包括生成物体、移动物体、添加特效、生成快照等操作 |
 | `../../scripts/import_generated_asset.py` | 宿主Python | 查找Blender安装路径，启动导入程序并读取报告 |
-| `../../scripts/prepare_world_asset.py` | 宿主Python | 世界场景导出→生成单个完整的`.glb`文件（无需使用Blender） |
 
 动作绑定/重定位功能不在此处实现——需通过gen_motion流程调用`operators/gen_motion/funcs/retarget_utils/`来实现。
 
@@ -55,7 +54,7 @@ python scripts/import_generated_asset.py --engine blender \
 
 Blender采用米作为单位，且坐标轴为**Z轴向上**；glTF同样以米为单位，但坐标轴为**Y轴向上**；UE则使用厘米作为单位，坐标轴也为Z轴向上。glTF导入器和导出器会在两种坐标体系间进行转换，因此经过 `glb → Blender → glb` 的往返转换后数据保持不变——这正是Blender能安全用作生成工具与UE5之间中间层的原因。出于同样的原因，FBX导出器被设置为 `-Z` 方向向前、`Y` 轴向上。
 
-`.ply` 导入器不会进行任何坐标转换，因为PLY文件本身不包含可用于转换的坐标元数据。`scripts/prepare_world_asset.py --up z` 命令会在其他程序处理前，对Z轴向上的世界导出数据进行一次旋转处理。
+`.ply` 导入器不会进行任何坐标转换，因为PLY文件本身不包含可用于转换的坐标元数据。若拿到的是Z轴向上的世界导出数据，请先用其它工具预先旋转为Y轴向上，再交给本导入器处理。
 
 ## 骨骼绑定与动作重定向
 
@@ -182,6 +181,6 @@ blender --background --factory-startup \
 - 导入模块与预览渲染器——具体测试数据及复现方法可查看`import_generated/README.md`；
 - 可运行运行时环境——通过`runtime/selftest.py`验证，17个步骤全部通过，5种特效后端均正常工作；此外还通过一个未安装Blender的Python程序通过UDP协议驱动实时服务器进行测试。`runtime/README.md`记录了两个在Blender 5.0.1环境下耗费实际时间排查出的问题。
 
-主机端的相关功能——作业文件、参数结构、层级默认设置——已由`tests/test_world_asset.py`覆盖测试，该测试无需安装Blender。
+主机端的相关功能——作业文件、参数结构、层级默认设置——由`tests/`下不依赖`bpy`的测试覆盖。
 
 交互模式在**Blender 4.5.12**上针对三种随附模板进行了验证：键盘与鼠标操作均符合各类型的规则要求，会话循环的固定步长、追赶上限、暂停与退出功能均正常；数百帧的录制会话可完全还原为字节级一致的运行结果。未进行测试的是实时窗口功能，因为该功能需要图形驱动支持——这台主机安装了CUDA计算栈但未安装OpenGL，因此Cycles渲染功能正常，却无法打开窗口。正因如此，`--play`参数会给出相应说明，而不会启动一个无人能看到的会话。

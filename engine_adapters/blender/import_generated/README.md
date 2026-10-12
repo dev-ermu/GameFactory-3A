@@ -99,28 +99,23 @@ blender --background --factory-startup --python import_mesh.py -- \
 
 ## 世界场景导出
 
-世界场景导出文件并非网格文件，而是Gaussian-splat格式的PLY文件加上一个或多个多边形PLY文件。需先通过`scripts/prepare_world_asset.py`脚本处理——该脚本会合并各部分并修复表面问题——之后才能像其他资产一样导入生成的`world.glb`文件。直接导入原始的碰撞体PLY文件虽可行，且可用于查看生成器输出的内容，但这类文件会呈现为“三角形杂乱堆”：顶点不共享、图层间有缝隙、缠绕方向混乱。
+世界场景导出需先在**外部**整理为单个 `.glb` 文件再交给本导入器；本目录不负责合并或修复此类导出数据。直接导入原始的碰撞体 PLY 文件虽可行，且可用于查看生成器输出的内容，但这类文件会呈现为"三角形杂乱堆"：顶点不共享、图层间有缝隙、缠绕方向混乱。
 
-## 已验证该操作在 **Blender 5.0.1** 环境下执行，通过 Python 3.11 版本的 pip `bpy` 安装包运行，未启用显示功能且未使用 GPU。导入、三个层级处理、轴心点调整、归一化、简化多边形数量操作，以及三种导出格式的处理、Cycles-CPU 渲染静帧和旋转动画生成、整个场景数据链的处理均为手动操作；下述数值均来自该次操作会话。如需复现操作步骤：
+## 已验证该操作在 **Blender 5.0.1** 环境下执行，通过 Python 3.11 版本的 pip `bpy` 安装包运行，未启用显示功能且未使用 GPU。导入、三个层级处理、轴心点调整、归一化、简化多边形数量操作，以及三种导出格式的处理、Cycles-CPU 渲染静帧和旋转动画生成均为手动操作；下述数值均来自该次操作会话。如需复现操作步骤：
 
 ```bash
 pip install bpy numpy scipy pillow      # 该安装包仅支持 Python 3.11 版本
 
-python scripts/prepare_world_asset.py --src <export_dir> \
-    --out-dir /tmp/world --task-id arena --up z --min-component-faces 4
 python engine_adapters/blender/import_generated/import_mesh.py \
-    --src /tmp/world/world.glb --dest /tmp/lib --name Arena --preview
+    --src <abs path to world.glb> --dest /tmp/lib --name Arena --preview
 ```
-
-路由的宿主端相关逻辑——作业文件、参数配置、层级默认值、操作符表等——由 `tests/test_world_asset.py` 负责覆盖测试，该测试无需依赖 Blender。
 
 以下数据均为实测结果，而非估算：
 
 | | |
 |---|---|
 | GLB 格式往返转换 | 输入为包含12个三角形的立方体，输出后仍为12个三角形，`glb -> Blender -> glb -> Blender` 流程结束后模型尺寸完全一致 |
-| 坐标轴转换 | glTF 格式的 `(x, y, z)` 坐标在 Blender 中会被转换为 `(x, -z, y)`；使用 `--up z` 参数生成的 Z轴朝上的场景最终会呈扁平状态，坐标变为 `[2, 1, 0]` |
-| 修复后的场景 | 包含258个三角形、154个顶点——与 `prepare_world_asset.py` 输出的结果完全一致 |
+| 坐标轴转换 | glTF 格式的 `(x, y, z)` 坐标在 Blender 中会被转换为 `(x, -z, y)`；Z轴朝上的输入需先在外部旋转，否则导入后会呈扁平状态 |
 | 多边形简化 | 原始模型有258个三角形，设置 `--target-tris 60` 参数后最终简化为60个三角形，同时会触发相应警告信息 |
 | `vfx_particle` 粒子系统 | 边界被重新居中到 ±0.5 / ±0.25 范围内，最大边界尺寸被归一化为 1.0 米 |
 | 原始碰撞体 PLY 文件 | 包含126个三角形、378个顶点，证明PLY 文件中的顶点并未共用角落 |

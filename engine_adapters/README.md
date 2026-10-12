@@ -42,8 +42,9 @@ python scripts/import_generated_asset.py --engine both \
 
 其中，`--engine both` 表示同时处理UE5和Unity的数据；`--engine all` 则会额外包含Godot和Blender的数据。兼容性启动器同样接受`--usage {asset,vfx_standalone,vfx_particle}`这类参数，并生成特定于引擎的JSON报告。Godot会输出暂存的`res://`资源信息、实际原生类名称、加载/实例化结果、动画与骨骼路径、源文件大小、可用的GLB三角形数据、警告信息以及编辑器进程的相关记录。具体细节可查看各目录下的README文档。
 
-先决条件：Unity项目中需要安装`com.unity.cloud.gltfast`插件；UE则需要启用`PythonScriptPlugin`，且需通过完整编辑器而非命令行工具来驱动导入过程（UE的README中解释了原因）。Blender无需特定项目或许可证，若未安装Blender应用程序，通过`pip install bpy`即可满足需求。可通过`scripts/engine_install/godot/install.sh --json`或`install.cmd --json`来安装/复用指定版本的Godot 4编辑器；该过程会验证官方的SHA-512校验码及精确的引擎版本。Godot主机代码要求Python版本为3.14及以上。
-需设置`A3GAME_GODOT_EXECUTABLE`和`A3GAME_GODOT_PROJECT`环境变量，或通过命令行参数指定相应值。若未设置可执行文件变量，则系统会通过`PATH`路径来查找。Godot材质绑定功能还会运行适配器自带的SceneTree脚本，只有当包含修改后的`MeshInstance3D`节点的已绑定`PackedScene`文件被成功记录并持久化后，该过程才会完成。
+先决条件：Unity项目中需要安装`com.unity.cloud.gltfast`插件；UE则需要启用`PythonScriptPlugin`，且需通过完整编辑器而非命令行工具来驱动导入过程（UE的README中解释了原因）。Blender无需特定项目或许可证，若未安装Blender应用程序，通过`pip install bpy`即可满足需求。Godot主机代码要求Python版本为3.14及以上。
+
+**本项目不再自动下载引擎。**Godot 4编辑器需使用者自行安装（从<https://godotengine.org/download/windows/>下载并解压），然后在`.env`中通过`A3GAME_GODOT_EXECUTABLE`告知可执行文件的绝对路径。这样每次使用都不会重新下载，也不会产生难以管理的安装目录；详见`<REPO_PATH>/scripts/engine_install/godot/README.md`。需同时设置`A3GAME_GODOT_PROJECT`，或通过命令行参数指定相应值。若可执行文件变量未设置，适配器会先在`PATH`中查找`godot4`/`godot`/`godot-mono`，再兜底查找`C:/Program Files/Godot/Godot.exe`与`%LOCALAPPDATA%/Programs/Godot/Godot.exe`。Godot材质绑定功能还会运行适配器自带的SceneTree脚本，只有当包含修改后的`MeshInstance3D`节点的已绑定`PackedScene`文件被成功记录并持久化后，该过程才会完成。
 
 ## 场景数据
 

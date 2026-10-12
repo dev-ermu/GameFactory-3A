@@ -91,7 +91,7 @@ OUT_DIR=D:/scratch/runtime python -m engine_adapters.blender.runtime.selftest
 在**Blender 5.0.1**（通过pip安装的`bpy`插件，Python 3.11环境，无显示器、无GPU）下测试：
 17个步骤全部通过，5种特效后端全部验证无误，退出码为0。
 
-这是针对Blender安装环境的诊断工具，并非单元测试——它检测的是机器的属性。不涉及`bpy`的主机端逻辑则由`tests/test_world_asset.py`覆盖测试。
+这是针对Blender安装环境的诊断工具，并非单元测试——它检测的是机器的属性。不涉及`bpy`的主机端逻辑则由`tests/`下不依赖`bpy`的测试覆盖。
 
 ### 值得留意的Blender 5.0.1的两个发现
 

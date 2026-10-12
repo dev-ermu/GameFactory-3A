@@ -3,8 +3,8 @@ engine_adapters/blender/runtime/scene/generated_scene.py
 
 Drop a model-generated environment into the running session.
 
-The runtime's end of the world pipeline: `scripts/prepare_world_asset.py` turns
-a world export into one repaired `world.glb`, and this imports it into the
+The runtime's end of the world pipeline: a prepared world mesh arrives as one
+`world.glb`, and this imports it into the
 process the characters are already standing in, so "can this be walked around"
 is answered before an engine is involved.
 
@@ -14,7 +14,7 @@ next world replaces it — a generated scene is routinely hundreds of objects.
 
 将模型生成的环境导入到正在运行的会话中。
 
-运行时的世界加载流程如下：`scripts/prepare_world_asset.py`会将导出的世界数据修复为单个完整的`world.glb`文件，随后该文件会被导入到角色所处的场景中，这样在引擎介入之前就能确定“该场景是否可行走”。
+运行时的世界加载流程如下：场景网格以单个完整的`world.glb`文件形式送达，随后该文件会被导入到角色所处的场景中，这样在引擎介入之前就能确定“该场景是否可行走”。
 
 所有生成的物体都会被归入一个根空集合下的同一个集合中，这样一来，只需调整该集合的变换参数就能实现环境的缩放或偏移；当下个世界替换当前环境时，直接删除这个集合即可——毕竟生成场景通常会包含数百个物体。
 """

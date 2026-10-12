@@ -13,8 +13,7 @@ Blender's role in the chain is not "another target engine". It is the neutral
 ground between a generator and an engine: the only importer here that reads
 `.ply` and `.usd`, applies a pivot or a decimation the generator did not, and
 writes the result back out as the `.glb` / `.fbx` a game engine wants. A world
-prepared by `scripts/prepare_world_asset.py` arrives as an ordinary `.glb` and
-takes the same path as any other asset.
+mesh arrives as an ordinary `.glb` and takes the same path as any other asset.
 
 Units and axes: Blender is metres and Z-up, glTF is metres and Y-up. The glTF
 importer converts on the way in and the exporter converts back, so a round trip
@@ -38,7 +37,7 @@ Batch mode reads a `<kind>_results_summary.json` written by a pipeline runner:
 
 **该模块在`bpy`解释器中运行**——既可以是Blender本身（`blender --background --python ...`），也可以是已安装`bpy` wheel包的Python环境。与UE5版本类似，`bpy`的导入操作被延迟执行，因此宿主端的启动器和测试程序无需安装Blender即可读取其常量。
 
-Blender在整个流程中并非“另一个目标引擎”，而是生成器与引擎之间的中立平台：它是此处唯一能读取`.ply`和`.usd`格式文件、对生成器未处理的轴心点或简化操作进行额外处理，并最终输出游戏引擎所需的`.glb`/`.fbx`格式的导入器。`scripts/prepare_world_asset.py`生成的场景会以普通的`.glb`格式呈现，与其他资产的处理路径一致。
+Blender在整个流程中并非“另一个目标引擎”，而是生成器与引擎之间的中立平台：它是此处唯一能读取`.ply`和`.usd`格式文件、对生成器未处理的轴心点或简化操作进行额外处理，并最终输出游戏引擎所需的`.glb`/`.fbx`格式的导入器。场景网格以普通的`.glb`格式呈现，与其他资产的处理路径一致。
 
 单位与坐标轴：Blender采用米作为单位且Z轴向上，glTF同样以米为单位但Y轴向上。glTF导入器会在导入时完成坐标转换，导出器则会反向转换，因此经过该文件的来回处理后数据保持不变——这正是允许在生成器与UE5之间使用`--export glb`参数的原因。
 
@@ -584,9 +583,9 @@ def import_from_results_summary(summary_path: str, dest_dir: str = DEFAULT_DEST,
     """
     Import every artifact listed in a `<kind>_results_summary.json`.
 
-    That file is what a pipeline runner — and `scripts/prepare_world_asset.py` —
-    writes, so this is the whole generate-then-import chain in one call. One
-    failing task does not abort the rest; its error lands in that entry's report.
+    That file is what a pipeline runner writes, so this is the whole
+        generate-then-import chain in one call. One
+        failing task does not abort the rest; its error lands in that entry's report.
     """
     results = json.loads(Path(summary_path).read_text(encoding="utf-8"))
     reports = []
