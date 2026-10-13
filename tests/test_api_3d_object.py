@@ -1,5 +1,5 @@
 """
-针对`agent_skills/develop_harness/api_model_require.md`R9的闭源3D后端`TripoModel`，`MeshyModel`的离线合约测试。
+针对`agent_skills/develop_harness/model_require.md`R9的闭源3D后端`TripoModel`，`MeshyModel`的离线合约测试。
 
 **没有网络，没有API密钥，没有GPU。**每个HTTP边界都被一个计算调用的伪传输所取代，
 这使得“缓存命中发送零请求”和“402永远不会重试”完全可以测试。
@@ -135,14 +135,14 @@ def make_meshy(**kw) -> MeshyModel:
 
 
 class TestConstruction(unittest.TestCase):
-    """R9.1 / R9.2 / R9.7 — construction must work without credentials."""
+    """R2.1 / R2.3 / R6.1 — construction must work without credentials."""
 
     def test_constructs_without_api_key(self):
         for cls, env in ((TripoModel, "TRIPO_API_KEY"), (MeshyModel, "MESHY_API_KEY")):
             with self.subTest(cls=cls.__name__):
                 saved = os.environ.pop(env, None)
                 try:
-                    model = cls()                      # must not raise (R9.7)
+                    model = cls()                      # must not raise (R6.1)
                     self.assertTrue(model.model_path)
                 finally:
                     if saved is not None:
@@ -163,7 +163,7 @@ class TestConstruction(unittest.TestCase):
                         os.environ[env] = saved
 
     def test_missing_api_base_fails_fast_and_actionably(self):
-        """R9.7 — API 根地址是必填项，绝不静默回退到默认值。"""
+        """R6.1 — API 根地址是必填项，绝不静默回退到默认值。"""
         for cls, env in ((TripoModel, "TRIPO_API_BASE"),
                          (MeshyModel, "MESHY_API_BASE")):
             with self.subTest(cls=cls.__name__):
@@ -179,19 +179,19 @@ class TestConstruction(unittest.TestCase):
                         os.environ[env] = saved
 
     def test_device_cpu_is_accepted_and_ignored(self):
-        """R9.2 — `device` exists for interface parity only."""
+        """R2.3 — `device` exists for interface parity only."""
         self.assertEqual(TripoModel(device="cpu").device, "cpu")
         self.assertEqual(MeshyModel(device="cpu").device, "cpu")
 
     def test_model_path_aliases(self):
-        """R9.1 — `model_path` is a version id; short aliases resolve."""
+        """R2.1 — `model_path` is a version id; short aliases resolve."""
         self.assertEqual(TripoModel(model_path="tripo-v3.1").model_path, "v3.1-20260211")
         self.assertEqual(MeshyModel(model_path="meshy-6-text-to-3d").model_path, "meshy-6")
         # Unknown ids pass through, so a newer version needs no code change.
         self.assertEqual(TripoModel(model_path="v9.9-future").model_path, "v9.9-future")
 
     def test_unload_is_idempotent(self):
-        """R9.4 — `unload()` closes the session and is safe to repeat."""
+        """R4.1 — `unload()` closes the session and is safe to repeat."""
         model = make_tripo()
         client = model._client
         model.unload()
@@ -222,7 +222,7 @@ class TestSwappability(unittest.TestCase):
 
 
 class TestInference(unittest.TestCase):
-    """R9.6 — submit, poll and download are hidden behind a blocking call."""
+    """R5.1 — submit, poll and download are hidden behind a blocking call."""
 
     def test_tripo_image_to_3d(self):
         model = make_tripo()
@@ -277,7 +277,7 @@ class TestInference(unittest.TestCase):
 
 
 class TestCache(unittest.TestCase):
-    """R9.8 — an identical request must never be billed twice."""
+    """R7.1 — an identical request must never be billed twice."""
 
     def test_cache_hit_sends_no_requests(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -310,7 +310,7 @@ class TestCache(unittest.TestCase):
 
 
 class TestRetryClassification(unittest.TestCase):
-    """R9.9 — retryable and terminal failures must not be confused."""
+    """R8.1 — retryable and terminal failures must not be confused."""
 
     def _client(self, responses, **kw):
         client = cloud_api.CloudAPIClient("https://api.example", "key",

@@ -66,7 +66,7 @@ def load_cloud_rig_models(
     cloud_format_model)``. Constructing them is free — no key, no socket.
     Inference is where the billing begins.
 
-    The key is read from ``TOKENHUB_API_KEY`` at first infer() call (R9.7).
+    The key is read from ``TOKENHUB_API_KEY`` at first infer() call (R6.1).
     Post-pay billing must be enabled at
     https://console.cloud.tencent.com/tokenhub/inference for the tripo-3d-*
     model family.

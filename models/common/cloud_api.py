@@ -5,10 +5,10 @@ Shared plumbing for closed-source ("cloud API") model wrappers — the part of
 Tripo / Meshy / Rodin / ElevenLabs / Kling wrappers that is identical no matter
 what the provider generates.
 
-契约见 `agent_skills/develop_harness/api_model_require.md` R9。
-本模块实现 R9.6（submit → poll → download 藏在一次阻塞调用之后）、R9.7（凭证**与
-API 根地址**都在调用时从配置读取）、R9.8（响应缓存，避免重跑二次计费）以及
-R9.9（带退避的重试，区分可重试／终态失败）。
+契约见 `agent_skills/develop_harness/model_require.md` R6–R8。
+本模块实现 R5.1（submit → poll → download 藏在一次阻塞调用之后）、R6.1（凭证**与
+API 根地址**都在调用时从配置读取）、R7.1（响应缓存，避免重跑二次计费）以及
+R8.1（带退避的重试，区分可重试／终态失败）。
 
 It knows nothing about 3D, audio or video — only HTTP, money and failure modes.
 
@@ -87,7 +87,7 @@ class CloudAPIError(RuntimeError):
         status:   HTTP status code, when the failure came from a response.
         task_id:  Provider task id, when one had already been created — keep it,
                   a timed-out task usually finishes anyway and can be fetched
-                  later (`api_model_require.md` R9.6).
+                  later (`model_require.md` R5.2).
         payload:  Decoded response body, truncated for readability.
     """
 
@@ -144,7 +144,7 @@ class CloudAPIConfigError(CloudAPIError):
 def require_api_key(value: Optional[str], env_var: str, *,
                     who: str = "This model") -> str:
     """
-    Resolve an API key, failing fast with an actionable message (R1.6 / R9.7).
+    Resolve an API key, failing fast with an actionable message (R1.6 / R6.1).
 
     Args:
         value:       Explicit key passed to the constructor, or None.
@@ -170,7 +170,7 @@ def require_api_key(value: Optional[str], env_var: str, *,
 def require_api_base(value: Optional[str], env_var: str, *,
                      who: str = "This model") -> str:
     """
-    解析 API 根地址；未配置时立即失败（R9.7）。
+    解析 API 根地址；未配置时立即失败（R6.1）。
 
     Base URL 是**必填**而非带默认值：公开端点并非在所有网络下都可达，硬编码的回退会
     一直表现得像「配置正常」，直到第一次计费调用失败。代码里同样不保留端点示例——
@@ -232,7 +232,7 @@ def _truncate(payload: Any, limit: int = 600) -> Any:
 def classify_http_error(status: int, body: Any, *,
                         task_id: Optional[str] = None) -> CloudAPIError:
     """
-    Map an HTTP status onto the right exception class (R9.9).
+    Map an HTTP status onto the right exception class (R8.1).
 
     The body is inspected too: providers happily answer 200/400 with a
     "not enough credits" payload, which must not be retried.
@@ -347,7 +347,7 @@ class CloudAPIClient:
         expect_json: bool = True,
     ) -> Any:
         """
-        Perform one API call, retrying retryable failures (R9.9).
+        Perform one API call, retrying retryable failures (R8.1).
 
         Args:
             method:      "GET" / "POST" / …
@@ -449,7 +449,7 @@ def poll_task(
     verbose: bool = False,
 ) -> dict:
     """
-    Block until a provider task reaches a terminal state (R9.6).
+    Block until a provider task reaches a terminal state (R5.1).
 
     Args:
         fetch:         Callable returning the decoded task object.
@@ -508,7 +508,7 @@ def poll_task(
 
 def request_hash(payload: dict) -> str:
     """
-    Stable sha256 over a request description (R9.8).
+    Stable sha256 over a request description (R7.1).
 
     The payload must contain everything that changes the output — model version,
     prompt, image bytes hash, every generation parameter, the output format.
@@ -528,7 +528,7 @@ class ResponseCache:
     Content-addressed cache of generated artifacts.
 
     A cloud call costs credits, so an identical request must never be sent twice
-    (R9.8). Layout::
+    (R7.1). Layout::
 
         <cache_dir>/<provider>/<hash>.<ext>        the artifact
         <cache_dir>/<provider>/<hash>.meta.json    request description + task id

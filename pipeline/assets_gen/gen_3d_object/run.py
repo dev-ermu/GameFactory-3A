@@ -66,7 +66,7 @@ DEFAULT_TASKS = paths.collect_jsonl(TASK_KIND)
 
 #: backend -> (default "ckpt", env var holding an override).
 #: The "ckpt" is a model **version id**, not a weight location
-#: (api_model_require.md R9.1) — the flag stays `--ckpt` so the operator
+#: (model_require.md R2.1) — the flag stays `--ckpt` so the operator
 #: and every caller keep one vocabulary.
 BACKENDS: dict[str, tuple[str, str]] = {
     "tripo": ("v3.1-20260211", "TRIPO_MODEL"),
@@ -97,7 +97,7 @@ def load_model(
     Args:
         ckpt: Model version id.
         device: Accepted and ignored — the cloud backends run server-side
-              (api_model_require.md R9.2).
+              (model_require.md R2.3).
         backend: One of `BACKENDS`.
         **backend_kwargs: Passed to the wrapper — `cache_dir`, `low_poly`,
               `output_format`, `timeout`, … for the cloud backends.
@@ -163,7 +163,7 @@ def run_from_jsonl(tasks_path: str, operator, game_filter: str | None = None) ->
                   f"  ({result['elapsed_sec']}s)")
         for message in result.get("warnings", ()):
             print(f"       ! {message}")
-        # Cloud backends record what the call cost and produced (R9.8).
+        # Cloud backends record what the call cost and produced (R7.1).
         call = getattr(getattr(operator, "model", None), "last_call_info", None)
         if call:
             print(f"       → task_id={call.get('task_id')}  "

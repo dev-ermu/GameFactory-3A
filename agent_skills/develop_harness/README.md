@@ -11,8 +11,7 @@
 | 文件 | 用途 |
 |------|------|
 | `README.md` | 本文档 — 介绍工作流程（标准操作程序）和分层规则 |
-| `model_require.md` | `<REPO_PATH>/models/` 下的包装器必须满足的接口约定 |
-| `api_model_require.md` | **R9** — 当模型为闭源云API时的变更要求 |
+| `model_require.md` | `<REPO_PATH>/models/` 下的云 API 包装器必须满足的接口约定 |
 | `operatar_require.md` | `<REPO_PATH>/operators/` 下的运算符必须满足的接口约定 |
 | `pipeline_require.md` | `<REPO_PATH>/pipeline/*/run.py` 与 `eval.py` 必须满足的接口约定 |
 

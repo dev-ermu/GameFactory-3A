@@ -124,7 +124,7 @@ class TestConstruction(unittest.TestCase):
         self.assertEqual(client.auth_template, "{key}")
 
     def test_missing_api_base_fails_fast_and_actionably(self):
-        """R9.7 — API 根地址是必填项，绝不静默回退到默认值。"""
+        """R6.1 — API 根地址是必填项，绝不静默回退到默认值。"""
         saved = os.environ.pop("SEED_AUDIO_API_BASE", None)
         try:
             with self.assertRaises(cloud_api.CloudAPIConfigError) as ctx:

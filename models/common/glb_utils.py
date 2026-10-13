@@ -4,7 +4,7 @@ models/common/glb_utils.py
 Dependency-free inspection of binary glTF (`.glb`) buffers.
 
 Why this exists instead of `trimesh.load(...)`: the API wrappers must report the
-triangle count of what they just paid for (`api_model_require.md` R9.8), and
+triangle count of what they just paid for (`model_require.md` R7.4), and
 that number has to be available on a CPU-only box with nothing but the stdlib
 installed. Parsing the JSON chunk of a GLB is enough for counting.
 

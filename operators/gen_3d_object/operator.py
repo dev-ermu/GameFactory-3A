@@ -244,7 +244,7 @@ class Gen3DObjectOperator:
                 if inp.get(key) is not None:
                     meta[key] = inp[key]
             # Cloud backends expose what the call cost and produced — task id,
-            # credits, triangle count (api_model_require.md R9.8). Recording it
+            # credits, triangle count (model_require.md R6–R8.8). Recording it
             # here is what makes a billed run reproducible after the fact.
             call_info = getattr(self.model, "last_call_info", None)
             if call_info:

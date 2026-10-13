@@ -4,7 +4,7 @@
 
 每个封装都应提供统一的接口（例如 `load()`、`infer()`、`unload()`），以便操作符在无需了解具体实现细节的情况下切换后端。
 
-规范文档位于 `agent_skills/develop_harness/` 目录：`model_require.md` 规定封装形态，`api_model_require.md`（R9）针对闭源云 API——R9 覆盖 R2.1–R2.3、R3.3/R3.4、R3.6 与 R4 条款，适用于远程模型。通用的云端处理逻辑（HTTP 重试、错误分类、响应缓存、提交请求→轮询状态→下载结果）被封装在 `models/common/cloud_api.py` 中——请勿为每个服务提供商重复实现这些逻辑。
+规范文档位于 `agent_skills/develop_harness/` 目录：`model_require.md` 规定封装形态，`model_require.md`（R9）针对闭源云 API——R9 覆盖 R2.1–R2.3、R3.3/R3.4、R3.6 与 R4 条款，适用于远程模型。通用的云端处理逻辑（HTTP 重试、错误分类、响应缓存、提交请求→轮询状态→下载结果）被封装在 `models/common/cloud_api.py` 中——请勿为每个服务提供商重复实现这些逻辑。
 
 本目录下的生成后端**全部为云端 API**。本仓库不下载模型权重：凭证写在 `.env` 中，安装脚本只负责安装各服务商所需的 Python 依赖。
 

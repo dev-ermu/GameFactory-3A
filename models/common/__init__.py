@@ -7,7 +7,7 @@ games or output paths (`model_require.md` R1.1 / R1.4 apply unchanged).
 Contents:
     cloud_api.py — HTTP session, retry/backoff, error classification, response
                    cache and the submit → poll → download loop used by every
-                   closed-source API wrapper (`api_model_require.md` R9.11).
+                   closed-source API wrapper (`model_require.md` R10.1).
     glb_utils.py — dependency-free GLB inspection (triangle count, bounds).
 
 Imports are kept lazy and stdlib-only at module level so `tests/harness/smoke.py`

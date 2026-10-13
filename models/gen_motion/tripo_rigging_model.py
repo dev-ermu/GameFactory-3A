@@ -21,19 +21,19 @@ upload endpoint and rejects `data:` URIs, so a mesh that exists only on local
 disk cannot be submitted. Callers pass `mesh_url`; `mesh` bytes only key the
 cache.
 
-CONTRACT DEVIATIONS (model_require.md targets local-weight models;
-                     see agent_skills/develop_harness/api_model_require.md):
-  C1  R2.1/R2.2 → R9.1  `model_path` carries a model-id string, not a path.
-  C2  R2.3      → R9.2  `device` accepted for interface parity, ignored.
-  C3  R3.6/R5.5 → R9.3  no @torch.no_grad(); torch is not imported.
-  C4  R4.1-R4.3 → R9.4  `unload()` closes the HTTP session only.
-  C5  R3.3/R3.4 → R9.5  `seed` accepted for interface parity, ignored.
+CONTRACT NOTES (see agent_skills/develop_harness/model_require.md R12
+                     see agent_skills/develop_harness/model_require.md):
+  C1  R2.1/R2.2  `model_path` carries a model-id string, not a path.
+  C2  R2.3  `device` accepted for interface parity, ignored.
+  C3  R3.6       no @torch.no_grad(); torch is not imported.
+  C4  R4.1-R4.3  `unload()` closes the HTTP session only.
+  C5  R3.3/R3.4  `seed` accepted for interface parity, ignored.
                         Server-side reproducibility is NOT guaranteed.
-  C6  R3.1      → R9.6  submit → poll → download behind a synchronous
+  C6  R3.1  submit → poll → download behind a synchronous
                         `infer()`. `timeout` default is 1800 s (generation
                         can run many minutes; a timeout carries `task_id`).
-  C8  (new)     → R9.8  `cache_dir` prevents re-billing identical requests.
-  C9  (new)     → R9.9  `max_retries` with exponential backoff; retryable
+  C8  R7.1        `cache_dir` prevents re-billing identical requests.
+  C9  R8.1        `max_retries` with exponential backoff; retryable
                         (5xx/429/transport) vs. terminal (4xx) split.
 
 Environment (all in `<repo>/.env`; see `.env.example`):
@@ -181,7 +181,7 @@ class _TripoCloudBase:
         self.poll_interval = poll_interval
         self.max_retries = max_retries
         self.cache_dir = cache_dir
-        # [R9.7] 必填项，且在首次调用时才解析。端点由用户在 .env 里配置，代码
+        # [R6.1] 必填项，且在首次调用时才解析。端点由用户在 .env 里配置，代码
         self.api_base = api_base
         self.http_timeout = http_timeout
         self.verbose = verbose
@@ -207,7 +207,7 @@ class _TripoCloudBase:
 
     @property
     def client(self) -> cloud_api.CloudAPIClient:
-        """[C6/R9.7] 惰性解析——凭证在这里读取，不在 __init__ 中。"""
+        """[C6/R6.1] 惰性解析——凭证在这里读取，不在 __init__ 中。"""
         if self._client is None:
             who = self.__class__.__name__
             key = cloud_api.require_api_key(

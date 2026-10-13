@@ -6,23 +6,23 @@ text-to-3D), producing a GLB.
 
 Reference: https://developers.tripo3d.ai/  (v3 API)
 
-CONTRACT DEVIATIONS (model_require.md targets local-weight models; the rules that
-replace it live in agent_skills/develop_harness/api_model_require.md):
-  C1  R2.1/R2.2 → R9.1  `model_path` carries a *model version id*
+CONTRACT NOTES (see agent_skills/develop_harness/model_require.md R12 —
+what each rule is for and which clause it maps to):
+  C1  R2.1/R2.2  `model_path` carries a *model version id*
                         ("v3.1-20260211"), not a weight location.
-  C2  R2.3      → R9.2  `device` accepted for interface parity and ignored.
-  C3  R3.6/R5.5 → R9.3  no @torch.no_grad(); torch is not involved.
-  C4  R4.1-R4.3 → R9.4  `unload()` is a no-op that closes the HTTP session.
-  C5  R3.3/R3.4 → R9.5  `seed` is forwarded as model_seed/texture_seed when the
+  C2  R2.3  `device` accepted for interface parity and ignored.
+  C3  R3.6       no @torch.no_grad(); torch is not involved.
+  C4  R4.1-R4.3  `unload()` is a no-op that closes the HTTP session.
+  C5  R3.3/R3.4  `seed` is forwarded as model_seed/texture_seed when the
                         provider accepts it; server-side reproducibility is NOT
                         guaranteed and is never faked locally.
-  C6  R3.1      → R9.6  task-based API (submit → poll → download); `infer()`
+  C6  R3.1  task-based API (submit → poll → download); `infer()`
                         blocks until completion or `timeout` (default 300 s).
                         A timeout error carries the `task_id`.
   C7  R1.2             uses the documented `infer_and_save(..., output_path)`
                         exception; the bytes-returning `infer()` exists alongside.
-  C8  (new)     → R9.8  `cache_dir` prevents re-billing an identical request.
-  C9  (new)     → R9.9  `max_retries` + exponential backoff; retryable (5xx/429/
+  C8  R7.1        `cache_dir` prevents re-billing an identical request.
+  C9  R8.1        `max_retries` + exponential backoff; retryable (5xx/429/
                         transport) and terminal (400/401/402) failures are split.
 
 环境变量（统一写在 `<repo>/.env`，见 `.env.example`）：
@@ -49,7 +49,7 @@ from models.common.glb_utils import glb_summary
 logger = logging.getLogger(__name__)
 
 #: `.env` 变量名。URL 一律由用户填写在该变量里，代码不保留任何 URL 字面量：
-#: 服务商会改域名，写死的地址只会变成过期信息（R9.7）。
+#: 服务商会改域名，写死的地址只会变成过期信息（R6.1）。
 ENV_KEY = "TRIPO_API_KEY"
 ENV_BASE = "TRIPO_API_BASE"
 
@@ -112,7 +112,7 @@ class TripoModel:
         texture / pbr / quad / texture_quality / geometry_quality:
                     Forwarded verbatim to the generation endpoint.
         api_base:   覆盖 API 根地址。为 None 时读取 `.env` 中的 `$TRIPO_API_BASE`；
-                    该变量缺失即报错（R9.7）。
+                    该变量缺失即报错（R6.1）。
         verbose:    Print task progress; off by default (R3.7).
     """
 
@@ -166,7 +166,7 @@ class TripoModel:
         self.quad = quad
         self.texture_quality = texture_quality
         self.geometry_quality = geometry_quality
-        # [R9.7] API 根地址是必填项，且在首次调用时才解析，因此构造函数既不要求
+        # [R6.1] API 根地址是必填项，且在首次调用时才解析，因此构造函数既不要求
         # 凭证也不触网。端点由用户在 .env 里配置，代码不含任何 URL 示例。
         self.api_base = api_base
         self.http_timeout = http_timeout
@@ -177,7 +177,7 @@ class TripoModel:
         self._cache = cloud_api.ResponseCache(cache_dir, self.PROVIDER)
 
         #: Record of the most recent **real** call: task_id, elapsed_sec, credits,
-        #: triangles, bytes, cached. Operators copy it into meta.json (R9.8).
+        #: triangles, bytes, cached. Operators copy it into meta.json (R7.1).
         self.last_call_info: dict[str, Any] = {}
 
     # ── plumbing ──────────────────────────────────────────────────────────────
@@ -187,7 +187,7 @@ class TripoModel:
         """
         HTTP 客户端，首次使用时创建。
 
-        [C6/R9.7] API Key 与 API 根地址都在这里解析，而不是在 `__init__` 中，因此
+        [C6/R6.1] API Key 与 API 根地址都在这里解析，而不是在 `__init__` 中，因此
         wrapper 可以在没有凭证的机器上被 import 和构造（`tests/harness/smoke.py`
         正是这么做的）。
         """
@@ -217,7 +217,7 @@ class TripoModel:
         Strip Tripo's `{"code": 0, "data": {...}}` envelope.
 
         A non-zero `code` on an HTTP 200 is a terminal application error — the
-        same request will fail the same way, so it must not be retried (R9.9).
+        same request will fail the same way, so it must not be retried (R8.1).
         """
         if not isinstance(resp, dict):
             raise cloud_api.CloudAPIError(f"unexpected response type {type(resp).__name__}: {resp!r}")
@@ -468,7 +468,7 @@ class TripoModel:
             "preview_url": (task.get("output") or {}).get("rendered_image_url"),
             **info,
         }
-        # R9.8 — one line per billed call: what it cost and what it produced.
+        # R7.1 — one line per billed call: what it cost and what it produced.
         logger.info(
             "[tripo] task=%s model=%s %.1fs credits=%s triangles=%s bytes=%s",
             task_id, self.model_path, elapsed, self.last_call_info.get("credits"),

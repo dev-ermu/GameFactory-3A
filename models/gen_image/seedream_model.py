@@ -26,7 +26,7 @@ from models.common import cloud_api
 
 logger = logging.getLogger(__name__)
 
-#: `.env` 变量名；URL 由用户填写在 `.env` 里，代码不保留 URL 字面量（R9.7）。
+#: `.env` 变量名；URL 由用户填写在 `.env` 里，代码不保留 URL 字面量（R6.1）。
 ENV_KEY = "ARK_API_KEY"
 ENV_BASE = "ARK_API_BASE"
 DEFAULT_MODEL = "doubao-seedream-5-0-260128"
@@ -86,7 +86,7 @@ class SeedreamModel:
         self.size = size
         self.watermark = watermark
         self.response_format = response_format
-        # [R9.7] 必填项，且在首次调用时才解析。端点由用户在 .env 里配置，代码
+        # [R6.1] 必填项，且在首次调用时才解析。端点由用户在 .env 里配置，代码
         # 不含任何 URL 示例。
         self.api_base = api_base
         self.http_timeout = http_timeout
@@ -104,7 +104,7 @@ class SeedreamModel:
 
     @property
     def client(self) -> cloud_api.CloudAPIClient:
-        """首次使用时创建带鉴权的 HTTP 客户端（R9.7）。"""
+        """首次使用时创建带鉴权的 HTTP 客户端（R6.1）。"""
         if self._client is None:
             key = cloud_api.require_api_key(
                 self.api_key, ENV_KEY, who="SeedreamModel"

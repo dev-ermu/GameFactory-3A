@@ -28,7 +28,7 @@ from models.gen_audio.seed_audio_utils import (
     encode_wav_base64,
 )
 
-#: `.env` 变量名；URL 由用户填写在 `.env` 里，代码不保留 URL 字面量（R9.7）。
+#: `.env` 变量名；URL 由用户填写在 `.env` 里，代码不保留 URL 字面量（R6.1）。
 ENV_KEY = "SEED_AUDIO_API_KEY"
 ENV_BASE = "SEED_AUDIO_API_BASE"
 DEFAULT_MODEL = "seed-audio-1.0"
@@ -67,7 +67,7 @@ class SeedAudioModel:
         self.device = device  # accepted for model-slot parity; the service is remote
         self.mode = str(mode).lower()
         self.api_key = api_key
-        # [R9.7] 必填项，且在首次调用时才解析。端点由用户在 .env 里配置，代码
+        # [R6.1] 必填项，且在首次调用时才解析。端点由用户在 .env 里配置，代码
         # 不含任何 URL 示例。
         self.api_base = api_base
         self.speaker_id = speaker_id or os.environ.get("SEED_AUDIO_SPEAKER_ID")

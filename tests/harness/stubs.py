@@ -407,7 +407,7 @@ class _StubBase:
 
 class _StubCloudModel(_StubBase):
     """
-    Shared body of the cloud-API stubs (`api_model_require.md` R9 checklist).
+    Shared body of the cloud-API stubs (`model_require.md` R6–R8 checklist).
 
     Mimics the *interface* of `TripoModel` / `MeshyModel` including
     `last_call_info` and `balance()`, and **performs no network I/O whatsoever** —

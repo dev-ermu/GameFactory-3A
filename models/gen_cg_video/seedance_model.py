@@ -3,17 +3,16 @@ SeedanceModel — wrapper around Volcengine Ark's Seedance video-generation API.
 
 Reference: https://www.volcengine.com/docs/82379/1520757
 
-CONTRACT DEVIATIONS (model_require.md targets local-weight models;
-                     see agent_skills/develop_harness/api_model_require.md):
-  C1  R2.1/R2.2 -> R9.1  `model_path` carries a model version id.
-  C2  R2.3      -> R9.2  `device` is accepted for parity and ignored.
-  C3  R3.6      -> R9.3  no torch inference context; this is an HTTP API.
-  C4  R4.1-R4.3 -> R9.4  `unload()` closes the HTTP session.
-  C5  R3.3/R3.4 -> R9.5  `seed` is forwarded; reproducibility is not guaranteed.
-  C6  R3.1      -> R9.6  submit, poll and download are hidden by `infer()`.
-  C7  R1.2              `infer_and_save(..., output_path)` writes caller's path.
-  C8  (new)     -> R9.8  identical billed requests use the response cache.
-  C9  (new)     -> R9.9  shared HTTP retries classify terminal failures.
+CONTRACT NOTES (see agent_skills/develop_harness/model_require.md R12):
+  C1  R2.1/R2.2  `model_path` carries a model version id.
+  C2  R2.3  `device` is accepted for parity and ignored.
+  C3  R3.6  no torch inference context; this is an HTTP API.
+  C4  R4.1-R4.3  `unload()` closes the HTTP session.
+  C5  R3.3/R3.4  `seed` is forwarded; reproducibility is not guaranteed.
+  C6  R3.1  submit, poll and download are hidden by `infer()`.
+  C7  R1.2        `infer_and_save(..., output_path)` writes caller's path.
+  C8  R7.1  identical billed requests use the response cache.
+  C9  R8.1  shared HTTP retries classify terminal failures.
 
 环境变量（统一写在 `<repo>/.env`，见 `.env.example`）：
     ARK_API_KEY   在首次 infer() 调用时必需，构造时不需要。
@@ -31,7 +30,7 @@ from models.gen_cg_video.utils import VideoGenerationInput, VideoGenerationMode
 
 logger = logging.getLogger(__name__)
 
-#: `.env` 变量名；URL 由用户填写在 `.env` 里，代码不保留 URL 字面量（R9.7）。
+#: `.env` 变量名；URL 由用户填写在 `.env` 里，代码不保留 URL 字面量（R6.1）。
 ENV_KEY = "ARK_API_KEY"
 ENV_BASE = "ARK_API_BASE"
 DEFAULT_MODEL = "doubao-seedance-2-0-260128"
@@ -93,7 +92,7 @@ class SeedanceModel:
         self.ratio = ratio
         self.generate_audio = generate_audio
         self.watermark = watermark
-        # [R9.7] 必填项，且在首次调用时才解析。端点由用户在 .env 里配置，代码
+        # [R6.1] 必填项，且在首次调用时才解析。端点由用户在 .env 里配置，代码
         # 不含任何 URL 示例。
         self.api_base = api_base
         self.http_timeout = http_timeout
@@ -111,7 +110,7 @@ class SeedanceModel:
 
     @property
     def client(self) -> cloud_api.CloudAPIClient:
-        """首次使用时创建带鉴权的 HTTP 客户端（R9.7）。"""
+        """首次使用时创建带鉴权的 HTTP 客户端（R6.1）。"""
         if self._client is None:
             key = cloud_api.require_api_key(
                 self.api_key, ENV_KEY, who="SeedanceModel"
