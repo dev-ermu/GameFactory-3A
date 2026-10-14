@@ -21,7 +21,6 @@ from config import (  # noqa: F401
     REPO_ROOT,
     ConfigError,
     Settings,
-    api_cache_dir,
     require_cloud_or_exit,
     settings,
 )
@@ -30,7 +29,6 @@ __all__ = [
     "REPO_ROOT",
     "ConfigError",
     "Settings",
-    "api_cache_dir",
     "require_cloud_or_exit",
     "settings",
 ]

@@ -73,7 +73,6 @@ python pipeline/assets_gen/gen_audio/run.py --only-audio-type sound_effect --no-
 
 ```bash
 export SEED_AUDIO_API_KEY=<你的火山引擎Seed Audio API密钥>
-export AAAGF_API_CACHE=outputs/runs/_api_cache
 
 # 可选配置：
 export SEED_AUDIO_MODEL=seed-audio-1.0

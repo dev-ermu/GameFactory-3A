@@ -36,7 +36,7 @@ def rig_character(
     if not isinstance(mesh, (bytes, bytearray)) or not mesh:
         raise ValueError("rig_character needs non-empty mesh file bytes.")
 
-    artifacts = model.infer(
+    artifacts = model.request(
         bytes(mesh),
         mesh_format=normalise_mesh_format(mesh_format),
         seed=seed,

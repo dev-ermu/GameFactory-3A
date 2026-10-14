@@ -164,7 +164,7 @@ class BaseModel(ABC):
         """返回当前绑定的会话标识。"""
         return self._previous_response_id
 
-    def unload(self) -> None:
+    def release(self) -> None:
         """关闭底层连接，释放网络资源。重复调用是安全的。"""
         if self._client is not None:
             self._client.close()
@@ -175,6 +175,7 @@ class BaseModel(ABC):
         self._client = None
         self._http_client = None
         self._previous_response_id = None
+
     # ── 重试 ────────────────────────────────────────────────────────
 
     def is_retryable(self, exc: BaseException) -> bool:
@@ -271,6 +272,7 @@ class BaseModel(ABC):
                 )
 
             time.sleep(self.poll_interval)
+    
     # ── 产物落盘 ────────────────────────────────────────────────────
 
     def persist(self, payload: bytes, directory: str | Path, filename: str) -> Path:

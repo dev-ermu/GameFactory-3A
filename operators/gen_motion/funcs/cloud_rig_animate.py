@@ -37,7 +37,7 @@ def check_riggable(
     Returns ``{"riggable": bool, "rig_type": str, "unclassified": bool,
     "raw": dict}``. Pass the returned ``rig_type`` to `rig_mesh`.
     """
-    return check_model.infer(
+    return check_model.request(
         mesh_bytes, mesh_format=mesh_format, mesh_url=mesh_url
     )
 
@@ -81,7 +81,7 @@ def rig_mesh(
     best_report: dict[str, Any] | None = None
 
     for index in range(max(1, attempts)):
-        result = rig_model.infer(
+        result = rig_model.request(
             mesh_bytes,
             mesh_format=mesh_format,
             seed=seed + index,
@@ -136,7 +136,7 @@ def animate_rigged(
             "skeleton held server-side for a completed rigging task, not "
             "against a mesh or a URL."
         )
-    result = animation_model.infer(
+    result = animation_model.request(
         rig_task_id,
         animation,
         seed=seed,
@@ -156,7 +156,7 @@ def convert_format(
     mesh_format: str = ".glb",
 ) -> dict[str, Any]:
     """Convert a mesh to another container in the cloud (FBX for engine import)."""
-    result = format_model.infer(
+    result = format_model.request(
         mesh_bytes,
         mesh_format=mesh_format,
         mesh_url=mesh_url,

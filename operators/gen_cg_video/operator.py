@@ -146,7 +146,7 @@ class GenCGVideoOperator:
         request = self._build_request(inp)
 
         t0 = time.time()
-        video_path = self.model.infer_and_save(
+        video_path = self.model.request_and_save(
             request,
             output_path=str(output_path),
         )

@@ -17,7 +17,7 @@ def generate_sound_effect(
         raise RuntimeError("No sound-effect model was loaded for this AudioGen operator.")
     if not prompt or not prompt.strip():
         raise ValueError("A sound_effect task requires a non-empty `prompt` field.")
-    return model.infer(
+    return model.request(
         prompt=prompt,
         seed=seed,
         duration_sec=duration_sec,

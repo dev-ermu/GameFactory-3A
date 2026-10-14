@@ -48,7 +48,7 @@ def _generate_tpose_rgb(
     prompt = TPOSE_PROMPT
     if description:
         prompt = f"Character description: {description}. " + prompt
-    return gen_model.infer(ref_image, prompt=prompt, seed=seed, steps=steps)
+    return gen_model.request(ref_image, prompt=prompt, seed=seed, steps=steps)
 
 
 # ---------------------------------------------------------------------------

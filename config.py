@@ -59,7 +59,6 @@ class Settings(BaseSettings):
 
     # 通用
     output_root: Path = Field(REPO_ROOT / "outputs" / "runs", validation_alias="AAAGF_OUTPUT_ROOT")
-    api_cache: str | None = Field(None, validation_alias=_a("AAAGF_API_CACHE", "GAMEFACTORY3A_API_CACHE"))
 
     # 任务槽位的后端开关。**只支持云端 API**——本地权重后端已全部移除。
     backend_3d_object: str = Field("tripo", validation_alias="AAAGF_3D_BACKEND")
@@ -376,10 +375,4 @@ def require_cloud_or_exit(
         names = ", ".join(provider_keys)
         sys.stderr.write(f"[config] cloud backend ready: {names}\n")
     return resolved
-
-
-# ── 常用派生值 ─────────────────────────────────────────────────────────────────
-def api_cache_dir() -> str | None:
-    """云 API 响应缓存目录；关闭缓存时返回 None（`AAAGF_API_CACHE`）。"""
-    return settings.api_cache or None
 

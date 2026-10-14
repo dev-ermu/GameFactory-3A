@@ -116,7 +116,6 @@ python pipeline/assets_gen/gen_cg_video/run.py \
   --task-id paper_dragon \
   --game gameA_cyberpunk_shooter \
   --run-id auto \
-  --cache-dir outputs/runs/_api_cache
 ```
 
 帧输入与参考模式：
@@ -172,7 +171,6 @@ JSONL格式的任务示例：
 ```bash
 pip install -r requirements.txt
 export ARK_API_KEY="你的API密钥"
-export GAMEFACTORY3A_API_CACHE=outputs/runs/_api_cache
 ```
 
 可选配置：
@@ -204,7 +202,6 @@ python pipeline/assets_gen/gen_cg_video/run.py \
   --timeout 1800 \
   --poll-interval 3 \
   --max-retries 3 \
-  --cache-dir outputs/runs/_api_cache \
   --prompt "一座悬浮城市的电影级全景镜头。"
 ```
 
@@ -264,7 +261,6 @@ export ARK_API_KEY="你的API密钥"
 export CG_VIDEO_BACKEND=seedance
 export CG_VIDEO_TEST_TASKS=/绝对路径/to/cg_tasks.jsonl
 export CG_VIDEO_TEST_OUT_DIR=/绝对路径/to/output
-export GAMEFACTORY3A_API_CACHE=/绝对路径/to/api_cache
 ```
 
 该测试会在联系服务提供商前先验证任务有效性。设置`CG_VIDEO_TEST_TASK_ID=<任务ID>`即可复现特定任务结果。切勿在持续集成环境中启用付费测试，也不要为了验证代码变更而运行所有模式。

@@ -14,7 +14,6 @@ Examples:
     python pipeline/assets_gen/gen_audio/run.py --audio-type sound_effect \
         --prompt "a single futuristic rifle shot" --task-id rifle_shot
     python pipeline/assets_gen/gen_audio/run.py --audio-type dialogue \
-        --text "发现目标" --cache-dir outputs/runs/_api_cache
 """
 
 import argparse
@@ -40,7 +39,6 @@ def load_seed_audio_model(
     mode: str,
     model_id: str = DEFAULT_SEED_AUDIO_MODEL,
     device: str = "cpu",
-    cache_dir: str | None = None,
     speaker_id: str | None = None,
     api_base: str | None = None,
     http_timeout: int = 300,
@@ -54,7 +52,6 @@ def load_seed_audio_model(
         model_path=model_id,
         device=device,
         mode=mode,
-        cache_dir=cache_dir,
         speaker_id=speaker_id,
         api_base=api_base,
         http_timeout=http_timeout,
@@ -150,12 +147,6 @@ def main() -> None:
         default=300,
         help="Per-request HTTP timeout in seconds for Seed Audio.",
     )
-    parser.add_argument(
-        "--cache-dir",
-        default=config.api_cache_dir(),
-        help="Cloud API response cache; reuse identical requests instead of "
-             "paying twice (default: $AAAGF_API_CACHE).",
-    )
     parser.add_argument("--game", default=None,
                         help=f"Game project id. Known: {paths.list_games() or '<none>'}")
     parser.add_argument("--tasks", default=None,
@@ -215,7 +206,6 @@ def main() -> None:
             "dialogue",
             model_id=args.seed_audio_model,
             device=args.device,
-            cache_dir=args.cache_dir,
             speaker_id=args.seed_audio_speaker_id,
             api_base=args.seed_audio_api_base,
             http_timeout=args.seed_audio_timeout,
@@ -226,7 +216,6 @@ def main() -> None:
             "sound_effect",
             model_id=args.seed_audio_model,
             device=args.device,
-            cache_dir=args.cache_dir,
             api_base=args.seed_audio_api_base,
             http_timeout=args.seed_audio_timeout,
             sample_rate=args.seed_audio_sample_rate,

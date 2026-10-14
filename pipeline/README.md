@@ -63,7 +63,7 @@ print(result["tpose_rgba_path"])
 ```
 
 该运行器所使用的具体封装代码位于
-`models/gen_image/seedream_model.py`。当不再需要已加载的模型时，请调用其 `unload()` 方法。
+`models/gen_image/seedream_model.py`。当不再需要已加载的模型时，请调用其 `release()` 方法。
 
 ## 职责划分
 

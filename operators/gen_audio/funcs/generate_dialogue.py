@@ -26,7 +26,7 @@ def generate_dialogue(
         instructions.append(f"Speak with a {emotion} emotion.")
     if delivery:
         instructions.append(delivery)
-    return model.infer(
+    return model.request(
         text=text,
         seed=seed,
         language=language,

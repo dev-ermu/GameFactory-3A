@@ -24,7 +24,7 @@ Usage:
     from models.gen_3d_object.tripo_model import TripoModel
     from operators.gen_3d_object.operator import Gen3DObjectOperator
 
-    model = TripoModel(model_path="v3.1-20260211")
+    model = TripoModel("v3.1-20260211")
 
     # per-game layout
     op = Gen3DObjectOperator(model=model, run_id="20260731_1032")
@@ -76,7 +76,7 @@ class Gen3DObjectOperator:
     Operator for 3D object generation.
 
     Args:
-        model: A loaded model with an `infer_and_save(image, output_path, ...)` method.
+        model: A loaded model with a `request_and_save(image, output_path, ...)` method.
                Currently supports TripoModel and MeshyModel; any model with the
                same interface works.
         output_dir (str, optional): **Legacy flat mode.** When given, every GLB is
@@ -187,7 +187,7 @@ class Gen3DObjectOperator:
         image = self._load_image(inp)
 
         t0 = time.time()
-        glb_path = self.model.infer_and_save(
+        glb_path = self.model.request_and_save(
             image,
             output_path=str(out_path),
             seed=seed,

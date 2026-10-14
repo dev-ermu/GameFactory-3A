@@ -22,7 +22,6 @@ Usage:
     export TRIPO_API_KEY=...
     python pipeline/assets_gen/gen_3d_object/run.py --backend tripo \
         --game gameA_cyberpunk_shooter --run-id auto \
-        --cache-dir outputs/runs/_api_cache
 
     # Only one game project (prefers that game's own object_tasks.jsonl)
     python pipeline/assets_gen/gen_3d_object/run.py --game gameA_cyberpunk_shooter
@@ -183,9 +182,6 @@ def main():
     parser.add_argument("--ckpt",      default=None,
                         help="Model version id. "
                              "Precedence: this flag > env var > backend default")
-    parser.add_argument("--cache-dir", default=config.api_cache_dir(),
-                        help="Cloud backends: reuse identical requests instead of "
-                             "paying for them twice (default: $AAAGF_API_CACHE)")
     parser.add_argument("--low-poly",  action="store_true",
                         help="Cloud backends: ask the service for low-poly "
                              "topology (mesh-particle VFX); better than local decimation")

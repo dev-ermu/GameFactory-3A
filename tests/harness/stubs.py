@@ -390,14 +390,14 @@ def _skinned_glb(joint_names, animation=None) -> bytes:
 class _StubBase:
     """Records calls so tests can assert the operator passed things through."""
 
-    def __init__(self, model_path: str = "stub://model", device: str = "cpu", **kw):
-        self.model_path = model_path
+    def __init__(self, model_id: str = "stub://model", device: str = "cpu", **kw):
+        self.model_id = model_id
         self.device = device
         self.extra = kw
         self.calls: list[dict] = []
 
-    def unload(self) -> None:  # idempotent, per R4.2
-        self.calls.append({"op": "unload"})
+    def release(self) -> None:  # idempotent, per R4.2
+        self.calls.append({"op": "release"})
 
 
 # ── Layer-A generation stubs ──────────────────────────────────────────────────
@@ -419,12 +419,12 @@ class _StubCloudModel(_StubBase):
     #: Faces the fake asset reports, so face-budget assertions have something real.
     triangles = 2
 
-    def __init__(self, model_path: str = "stub-v1", device: str = "cpu", **kw):
-        super().__init__(model_path=model_path, device=device, **kw)
+    def __init__(self, model_id: str = "stub-v1", device: str = "cpu", **kw):
+        super().__init__(model_id=model_id, device=device, **kw)
         self.output_format = kw.get("output_format", "glb")
         self.last_call_info: dict = {}
 
-    def infer(
+    def request(
         self,
         image=None,
         seed: int = 42,
@@ -438,22 +438,22 @@ class _StubCloudModel(_StubBase):
         **provider_kwargs,
     ) -> bytes:
         if image is None and image_url is None and not prompt:
-            raise ValueError(f"{type(self).__name__}.infer needs an image or a prompt")
+            raise ValueError(f"{type(self).__name__}.request needs an image or a prompt")
         self.calls.append({
-            "op": "infer", "seed": seed, "prompt": prompt,
+            "op": "request", "seed": seed, "prompt": prompt,
             "decimation_target": decimation_target, "texture_size": texture_size,
             **provider_kwargs,
         })
         data = make_minimal_glb(triangles=self.triangles)
         self.last_call_info = {
-            "provider": self.provider, "model": self.model_path,
+            "provider": self.provider, "model": self.model_id,
             "task_id": f"stub_task_{len(self.calls):03d}", "elapsed_sec": 0.0,
             "credits": 0, "cached": False, "triangles": self.triangles,
             "bytes": len(data),
         }
         return data
 
-    def infer_and_save(
+    def request_and_save(
         self,
         image=None,
         output_path: str | None = None,
@@ -469,10 +469,10 @@ class _StubCloudModel(_StubBase):
     ) -> str:
         if not output_path:
             raise ValueError("output_path is required (model_require.md R1.2)")
-        data = self.infer(image, seed, decimation_target, texture_size,
+        data = self.request(image, seed, decimation_target, texture_size,
                           prompt=prompt, negative_prompt=negative_prompt,
                           image_url=image_url, verbose=verbose, **provider_kwargs)
-        self.calls.append({"op": "infer_and_save", "output_path": output_path})
+        self.calls.append({"op": "request_and_save", "output_path": output_path})
         out = Path(output_path)
         out.parent.mkdir(parents=True, exist_ok=True)
         out.write_bytes(data)
@@ -502,18 +502,18 @@ class StubTripoRigCheckModel(_StubBase):
     Performs no network I/O, per the R9 stub checklist.
     """
 
-    def __init__(self, model_path: str = "tripo-3d-rigging-check",
+    def __init__(self, model_id: str = "tripo-3d-rigging-check",
                  device: str = "cpu", *, riggable: bool = True,
                  rig_type: str = "biped", **kw):
-        super().__init__(model_path=model_path, device=device, **kw)
+        super().__init__(model_id=model_id, device=device, **kw)
         self._riggable = riggable
         self._rig_type = rig_type
         self.last_call_info: dict = {}
 
-    def infer(self, mesh=None, mesh_format: str = ".glb",
+    def request(self, mesh=None, mesh_format: str = ".glb",
               seed: int = 42, *, mesh_url: str = "", **kw) -> dict:
         _require_mesh_url(mesh_url)
-        self.calls.append({"op": "infer", "mesh_url": mesh_url,
+        self.calls.append({"op": "request", "mesh_url": mesh_url,
                            "mesh_bytes": len(mesh) if mesh else 0,
                            "mesh_format": mesh_format, **kw})
         self.last_call_info = {"task_id": f"stub_check_{len(self.calls):03d}",
@@ -544,20 +544,20 @@ class StubTripoRiggingModel(_StubBase):
     ``limbs_per_attempt`` scripts the sequence.
     """
 
-    def __init__(self, model_path: str = "tripo-3d-rigging",
+    def __init__(self, model_id: str = "tripo-3d-rigging",
                  device: str = "cpu", *,
                  limbs_per_attempt: tuple[int, ...] = (1, 4), **kw):
-        super().__init__(model_path=model_path, device=device, **kw)
+        super().__init__(model_id=model_id, device=device, **kw)
         self.last_call_info: dict = {}
         self._limbs = limbs_per_attempt
         self._attempt = 0
 
-    def infer(self, mesh=None, mesh_format: str = ".glb", seed: int = 42,
+    def request(self, mesh=None, mesh_format: str = ".glb", seed: int = 42,
               *, mesh_url: str = "", rig_type: str = "biped",
               rig_spec: str = "tripo", out_format: str = "glb",
               post_filter: bool = True, **kw) -> dict:
         _require_mesh_url(mesh_url)
-        self.calls.append({"op": "infer", "mesh_url": mesh_url,
+        self.calls.append({"op": "request", "mesh_url": mesh_url,
                            "mesh_bytes": len(mesh) if mesh else 0,
                            "rig_type": rig_type, "rig_spec": rig_spec,
                            "out_format": out_format, "seed": seed, **kw})
@@ -586,12 +586,12 @@ class StubTripoAnimationModel(_StubBase):
     anything that is not a ``preset:`` name.
     """
 
-    def __init__(self, model_path: str = "tripo-3d-animation",
+    def __init__(self, model_id: str = "tripo-3d-animation",
                  device: str = "cpu", **kw):
-        super().__init__(model_path=model_path, device=device, **kw)
+        super().__init__(model_id=model_id, device=device, **kw)
         self.last_call_info: dict = {}
 
-    def infer(self, rig_task_id: str = "", animation: str = "", seed: int = 42,
+    def request(self, rig_task_id: str = "", animation: str = "", seed: int = 42,
               *, out_format: str = "glb", animate_in_place: bool = False,
               export_with_geometry: bool = True, **kw) -> dict:
         if not str(rig_task_id).strip():
@@ -604,7 +604,7 @@ class StubTripoAnimationModel(_StubBase):
                 f"animation={animation!r} is not a preset identifier; this "
                 "endpoint retargets a fixed library, e.g. 'preset:walk'."
             )
-        self.calls.append({"op": "infer", "rig_task_id": rig_task_id,
+        self.calls.append({"op": "request", "rig_task_id": rig_task_id,
                            "animation": animation, "seed": seed,
                            "out_format": out_format,
                            "animate_in_place": animate_in_place, **kw})
@@ -625,15 +625,15 @@ class StubTripoAnimationModel(_StubBase):
 class StubTripoFormatModel(_StubBase):
     """Mimics `TripoFormatModel` — returns bytes in the requested container."""
 
-    def __init__(self, model_path: str = "tripo-3d-format",
+    def __init__(self, model_id: str = "tripo-3d-format",
                  device: str = "cpu", **kw):
-        super().__init__(model_path=model_path, device=device, **kw)
+        super().__init__(model_id=model_id, device=device, **kw)
         self.last_call_info: dict = {}
 
-    def infer(self, mesh=None, mesh_format: str = ".glb", seed: int = 42,
+    def request(self, mesh=None, mesh_format: str = ".glb", seed: int = 42,
               *, mesh_url: str = "", output_format: str = "fbx", **kw) -> dict:
         _require_mesh_url(mesh_url)
-        self.calls.append({"op": "infer", "mesh_url": mesh_url,
+        self.calls.append({"op": "request", "mesh_url": mesh_url,
                            "mesh_bytes": len(mesh) if mesh else 0,
                            "output_format": output_format, **kw})
         data = (make_minimal_glb(triangles=2) if output_format == "glb"
@@ -761,42 +761,42 @@ def stub_retarget_motion(
 class StubSeedreamModel(_StubBase):
     """Mimics `models.gen_image.seedream_model.SeedreamModel`."""
 
-    def __init__(self, model_path: str = "stub-seedream", device: str = "cpu", **kw):
-        super().__init__(model_path=model_path, device=device, **kw)
+    def __init__(self, model_id: str = "stub-seedream", device: str = "cpu", **kw):
+        super().__init__(model_id=model_id, device=device, **kw)
         self.last_call_info: dict = {}
 
-    def infer(self, image: Image.Image, prompt: str, seed: int = 42,
+    def request(self, image: Image.Image, prompt: str, seed: int = 42,
               steps: int = 40) -> Image.Image:
-        self.calls.append({"op": "infer", "seed": seed, "steps": steps,
+        self.calls.append({"op": "request", "seed": seed, "steps": steps,
                            "prompt_len": len(prompt)})
         result = make_ref_image(size=max(image.size), seed=seed)
         self.last_call_info = {
             "provider": "seedream",
-            "model": self.model_path,
+            "model": self.model_id,
             "cached": False,
         }
         return result
 
 
 class StubVideoModel(_StubBase):
-    """Mimics the shared ``infer`` / ``infer_and_save`` CG-video interface."""
+    """Mimics the shared ``request`` / ``request_and_save`` CG-video interface."""
 
     output_format = "mp4"
 
-    def __init__(self, model_path: str = "stub-seedance", device: str = "cpu", **kw):
-        super().__init__(model_path=model_path, device=device, **kw)
+    def __init__(self, model_id: str = "stub-seedance", device: str = "cpu", **kw):
+        super().__init__(model_id=model_id, device=device, **kw)
         self.last_call_info: dict = {}
 
-    def infer(self, request, **provider_kwargs) -> bytes:
+    def request(self, video_input, **provider_kwargs) -> bytes:
         self.calls.append({
-            "op": "infer",
-            "mode": request.mode.value,
-            "prompt": request.prompt,
-            "duration_sec": request.duration_sec,
-            "seed": request.seed,
-            "first_frame": request.first_frame is not None,
-            "last_frame": request.last_frame is not None,
-            "reference_count": len(request.reference_images),
+            "op": "request",
+            "mode": video_input.mode.value,
+            "prompt": video_input.prompt,
+            "duration_sec": video_input.duration_sec,
+            "seed": video_input.seed,
+            "first_frame": video_input.first_frame is not None,
+            "last_frame": video_input.last_frame is not None,
+            "reference_count": len(video_input.reference_images),
             **provider_kwargs,
         })
         # Minimal MP4-like fixture: the harness checks placement and non-empty
@@ -804,7 +804,7 @@ class StubVideoModel(_StubBase):
         data = b"\x00\x00\x00\x18ftypmp42\x00\x00\x00\x00mp42isomgamefactory3a-video-stub"
         self.last_call_info = {
             "provider": "stub-video",
-            "model": self.model_path,
+            "model": self.model_id,
             "task_id": f"stub_video_{len(self.calls):03d}",
             "elapsed_sec": 0.0,
             "bytes": len(data),
@@ -812,12 +812,12 @@ class StubVideoModel(_StubBase):
         }
         return data
 
-    def infer_and_save(self, request, output_path: str, **provider_kwargs) -> str:
-        data = self.infer(request, **provider_kwargs)
+    def request_and_save(self, video_input, output_path: str, **provider_kwargs) -> str:
+        data = self.request(video_input, **provider_kwargs)
         out = Path(output_path)
         out.parent.mkdir(parents=True, exist_ok=True)
         out.write_bytes(data)
-        self.calls.append({"op": "infer_and_save", "output_path": str(out)})
+        self.calls.append({"op": "request_and_save", "output_path": str(out)})
         return str(out)
 
 
@@ -829,10 +829,10 @@ class StubSeedAudioModel(_StubBase):
     """Mimics ``SeedAudioModel`` in either dialogue or sound-effect mode."""
 
     def __init__(self, mode: str = "dialogue", **kw):
-        super().__init__(model_path="stub://seed-audio-1.0", device="cpu", **kw)
+        super().__init__(model_id="stub://seed-audio-1.0", device="cpu", **kw)
         self.mode = mode
 
-    def infer(self, text=None, seed: int = 42, *, prompt=None,
+    def request(self, text=None, seed: int = 42, *, prompt=None,
               duration_sec=None, **kw) -> dict:
         sample_rate = 24_000
         source = str(text or prompt or "")
@@ -845,7 +845,7 @@ class StubSeedAudioModel(_StubBase):
             rng = np.random.default_rng(seed)
             envelope = np.exp(-np.linspace(0.0, 8.0, samples, dtype=np.float32))
             waveform = 0.25 * rng.standard_normal(samples) * envelope
-        self.calls.append({"op": "infer", "mode": self.mode, "text": text,
+        self.calls.append({"op": "request", "mode": self.mode, "text": text,
                            "prompt": prompt, "seed": seed, **kw})
         return {"waveform": waveform.astype(np.float32)[None, :],
                 "sample_rate": sample_rate}

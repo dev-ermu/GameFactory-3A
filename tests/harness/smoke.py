@@ -117,18 +117,7 @@ def _make_task(kind: str, task_id: str, game_id: str | None = None) -> dict:
     if game_id is not None:
         task["game_id"] = game_id
     if kind == "motion":
-        fixture_dir = paths.OUTPUT_ROOT / "_smoke_motion_inputs"
-        fixture_dir.mkdir(parents=True, exist_ok=True)
-        target = fixture_dir / "target.glb"
-        target.write_bytes(make_minimal_glb())
-        task.update(
-            {
-                "task_type": "humanoid",
-                "target_glb_path": str(target),
-                "prompt": "A person walks forward and waves.",
-                "in_place": True,
-            }
-        )
+        task.update({"task_type": "cloud_humanoid"})
     return task
 
 
@@ -248,6 +237,78 @@ def smoke_summaries(kind: str, results: list[dict]) -> None:
     print(f"  [summary]  run_meta.json ok (git_sha={meta_data.get('git_sha')})")
 
 
+def smoke_motion_logic() -> dict:
+    """Motion 只做入参校验，不发真实请求。
+
+    云端绑定与重定向都需要服务商自行下载网格，因此必须提供公网
+    `mesh_url`；用真实地址跑一次要花钱，本冒烟测试不覆盖该路径。
+
+    这里验证的是算子的入参校验与错误提示——这些检查全部发生在第一次
+    网络调用之前，因此不会产生任何额度消耗。
+    """
+    print("  [logic] checking motion task validation (no provider call)")
+    op = build_operator("motion", run_id=SMOKE_RUN_ID)
+
+    base = {
+        "task_id": "smoke_motion_001",
+        "game_id": SMOKE_GAME,
+        "task_type": "cloud_humanoid",
+        "prompt": "A person walks forward and waves.",
+        "seed": 7,
+    }
+
+    # 本地 rig 路线要求真实的网格文件才会走到「后端已移除」那条提示。
+    fixture_dir = paths.OUTPUT_ROOT / "_smoke_motion_inputs"
+    fixture_dir.mkdir(parents=True, exist_ok=True)
+    local_mesh = fixture_dir / "local_route.glb"
+    local_mesh.write_bytes(make_minimal_glb())
+
+    cases = [
+        (
+            "缺少 mesh_url",
+            dict(base),
+            "mesh_url",
+        ),
+        (
+            "非法的 rig_type",
+            dict(
+                base,
+                mesh_url="https://example.invalid/mesh.glb",
+                rig_type="dragon",
+                skip_rig_check=True,
+            ),
+            "rig_type",
+        ),
+        (
+            "cloud_rig 缺少 mesh_url",
+            dict(base, task_type="cloud_rig"),
+            "mesh_url",
+        ),
+        (
+            "已废弃的本地 rig 路线",
+            dict(base, task_type="rig", target_glb_path=str(local_mesh)),
+            "PuppeteerModel",
+        ),
+        (
+            "已废弃的本地 humanoid 路线",
+            dict(base, task_type="humanoid", target_glb_path=str(local_mesh)),
+            "PuppeteerModel",
+        ),
+    ]
+
+    for label, task, expected in cases:
+        try:
+            op.run(task)
+        except (ValueError, RuntimeError) as exc:
+            _require(expected in str(exc),
+                     f"motion: {label} 的错误信息里应包含 {expected!r}，实际为 {exc}")
+            print(f"    [ok] {label} -> 被拒绝且提示明确")
+        else:
+            raise SmokeFailure(f"motion: {label} 应当被拒绝，但调用成功了")
+
+    return {"task_id": "smoke_motion_001", "validated": len(cases)}
+
+
 def smoke_kind(kind: str, keep: bool, backend: str | None = None) -> None:
     print(f"\n\033[1m▶ {kind}\033[0m")
     # --backend applies only to slots that actually have alternative backends,
@@ -255,6 +316,12 @@ def smoke_kind(kind: str, keep: bool, backend: str | None = None) -> None:
     backend = backend if kind in STUB_BACKENDS else None
     tmp_flat = paths.OUTPUT_ROOT / f"_smoke_legacy_{kind}"
     try:
+        if kind == "motion":
+            # 云端 motion 需要公网 mesh_url，跑真链路要花钱，这里只校验入参。
+            smoke_motion_logic()
+            print("  [logic] motion validated without any provider call")
+            return
+
         results = [smoke_per_game_mode(kind, backend=backend)]
         for extra_task in EXTRA_ROUTE_TASKS.get(kind, []):
             route_task = dict(extra_task)

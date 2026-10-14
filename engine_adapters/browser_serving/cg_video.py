@@ -67,7 +67,6 @@ ALLOWED_OPTION_KEYS = frozenset(
         "timeout",
         "poll_interval",
         "max_retries",
-        "cache_dir",
         "resolution",
         "ratio",
         "generate_audio",
@@ -723,8 +722,6 @@ class CgVideoGateway:
                 None,
             )
             kwargs = {
-                "cache_dir": opts.get("cache_dir")
-                or os.environ.get("GAMEFACTORY3A_API_CACHE"),
                 "timeout": int(opts.get("timeout", 1800)),
                 "poll_interval": float(opts.get("poll_interval", 3.0)),
                 "max_retries": int(opts.get("max_retries", 3)),
@@ -750,8 +747,6 @@ class CgVideoGateway:
         kwargs = {
             "runtime": runtime,
             "ref_image_size": str(opts.get("ref_image_size") or "match"),
-            "cache_dir": opts.get("cache_dir")
-            or os.environ.get("GAMEFACTORY3A_API_CACHE"),
             "timeout": int(opts.get("timeout", 1800)),
             "poll_interval": float(opts.get("poll_interval", 10.0)),
             "max_retries": int(opts.get("max_retries", 3)),

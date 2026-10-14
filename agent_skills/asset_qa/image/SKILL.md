@@ -48,7 +48,7 @@ image = model.generate(
     seed=42,
 )
 image.save("/absolute/path/chest.png")
-model.unload()
+model.release()
 ```
 
 画面中仅保留一个主体。如果生成结果将用于3D转换，在调用3D物体生成功能前应先审核图像质量，切勿试图后续修复有问题的几何结构。

@@ -16,8 +16,8 @@ class _StubVideoModel:
     def __init__(self) -> None:
         self.calls = 0
 
-    def infer_and_save(self, request, output_path: str) -> str:
-        del request
+    def request_and_save(self, video_input, output_path: str) -> str:
+        del video_input
         self.calls += 1
         target = Path(output_path)
         target.parent.mkdir(parents=True, exist_ok=True)
@@ -37,8 +37,8 @@ class _RecordingVideoModel:
         self.delay = delay
         self.last_call_info: dict[str, object] = {}
 
-    def infer_and_save(self, request, output_path: str) -> str:
-        del request
+    def request_and_save(self, video_input, output_path: str) -> str:
+        del video_input
         self.calls += 1
         if self.delay:
             time.sleep(self.delay)
@@ -48,7 +48,7 @@ class _RecordingVideoModel:
         self.last_call_info = {
             "provider": "stub",
             "runtime": "api",
-            "model": "stub-h3",
+            "model": "stub-seedance",
             "bytes": len(b"stub-mp4"),
             "cached": False,
         }

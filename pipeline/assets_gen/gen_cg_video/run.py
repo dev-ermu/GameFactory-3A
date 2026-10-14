@@ -125,12 +125,6 @@ def main() -> None:
         help="Cloud model version. "
              "Precedence: flag > environment > backend default",
     )
-    parser.add_argument(
-        "--cache-dir",
-        default=config.api_cache_dir(),
-        help="Reuse identical billed requests without network traffic "
-             "(default: $GAMEFACTORY3A_API_CACHE)",
-    )
     parser.add_argument("--timeout", type=int, default=1800)
     parser.add_argument("--poll-interval", type=float, default=3.0)
     parser.add_argument("--max-retries", type=int, default=3)

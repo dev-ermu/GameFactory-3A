@@ -28,7 +28,7 @@ def generate_motion(
     if repeat_times < 1:
         raise ValueError(f"repeat_times must be >= 1, got {repeat_times}")
 
-    artifacts = model.infer(
+    artifacts = model.request(
         prompt.strip(),
         seed=seed,
         motion_length=motion_length,
