@@ -56,6 +56,7 @@ if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 # ──────────────────────────────────────────────────────────────────────────────
 
+from config import settings  # noqa: E402
 from pipeline.common import config, paths  # noqa: E402
 
 #: Registered task kind — keys into paths.TASK_* tables.
@@ -76,17 +77,19 @@ BACKENDS: dict[str, tuple[str, str]] = {
 CLOUD_BACKENDS = ("tripo", "meshy")
 
 
-def resolve_ckpt(backend: str, cli_value: str | None) -> str:
-    """Checkpoint / model-version precedence: CLI flag > env var > default (R3.1)."""
-    import os
+def _text(value: object) -> str:
+    """把 `settings` 字段值转成去空白字符串；`None` 与空值一律返回 `""`。"""
+    return "" if value is None else str(value).strip()
 
-    default, env_var = BACKENDS[backend]
-    return cli_value or os.environ.get(env_var) or default
+
+def resolve_model_id(backend: str, cli_value: str | None) -> str:
+    """Model-version precedence: CLI flag > backend default (R2.1)."""
+    default, _env_var = BACKENDS[backend]
+    return cli_value or default
 
 
 def load_model(
-    ckpt: str,
-    device: str = "cpu",
+    model_id: str,
     backend: str = "tripo",
     **backend_kwargs,
 ):
@@ -94,26 +97,23 @@ def load_model(
     Load the 3D-object backend named by `backend` (R2.1).
 
     Args:
-        ckpt: Model version id.
-        device: Accepted and ignored — the cloud backends run server-side
-              (model_require.md R2.3).
+        model_id: 服务商的模型版本标识，例如 `v3.1-20260211`。
         backend: One of `BACKENDS`.
-        **backend_kwargs: Passed to the wrapper — `cache_dir`, `low_poly`,
-              `output_format`, `timeout`, … for the cloud backends.
+        **backend_kwargs: Passed to the wrapper — `output_format`, `timeout`, …
 
     Returns:
-        A model exposing `infer_and_save(image, output_path, seed,
+        A model exposing `request_and_save(image, output_path, seed,
         decimation_target, texture_size)`.
     """
     if backend == "tripo":
         from models.gen_3d_object.tripo_model import TripoModel
-        print(f"[run] Using TripoModel (cloud API), model={ckpt}")
-        return TripoModel(model_path=ckpt, device=device, **backend_kwargs)
+        print(f"[run] Using TripoModel (cloud API), model={model_id}")
+        return TripoModel(model_id, **backend_kwargs)
 
     if backend == "meshy":
         from models.gen_3d_object.meshy_model import MeshyModel
-        print(f"[run] Using MeshyModel (cloud API), model={ckpt}")
-        return MeshyModel(model_path=ckpt, device=device, **backend_kwargs)
+        print(f"[run] Using MeshyModel (cloud API), model={model_id}")
+        return MeshyModel(model_id, **backend_kwargs)
 
     raise ValueError(f"Unknown backend {backend!r}. Known: {sorted(BACKENDS)}")
 
@@ -173,10 +173,8 @@ def run_from_jsonl(tasks_path: str, operator, game_filter: str | None = None) ->
 
 
 def main():
-    import os
-
     parser = argparse.ArgumentParser(description="Run 3D object generation.")
-    parser.add_argument("--backend",   default=os.environ.get("AAAGF_3D_BACKEND", "tripo"),
+    parser.add_argument("--backend",   default=_text(settings.backend_3d_object) or "tripo",
                         choices=sorted(BACKENDS),
                         help="Model slot backend: a cloud API")
     parser.add_argument("--ckpt",      default=None,
@@ -197,7 +195,6 @@ def main():
                         help="Run directory name; 'auto' for a timestamp")
     parser.add_argument("--out-dir",   default=None,
                         help="Legacy flat output dir; bypasses the per-game layout")
-    parser.add_argument("--device",    default="cpu")
     # Single-demo mode
     parser.add_argument("--image",     default=None, help="Path to a single image (demo mode)")
     parser.add_argument("--task-id",   default="demo")
@@ -222,7 +219,7 @@ def main():
             context=f"3D-object backend {args.backend!r}",
         )
 
-    ckpt = resolve_ckpt(args.backend, args.ckpt)
+    model_id = resolve_model_id(args.backend, args.ckpt)
     backend_kwargs = {
         "cache_dir": args.cache_dir,
         "low_poly": args.low_poly,
@@ -230,7 +227,7 @@ def main():
         "timeout": args.timeout,
         "verbose": True,
     }
-    model = load_model(ckpt, device=args.device,
+    model = load_model(model_id,
                        backend=args.backend, **backend_kwargs)
 
     operator = make_operator(model, output_dir=args.out_dir,

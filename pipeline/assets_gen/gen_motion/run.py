@@ -56,7 +56,7 @@ def load_retarget_runtime(
 def load_cloud_rig_models(
     *,
     api_key: str | None = None,
-    cache_dir: str | None = None,
+    api_base: str | None = None,
     timeout: int = 1800,
     verbose: bool = False,
 ) -> tuple[Any, Any, Any, Any]:
@@ -66,7 +66,7 @@ def load_cloud_rig_models(
     cloud_format_model)``. Constructing them is free — no key, no socket.
     Inference is where the billing begins.
 
-    The key is read from ``TOKENHUB_API_KEY`` at first infer() call (R6.1).
+    The key is read from ``TOKENHUB_API_KEY`` at first `request()` call (R6.1).
     Post-pay billing must be enabled at
     https://console.cloud.tencent.com/tokenhub/inference for the tripo-3d-*
     model family.
@@ -77,19 +77,23 @@ def load_cloud_rig_models(
         TripoRigCheckModel,
         TripoRiggingModel,
     )
+
     kwargs: dict[str, Any] = {
-        "cache_dir": cache_dir,
         "timeout": timeout,
         "verbose": verbose,
     }
+
     if api_key:
         kwargs["api_key"] = api_key
 
+    if api_base:
+        kwargs["api_base"] = api_base
+
     return (
-        TripoRigCheckModel(**kwargs),
-        TripoRiggingModel(**kwargs),
-        TripoAnimationModel(**kwargs),
-        TripoFormatModel(**kwargs),
+        TripoRigCheckModel(TripoRigCheckModel.default_model_id, **kwargs),
+        TripoRiggingModel(TripoRiggingModel.default_model_id, **kwargs),
+        TripoAnimationModel(TripoAnimationModel.default_model_id, **kwargs),
+        TripoFormatModel(TripoFormatModel.default_model_id, **kwargs),
     )
 
 

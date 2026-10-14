@@ -4,6 +4,14 @@ import os
 import re
 from pathlib import Path
 
+from config import settings
+
+
+def _text(value: object) -> str:
+    """把 `settings` 字段值转成去空白字符串；`None` 与空值一律返回 `""`。"""
+    return "" if value is None else str(value).strip()
+
+
 
 TECHNICAL_AVATAR_SUFFIXES = (
     "_skeleton",
@@ -29,9 +37,7 @@ TECHNICAL_AVATAR_SUFFIXES = (
 
 
 def list_local_imported_assets(asset_type: str) -> list[dict]:
-    configured_project = (
-        os.environ.get("A3GAME_UE_PROJECT", "").strip()
-    )
+    configured_project = _text(settings.ue_project)
     if not configured_project:
         return []
     project_path = Path(configured_project).expanduser()

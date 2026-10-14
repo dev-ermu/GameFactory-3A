@@ -78,8 +78,6 @@ export SEED_AUDIO_API_KEY=<你的火山引擎Seed Audio API密钥>
 export SEED_AUDIO_MODEL=seed-audio-1.0
 export SEED_AUDIO_API_BASE=https://openspeech.bytedance.com
 export SEED_AUDIO_SPEAKER_ID=<已注册的Seed Audio发音人资源ID>
-export AAAGF_DIALOGUE_BACKEND=seed_audio
-export AAAGF_SOUND_EFFECT_BACKEND=seed_audio
 ```
 
 根据具体云端大模型调用参数，发送合适参数内容。比如Qwen风格的`speaker_id`值（例如`Vivian`）不会发送给Seed Audio。若要指定发音人，需使用`SEED_AUDIO_SPEAKER_ID`参数来指定已注册的Seed Audio发音人。仅在相关授权允许的情况下才可使用参考录音。

@@ -59,6 +59,8 @@ import hashlib
 import importlib.util
 import json
 import os
+
+from config import settings
 import platform
 import re
 import shutil
@@ -160,6 +162,12 @@ def find_unreal_editor(explicit: str | None = None) -> Path | None:
     return Path(found[-1]) if found else None
 
 
+
+def _text(value: object) -> str:
+    """把 `settings` 字段值转成去空白字符串；`None` 与空值一律返回 `""`。"""
+    return "" if value is None else str(value).strip()
+
+
 def _prefer_cmd_binary(path: Path) -> Path:
     """`UnrealEditor.exe` → `UnrealEditor-Cmd.exe` when that one exists."""
     if path.stem.endswith("-Cmd"):
@@ -189,8 +197,9 @@ def find_blender(explicit: str | None = None) -> Path | None:
     second is what a headless install script leaves behind, so this interpreter
     is checked before giving up.
     """
-    if explicit or os.environ.get("AAAGF_BLENDER"):
-        return Path(explicit or os.environ["AAAGF_BLENDER"])
+    resolved = explicit or _text(settings.blender_root)
+    if resolved:
+        return Path(resolved)
 
     on_path = shutil.which("blender")
     if on_path:
@@ -212,7 +221,7 @@ def find_godot(explicit: str | None = None) -> Path | None:
     if not configured:
         # 只有一个变量名 `A3GAME_GODOT_EXECUTABLE`，没有 `A3GAME_GODOT` / `AAAGF_GODOT`
         # 旧名回退——配置只有一个来源，回退链会让来源重新变成多个。
-        configured = os.environ.get("A3GAME_GODOT_EXECUTABLE", "").strip()
+        configured = _text(settings.godot_executable)
     if configured:
         return Path(configured).expanduser().resolve(strict=False)
     for name in ("godot4", "godot", "godot-mono"):
@@ -1410,7 +1419,7 @@ def main() -> int:
     ap.add_argument("--godot", default=None, help="Godot 4 editor binary path")
     ap.add_argument(
         "--godot-project",
-        default=(os.environ.get("A3GAME_GODOT_PROJECT", "").strip() or None),
+        default=(_text(settings.godot_project) or None),
         help="Godot project directory or its project.godot file",
     )
     ap.add_argument(

@@ -1,9 +1,22 @@
-"""Configuration for the stable UEClient API."""
+"""Configuration for the stable UEClient API.
+
+取值一律走 `config.settings`（项目唯一配置源），不再读 `os.environ`；
+旧名回退链由 `Settings` 的 `validation_alias` 承担。
+"""
 
 import os
 import re
+import sys
 from dataclasses import dataclass
 from pathlib import Path
+
+# 仓库根入 sys.path：`config` 是顶层模块，因此适配器不必 import `pipeline/`
+# 也能读到项目唯一的配置源（`model_require.md` R1.1）。
+_REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
+
+from config import settings
 
 
 SUPPORTED_API_VERSIONS = ("v1",)
@@ -38,12 +51,9 @@ UE_ASSET_TYPE_DEFAULT_DESTS = {
 }
 
 
-def _first_environment_value(*names: str) -> str:
-    for name in names:
-        value = os.environ.get(name, "").strip()
-        if value:
-            return value
-    return ""
+def _text(value: object) -> str:
+    """把 `settings` 字段值转成去空白字符串；`None` 与空值一律返回 `""`。"""
+    return "" if value is None else str(value).strip()
 
 
 def _optional_path(value: str | Path | None) -> Path | None:
@@ -63,10 +73,7 @@ def _optional_path(value: str | Path | None) -> Path | None:
 def _default_python_plugin_path(
     ue_root: Path | None,
 ) -> Path | None:
-    configured = _first_environment_value(
-        "A3GAME_UE_PYTHON_PLUGIN_PATH",
-        "UE_PYTHON_PLUGIN_PATH",
-    )
+    configured = _text(settings.ue_python_plugin_path)
     if configured:
         return _optional_path(configured)
     if ue_root is None:
@@ -119,52 +126,26 @@ class UEClientConfig:
             )
 
         resolved_root = _optional_path(
-            ue_root
-            or _first_environment_value(
-                "A3GAME_UE_ROOT",
-            )
+            ue_root or _text(settings.ue_root)
         )
         resolved_project = _optional_path(
-            project_path
-            or _first_environment_value(
-                "A3GAME_UE_PROJECT",
-            )
+            project_path or _text(settings.ue_project)
         )
-        resolved_host = (
-            host
-            or _first_environment_value(
-                "A3GAME_UE_HOST",
-                "UE_HOST",
-            )
-            or DEFAULT_HOST
-        )
+        resolved_host = host or _text(settings.ue_host) or DEFAULT_HOST
         resolved_port = port
         if resolved_port is None:
-            configured_port = _first_environment_value(
-                "A3GAME_UE_PORT",
-                "UE_PORT",
-            )
-            resolved_port = (
-                int(configured_port)
-                if configured_port
-                else DEFAULT_PORT
-            )
+            configured_port = _text(settings.ue_port)
+            resolved_port = int(configured_port) if configured_port else DEFAULT_PORT
         if not 1 <= int(resolved_port) <= 65535:
             raise ValueError(
                 "UE Remote Control port must be between 1 and 65535"
             )
         resolved_runtime_host = (
-            runtime_host
-            or _first_environment_value(
-                "A3GAME_UE_RUNTIME_HOST",
-            )
-            or DEFAULT_RUNTIME_HOST
+            runtime_host or _text(settings.ue_runtime_host) or DEFAULT_RUNTIME_HOST
         )
         resolved_runtime_port = runtime_port
         if resolved_runtime_port is None:
-            configured_runtime_port = _first_environment_value(
-                "A3GAME_UE_RUNTIME_PORT",
-            )
+            configured_runtime_port = _text(settings.ue_runtime_port)
             resolved_runtime_port = (
                 int(configured_runtime_port)
                 if configured_runtime_port
@@ -177,9 +158,7 @@ class UEClientConfig:
 
         resolved_transport = (
             python_transport
-            or _first_environment_value(
-                "A3GAME_UE_PYTHON_TRANSPORT",
-            )
+            or _text(settings.ue_python_transport)
             or DEFAULT_PYTHON_TRANSPORT
         ).strip().lower()
         if resolved_transport not in {
@@ -241,14 +220,9 @@ class UEClientConfig:
 
     @property
     def data_root(self) -> Path:
-        configured = _first_environment_value(
-            "A3GAME_UE_DATA_ROOT",
-            "A3GAME_DATA_ROOT",
-        )
+        configured = _text(settings.ue_data_root)
         if configured:
-            return Path(configured).expanduser().resolve(
-                strict=False
-            )
+            return Path(configured).expanduser().resolve(strict=False)
         project_file = self.project_file
         if project_file is not None:
             return (
@@ -263,24 +237,14 @@ class UEClientConfig:
 
     @property
     def artifact_registry_path(self) -> Path:
-        configured = _first_environment_value(
-            "A3GAME_UE_ARTIFACT_REGISTRY",
-            "A3GAME_ARTIFACT_REGISTRY",
-        )
+        configured = _text(settings.ue_artifact_registry)
         if configured:
-            return Path(configured).expanduser().resolve(
-                strict=False
-            )
+            return Path(configured).expanduser().resolve(strict=False)
         return self.data_root / "artifacts.json"
 
     @property
     def world_registry_root(self) -> Path:
-        configured = _first_environment_value(
-            "A3GAME_UE_WORLD_REGISTRY_ROOT",
-            "A3GAME_WORLD_REGISTRY_ROOT",
-        )
+        configured = _text(settings.ue_world_registry_root)
         if configured:
-            return Path(configured).expanduser().resolve(
-                strict=False
-            )
+            return Path(configured).expanduser().resolve(strict=False)
         return self.data_root / "worlds"

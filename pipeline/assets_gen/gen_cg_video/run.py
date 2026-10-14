@@ -29,7 +29,7 @@ BACKEND_PROVIDERS: dict[str, tuple[str, ...]] = {
 }
 
 
-def resolve_ckpt(backend: str, cli_value: str | None) -> str:
+def resolve_model_id(backend: str, cli_value: str | None) -> str:
     """Resolve CLI > environment > backend default, matching the 3D runner."""
     import os
 
@@ -38,8 +38,7 @@ def resolve_ckpt(backend: str, cli_value: str | None) -> str:
 
 
 def load_model(
-    ckpt: str,
-    device: str = "cpu",
+    model_id: str,
     backend: str = "seedance",
     **backend_kwargs,
 ):
@@ -47,12 +46,8 @@ def load_model(
     if backend == "seedance":
         from models.gen_cg_video.seedance_model import SeedanceModel
 
-        print(f"[run] Using SeedanceModel (cloud API), model={ckpt}")
-        return SeedanceModel(
-            model_path=ckpt,
-            device=device,
-            **backend_kwargs,
-        )
+        print(f"[run] Using SeedanceModel (cloud API), model={model_id}")
+        return SeedanceModel(model_id, **backend_kwargs)
 
     raise ValueError(f"Unknown backend {backend!r}. Known: {sorted(BACKENDS)}")
 
@@ -160,7 +155,6 @@ def main() -> None:
         default=None,
         help="Legacy flat output directory",
     )
-    parser.add_argument("--device", default="cpu")
 
     # Single-task mode. Without --prompt, the runner uses JSONL batch mode.
     parser.add_argument("--prompt", default=None)
@@ -192,7 +186,7 @@ def main() -> None:
     args = parser.parse_args()
 
     run_id = paths.new_run_id() if args.run_id == "auto" else args.run_id
-    ckpt = resolve_ckpt(args.backend, args.ckpt)
+    model_id = resolve_model_id(args.backend, args.ckpt)
     backend_kwargs = {
         "cache_dir": args.cache_dir,
         "timeout": args.timeout,
@@ -211,8 +205,7 @@ def main() -> None:
     )
 
     model = load_model(
-        ckpt,
-        device=args.device,
+        
         backend=args.backend,
         **backend_kwargs,
     )

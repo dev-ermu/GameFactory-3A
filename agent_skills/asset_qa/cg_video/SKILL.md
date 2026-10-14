@@ -219,11 +219,9 @@ MiniMax 的视频模型有两个容易混淆的名字，本仓库使用的是 **
 
 ### API运行时
 
-属于云端API，无需安装本地运行环境，只需在`.env`中配置`$MINIMAX_API_KEY`：
 
 ```bash
 pip install -r requirements.txt
-export MINIMAX_API_KEY="你的密钥"
 
 python pipeline/assets_gen/gen_cg_video/run.py \
   --backend minimax-h3 \

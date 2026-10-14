@@ -210,7 +210,7 @@ def create_app(
     config: BrowserServingConfig | None = None,
     backends: list[Any] | None = None,
 ) -> FastAPI:
-    resolved_config = config or BrowserServingConfig.from_environment()
+    resolved_config = config or BrowserServingConfig.from_settings()
     if service is None:
         if backends is None:
             from ..backends import (

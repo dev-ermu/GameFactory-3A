@@ -91,7 +91,7 @@ def build_admin_app(
     *,
     config: BrowserServingConfig | None = None,
 ) -> gr.Blocks:
-    resolved = config or BrowserServingConfig.from_environment()
+    resolved = config or BrowserServingConfig.from_settings()
     api = client or BrowserServingClient(
         resolved.public_gateway_url,
         engine=resolved.default_engine,
@@ -653,7 +653,7 @@ def build_admin_app(
 def launch_admin(
     config: BrowserServingConfig | None = None,
 ) -> None:
-    resolved = config or BrowserServingConfig.from_environment()
+    resolved = config or BrowserServingConfig.from_settings()
     build_admin_app(config=resolved).launch(
         server_name=resolved.admin_host,
         server_port=resolved.admin_port,

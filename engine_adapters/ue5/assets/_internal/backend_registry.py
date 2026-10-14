@@ -5,6 +5,13 @@ from threading import RLock
 
 from .backend import AssetBackend, AssetBackendProvider
 
+from config import settings
+
+
+def _text(value: object) -> str:
+    """把 `settings` 字段值转成去空白字符串；`None` 与空值一律返回 `""`。"""
+    return "" if value is None else str(value).strip()
+
 
 class AssetBackendRegistry:
     def __init__(self) -> None:
@@ -20,11 +27,7 @@ class AssetBackendRegistry:
 
     def get(self, name: str = "") -> AssetBackend:
         key = self._normalize_name(
-            name
-            or os.environ.get(
-                "A3GAME_UE_ASSET_BACKEND",
-                os.environ.get("A3GAME_ASSET_BACKEND", "ue"),
-            )
+            name or _text(settings.ue_asset_backend)
         )
         with self._lock:
             if key not in self._providers:

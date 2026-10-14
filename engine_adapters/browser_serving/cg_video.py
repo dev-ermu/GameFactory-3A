@@ -71,7 +71,6 @@ ALLOWED_OPTION_KEYS = frozenset(
         "ratio",
         "generate_audio",
         "watermark",
-        "minimax_runtime",
         "ref_image_size",
         "prompt_optimizer",
         "fast_pretreatment",
@@ -88,36 +87,6 @@ REUSE_REQUIRED_TASK_FIELDS = ("mode", "prompt", "duration_sec", "seed")
 
 class CgVideoError(BrowserServingError):
     """Raised when a CG-video request cannot be accepted or served."""
-
-
-def resolve_minimax_runtime(options: Mapping[str, Any]) -> str:
-    """解析 MiniMax H3 的执行路线。**只允许云端 API**。
-
-    原本支持 ``local``（ComfyUI + 本地 checkpoint），该运行时已随本地模型一并移除，
-    因此这里只接受 ``api``；``auto`` 也不再是合法取值。
-
-    Args:
-        options: 任务选项，可含 `minimax_runtime`。
-
-    Returns:
-        恒为 ``"api"``。
-
-    Raises:
-        CgVideoError: 取值不是 ``api`` 时。
-    """
-    raw = (
-        options.get("minimax_runtime")
-        or os.environ.get("MINIMAX_H3_RUNTIME")
-        or "api"
-    )
-    value = str(raw).strip().lower()
-    if value != "api":
-        raise CgVideoError(
-            f"minimax_runtime must be 'api'; got {value!r}. The local MiniMax H3 "
-            "runtime has been removed — this project generates video through "
-            "cloud APIs only."
-        )
-    return value
 
 
 class CgVideoGatewayProtocol(Protocol):
@@ -477,7 +446,7 @@ class CgVideoGateway:
         """
 
         opts = dict(options)
-        resolve_minimax_runtime(opts)   # 只允许 api，越界即拒
+
         return {
             "mode": str(task.get("mode") or "text_to_video"),
             "prompt": str(task.get("prompt") or ""),
@@ -742,8 +711,7 @@ class CgVideoGateway:
                 **kwargs,
             )
 
-        runtime = resolve_minimax_runtime(opts)
-        ckpt = resolve_ckpt(backend, None)
+            ckpt = resolve_ckpt(backend, None)
         kwargs = {
             "runtime": runtime,
             "ref_image_size": str(opts.get("ref_image_size") or "match"),
@@ -873,7 +841,6 @@ class CgVideoGateway:
         backend: str,
         options: Mapping[str, Any],
     ) -> None:
-        resolve_minimax_runtime(options)   # 只允许 api，越界即拒
         if not self.allow_cloud and self._bills_cloud_calls():
             raise CgVideoError(
                 "Cloud CG-video generation is disabled; enable it explicitly "

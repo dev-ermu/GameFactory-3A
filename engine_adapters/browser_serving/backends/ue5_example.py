@@ -1393,5 +1393,5 @@ def create_ue5_example_backend(
     config: BrowserServingConfig | None = None,
 ) -> UE5ExampleBackend:
     return UE5ExampleBackend(
-        config or BrowserServingConfig.from_environment()
+        config or BrowserServingConfig.from_settings()
     )

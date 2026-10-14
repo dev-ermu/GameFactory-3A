@@ -1,23 +1,32 @@
 """Configuration for the stable BlenderClient API.
 稳定的BlenderClient API配置。
+
+取值一律走 `config.settings`（项目唯一配置源），不再读 `os.environ`；
+旧名回退链由 `Settings` 的 `validation_alias` 承担。
 """
 
 import os
 import shutil
+import sys
 from dataclasses import dataclass
 from pathlib import Path
+
+# 仓库根入 sys.path：`config` 是顶层模块，因此适配器不必 import `pipeline/`
+# 也能读到项目唯一的配置源（`model_require.md` R1.1）。
+_REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
+
+from config import settings
 
 
 SUPPORTED_API_VERSIONS = ("v1",)
 DEFAULT_API_VERSION = "v1"
 
 
-def _first_environment_value(*names: str) -> str:
-    for name in names:
-        value = os.environ.get(name, "").strip()
-        if value:
-            return value
-    return ""
+def _text(value: object) -> str:
+    """把 `settings` 字段值转成去空白字符串；`None` 与空值一律返回 `""`。"""
+    return "" if value is None else str(value).strip()
 
 
 def _optional_path(value: str | Path | None) -> Path | None:
@@ -55,18 +64,10 @@ class BlenderClientConfig:
                 f"supported versions: {supported}"
             )
         resolved_root = _optional_path(
-            blender_root
-            or _first_environment_value(
-                "A3GAME_BLENDER_ROOT",
-                "AAAGF_BLENDER",
-                "BLENDER",
-            )
+            blender_root or _text(settings.blender_root)
         )
         resolved_project = _optional_path(
-            project_path
-            or _first_environment_value(
-                "A3GAME_BLENDER_PROJECT",
-            )
+            project_path or _text(settings.blender_project)
         )
         return cls(
             project_path=resolved_project,

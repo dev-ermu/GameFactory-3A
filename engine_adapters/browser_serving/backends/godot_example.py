@@ -1599,5 +1599,5 @@ def create_godot_example_backend(
     config: BrowserServingConfig | None = None,
 ) -> GodotExampleBackend:
     return GodotExampleBackend(
-        config or BrowserServingConfig.from_environment()
+        config or BrowserServingConfig.from_settings()
     )

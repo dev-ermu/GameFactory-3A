@@ -13,7 +13,7 @@ from .gateway import create_app
 
 
 def run_gateway(config: BrowserServingConfig | None = None) -> None:
-    resolved = config or BrowserServingConfig.from_environment()
+    resolved = config or BrowserServingConfig.from_settings()
     uvicorn.run(
         create_app(config=resolved),
         host=resolved.gateway_host,
@@ -41,7 +41,7 @@ def _wait_for_gateway(config: BrowserServingConfig) -> None:
 
 
 def run_all(config: BrowserServingConfig | None = None) -> None:
-    resolved = config or BrowserServingConfig.from_environment()
+    resolved = config or BrowserServingConfig.from_settings()
     from .frontend import launch_admin
 
     gateway_thread = threading.Thread(
@@ -70,7 +70,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> None:
     args = build_parser().parse_args(argv)
-    config = BrowserServingConfig.from_environment()
+    config = BrowserServingConfig.from_settings()
     if args.service == "gateway":
         run_gateway(config)
     elif args.service == "admin":

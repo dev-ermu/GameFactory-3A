@@ -1128,5 +1128,5 @@ def create_unity3d_example_backend(
     config: BrowserServingConfig | None = None,
 ) -> Unity3DExampleBackend:
     return Unity3DExampleBackend(
-        config or BrowserServingConfig.from_environment()
+        config or BrowserServingConfig.from_settings()
     )

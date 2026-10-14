@@ -53,21 +53,16 @@ DEFAULT_TASKS = paths.collect_jsonl(TASK_KIND)
 
 
 def load_gen_model(
-    ckpt: str | None = None,
-    device: str = "cpu",
+    model_id: str | None = None,
     backend: str = "seedream",
     **model_kwargs,
 ):
     """Load the selected image-generation backend."""
     if backend == "seedream":
         from models.gen_image.seedream_model import SeedreamModel
-        model_id = ckpt or DEFAULT_SEEDREAM_MODEL
-        print(f"[run] Loading SeedreamModel (API): {model_id}")
-        return SeedreamModel(
-            model_path=model_id,
-            device=device,
-            **model_kwargs,
-        )
+        resolved = model_id or DEFAULT_SEEDREAM_MODEL
+        print(f"[run] Loading SeedreamModel (API): {resolved}")
+        return SeedreamModel(resolved, **model_kwargs)
     raise ValueError(
         f"unsupported image generation backend {backend!r}; expected 'seedream'"
     )
@@ -134,9 +129,7 @@ def main():
                         help="Run directory name; 'auto' for a timestamp")
     parser.add_argument("--out-dir",   default=None,
                         help="Legacy flat output dir; bypasses the per-game layout")
-    parser.add_argument("--device",    default="cpu",
-                        help="推理设备。生成走云端 API，此值只作用于本地掩码模型")
-    # Single-demo mode
+                        # Single-demo mode
     parser.add_argument("--image",       default=None, help="Path to a single image (demo mode)")
     parser.add_argument("--task-id",     default="demo")
     parser.add_argument("--description", default="")
@@ -156,7 +149,6 @@ def main():
 
     gen_model = load_gen_model(
         gen_ckpt,
-        device=args.device,
         backend=args.gen_backend,
     )
     operator = make_operator(gen_model, output_dir=args.out_dir,

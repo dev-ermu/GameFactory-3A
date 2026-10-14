@@ -19,6 +19,15 @@ Examples:
 import argparse
 import json
 import os
+
+from config import settings
+
+
+def _text(value: object) -> str:
+    """把 `settings` 字段值转成去空白字符串；`None` 与空值一律返回 `""`。"""
+    return "" if value is None else str(value).strip()
+
+
 import sys
 from pathlib import Path
 
@@ -30,32 +39,25 @@ from pipeline.common import config, paths  # noqa: E402
 
 TASK_KIND = "audio"
 DEFAULT_SEED_AUDIO_MODEL = "seed-audio-1.0"
-DIALOGUE_BACKENDS = ("seed_audio",)
-SOUND_EFFECT_BACKENDS = ("seed_audio",)
 DEFAULT_TASKS = paths.collect_jsonl(TASK_KIND)
 
 
 def load_seed_audio_model(
     mode: str,
     model_id: str = DEFAULT_SEED_AUDIO_MODEL,
-    device: str = "cpu",
     speaker_id: str | None = None,
     api_base: str | None = None,
-    http_timeout: int = 300,
-    sample_rate: int = 24_000,
+    timeout: int = 600,
 ):
-    """Load the synchronous Seed Audio API wrapper for one AudioGen slot."""
+    """Load the Seed Audio wrapper for one AudioGen slot."""
     from models.gen_audio.seed_audio_model import SeedAudioModel
 
     print(f"[run] Loading SeedAudioModel ({mode}) from API model: {model_id}")
     return SeedAudioModel(
-        model_path=model_id,
-        device=device,
-        mode=mode,
-        speaker_id=speaker_id,
+        model_id,
+        speaker_id=speaker_id or "",
         api_base=api_base,
-        http_timeout=http_timeout,
-        sample_rate=sample_rate,
+        timeout=timeout,
         verbose=True,
     )
 
@@ -109,20 +111,8 @@ def run_from_jsonl(
 def main() -> None:
     parser = argparse.ArgumentParser(description="Generate dialogue and game SFX assets.")
     parser.add_argument(
-        "--dialogue-backend",
-        choices=DIALOGUE_BACKENDS,
-        default=os.environ.get("AAAGF_DIALOGUE_BACKEND", "seed_audio"),
-        help="Dialogue model slot. Only the Seed Audio API is available.",
-    )
-    parser.add_argument(
-        "--sound-effect-backend",
-        choices=SOUND_EFFECT_BACKENDS,
-        default=os.environ.get("AAAGF_SOUND_EFFECT_BACKEND", "seed_audio"),
-        help="Sound-effect model slot. Only the Seed Audio API is available.",
-    )
-    parser.add_argument(
         "--seed-audio-model",
-        default=os.environ.get("SEED_AUDIO_MODEL", DEFAULT_SEED_AUDIO_MODEL),
+        default=_text(settings.seed_audio_model) or DEFAULT_SEED_AUDIO_MODEL,
         help="Seed Audio API model id.",
     )
     parser.add_argument(
@@ -132,7 +122,7 @@ def main() -> None:
     )
     parser.add_argument(
         "--seed-audio-speaker-id",
-        default=os.environ.get("SEED_AUDIO_SPEAKER_ID"),
+        default=_text(settings.seed_audio_speaker_id) or None,
         help="Optional Seed Audio speaker resource id; Qwen speaker names are not reused.",
     )
     parser.add_argument(
@@ -155,7 +145,6 @@ def main() -> None:
                         help="Run directory name; 'auto' for a timestamp")
     parser.add_argument("--out-dir", default=None,
                         help="Legacy flat output dir; bypasses the per-game layout")
-    parser.add_argument("--device", default="cpu")
     parser.add_argument(
         "--only-audio-type",
         choices=["dialogue", "sound_effect"],
@@ -192,12 +181,11 @@ def main() -> None:
     active_filter = route if single_demo else args.only_audio_type
 
     # 在加载模型之前先失败：Seed Audio 槽位需要 `.env` 配置。
-    if active_filter != "sound_effect" and args.dialogue_backend == "seed_audio":
-        config.require_cloud_or_exit(
-            ("seed_audio",), context="dialogue backend 'seed_audio'")
-    if active_filter != "dialogue" and args.sound_effect_backend == "seed_audio":
-        config.require_cloud_or_exit(
-            ("seed_audio",), context="sound-effect backend 'seed_audio'")
+    if active_filter != "sound_effect":
+        config.require_cloud_or_exit(("seed_audio",), context="dialogue slot")
+
+    if active_filter != "dialogue":
+        config.require_cloud_or_exit(("seed_audio",), context="sound-effect slot")
 
     dialogue_model = None
     sound_effect_model = None
@@ -205,20 +193,16 @@ def main() -> None:
         dialogue_model = load_seed_audio_model(
             "dialogue",
             model_id=args.seed_audio_model,
-            device=args.device,
             speaker_id=args.seed_audio_speaker_id,
             api_base=args.seed_audio_api_base,
-            http_timeout=args.seed_audio_timeout,
-            sample_rate=args.seed_audio_sample_rate,
+            timeout=args.seed_audio_timeout,
         )
     if active_filter != "dialogue":
         sound_effect_model = load_seed_audio_model(
             "sound_effect",
             model_id=args.seed_audio_model,
-            device=args.device,
             api_base=args.seed_audio_api_base,
-            http_timeout=args.seed_audio_timeout,
-            sample_rate=args.seed_audio_sample_rate,
+            timeout=args.seed_audio_timeout,
         )
     operator = make_operator(
         dialogue_model,

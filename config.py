@@ -62,10 +62,6 @@ class Settings(BaseSettings):
 
     # 任务槽位的后端开关。**只支持云端 API**——本地权重后端已全部移除。
     backend_3d_object: str = Field("tripo", validation_alias="AAAGF_3D_BACKEND")
-    backend_tpose: str = Field("seedream", validation_alias="TPOSE_GEN_BACKEND")
-    backend_audio_dialogue: str = Field("seed_audio", validation_alias="AAAGF_DIALOGUE_BACKEND")
-    backend_audio_sound_effect: str = Field("seed_audio", validation_alias="AAAGF_SOUND_EFFECT_BACKEND")
-    backend_cg_video: str = Field("seedance", validation_alias="GAMEFACTORY3A_VIDEO_BACKEND")
 
     # 云服务商凭证与模型名称
     tripo_api_base: str = ""
@@ -82,13 +78,6 @@ class Settings(BaseSettings):
     seed_audio_api_key: str = ""
     seed_audio_model: str = "seed-audio-1.0"
     seed_audio_speaker_id: str = ""
-    minimax_api_base: str = ""
-    minimax_api_key: str = ""
-    #: MiniMax 视频模型 ID。此处是 **MiniMax H3**（市场名亦作 Hailuo 3），
-    #: 输出 4-15 秒。上一代 **MiniMax-Hailuo-2.3** 是另一个模型
-    #: （ID ``minimax-video-v2.3``，仅 6 或 10 秒），两者不可混用。
-    minimax_video_model: str = "minimax-video-h3"
-    minimax_h3_runtime: str = "api"
     tokenhub_api_base: str = ""
     tokenhub_api_key: str = ""
 
@@ -112,6 +101,7 @@ class Settings(BaseSettings):
     ue_runtime_host: str = Field("127.0.0.1", validation_alias="A3GAME_UE_RUNTIME_HOST")
     ue_runtime_port: int = Field(30020, validation_alias="A3GAME_UE_RUNTIME_PORT")
     ue_python_plugin_path: Path | None = Field(None, validation_alias="A3GAME_UE_PYTHON_PLUGIN_PATH")
+    ue_asset_backend: str = Field("ue", validation_alias=_a("A3GAME_UE_ASSET_BACKEND", "A3GAME_ASSET_BACKEND"))
     ue_python_transport: str = Field("remote_execution", validation_alias="A3GAME_UE_PYTHON_TRANSPORT")
     ue_data_root: Path | None = Field(None, validation_alias=_a("A3GAME_UE_DATA_ROOT", "A3GAME_DATA_ROOT"))
     ue_artifact_registry: Path | None = Field(None, validation_alias=_a("A3GAME_UE_ARTIFACT_REGISTRY", "A3GAME_ARTIFACT_REGISTRY"))
@@ -135,24 +125,36 @@ class Settings(BaseSettings):
     blender_root: Path | None = Field(None, validation_alias=_a("A3GAME_BLENDER_ROOT", "AAAGF_BLENDER"))
 
     # ── 浏览器服务 ─────────────────────────────────────────────────────────────
-    browser_engine: str = Field("godot", validation_alias="A3GAME_BROWSER_ENGINE")
+    # 默认值与 `engine_adapters/browser_serving/config.py` 保持一致——迁移到
+    # `settings` 后行为不变，若两边不同就等于悄悄改了运行时行为。
+    browser_engine: str = Field("ue5", validation_alias="A3GAME_BROWSER_ENGINE")
     browser_admin_host: str = Field("127.0.0.1", validation_alias="A3GAME_BROWSER_ADMIN_HOST")
-    browser_admin_port: int = Field(30100, validation_alias="A3GAME_BROWSER_ADMIN_PORT")
+    browser_admin_port: int = Field(7860, validation_alias="A3GAME_BROWSER_ADMIN_PORT")
     browser_public_url: str = Field("", validation_alias="A3GAME_BROWSER_PUBLIC_URL")
     browser_gateway_host: str = Field("127.0.0.1", validation_alias="A3GAME_BROWSER_GATEWAY_HOST")
-    browser_gateway_port: int = Field(30101, validation_alias="A3GAME_BROWSER_GATEWAY_PORT")
+    browser_gateway_port: int = Field(7870, validation_alias="A3GAME_BROWSER_GATEWAY_PORT")
     browser_pixel_host: str = Field("127.0.0.1", validation_alias="A3GAME_BROWSER_PIXEL_HOST")
-    browser_session_port_stride: int = Field(2, validation_alias="A3GAME_BROWSER_SESSION_PORT_STRIDE")
-    browser_base_runtime_port: int = Field(30200, validation_alias="A3GAME_BROWSER_BASE_RUNTIME_PORT")
-    browser_base_pixel_http_port: int = Field(30300, validation_alias="A3GAME_BROWSER_BASE_PIXEL_HTTP_PORT")
-    browser_base_pixel_sfu_port: int = Field(30301, validation_alias="A3GAME_BROWSER_BASE_PIXEL_SFU_PORT")
-    browser_base_pixel_streamer_port: int = Field(30302, validation_alias="A3GAME_BROWSER_BASE_PIXEL_STREAMER_PORT")
-    browser_pixel_start_timeout: int = Field(30, validation_alias="A3GAME_BROWSER_PIXEL_START_TIMEOUT")
+    browser_session_port_stride: int = Field(10, validation_alias="A3GAME_BROWSER_SESSION_PORT_STRIDE")
+    browser_base_runtime_port: int = Field(31020, validation_alias="A3GAME_BROWSER_BASE_RUNTIME_PORT")
+    browser_base_pixel_http_port: int = Field(18080, validation_alias="A3GAME_BROWSER_BASE_PIXEL_HTTP_PORT")
+    browser_base_pixel_sfu_port: int = Field(18889, validation_alias="A3GAME_BROWSER_BASE_PIXEL_SFU_PORT")
+    browser_base_pixel_streamer_port: int = Field(18888, validation_alias="A3GAME_BROWSER_BASE_PIXEL_STREAMER_PORT")
+    browser_pixel_start_timeout: int = Field(120, validation_alias="A3GAME_BROWSER_PIXEL_START_TIMEOUT")
     browser_max_sessions: int = Field(8, validation_alias="A3GAME_BROWSER_MAX_SESSIONS")
-    browser_cg_video_max_workers: int = Field(2, validation_alias="A3GAME_BROWSER_CG_VIDEO_MAX_WORKERS")
+    browser_cg_video_max_workers: int = Field(1, validation_alias="A3GAME_BROWSER_CG_VIDEO_MAX_WORKERS")
     browser_preview_map: str = Field("", validation_alias="A3GAME_BROWSER_PREVIEW_MAP")
-    browser_upload_game_id: str = Field("", validation_alias="A3GAME_BROWSER_UPLOAD_GAME_ID")
-    browser_upload_run_id: str = Field("", validation_alias="A3GAME_BROWSER_UPLOAD_RUN_ID")
+    browser_upload_game_id: str = Field("_browser_uploads", validation_alias="A3GAME_BROWSER_UPLOAD_GAME_ID")
+    browser_upload_run_id: str = Field("browser_uploads", validation_alias="A3GAME_BROWSER_UPLOAD_RUN_ID")
+    browser_play_dir: Path | None = Field(None, validation_alias="A3GAME_BROWSER_PLAY_DIR")
+    browser_render_offscreen: bool = Field(True, validation_alias="A3GAME_BROWSER_RENDER_OFFSCREEN")
+    browser_dry_run: bool = Field(False, validation_alias="A3GAME_BROWSER_DRY_RUN")
+    browser_pixel_use_frontend: bool = Field(False, validation_alias="A3GAME_BROWSER_PIXEL_USE_FRONTEND")
+    browser_cg_video_enabled: bool = Field(True, validation_alias="A3GAME_BROWSER_CG_VIDEO_ENABLED")
+    browser_cg_video_allow_cloud: bool = Field(False, validation_alias="A3GAME_BROWSER_CG_VIDEO_ALLOW_CLOUD")
+    browser_cg_video_prebuilt_only: bool = Field(False, validation_alias="A3GAME_BROWSER_CG_VIDEO_PREBUILT_ONLY")
+    unity_webgl_build: Path | None = Field(None, validation_alias="A3GAME_UNITY_WEBGL_BUILD")
+    godot_host: str = Field("127.0.0.1", validation_alias="A3GAME_GODOT_HOST")
+    godot_auto_open_browser: bool = Field(False, validation_alias="A3GAME_GODOT_AUTO_OPEN_BROWSER")
 
     # 单元测试相关配置项。所有测试强制要求从项目根目录开始运行，保证工作路径是项目根目录。
     outputs_dir: str = "./tests/data"
@@ -198,7 +200,6 @@ CLOUD_LABELS: dict[str, str] = {
     "meshy": "Meshy",
     "ark": "Volcengine Ark (Seedream / Seedance)",
     "seed_audio": "Seed Audio (Volcengine Speech)",
-    "minimax": "MiniMax H3 (Hailuo 3)",
     "tokenhub": "Tencent Cloud TokenHub (Tripo rigging / animation)",
 }
 
@@ -223,61 +224,6 @@ def _cloud_fields(provider_key: str) -> tuple[str, ...]:
 def _env_name(field_name: str) -> str:
     """`Settings` 字段名 -> `.env` 里的键名。"""
     return FIELD_ENV_OF.get(field_name, field_name.upper())
-
-# ── 兼容层：把配置发布到 os.environ ────────────────────────────────────────────
-# 目标状态是「只有 settings 一个来源」。迁移尚未完成：`models/common/cloud_api.py`
-# 与 `pipeline/common/paths.py` 在 import 时调用 `load()`，且 7 个
-# `engine_adapters/*/config.py` 仍直读 `os.environ`。下面这个函数是过渡桥，
-# 新代码不要调用它——直接读 `settings`。
-_LOADED = False
-
-
-def load(*, override: bool = False, verbose: bool | None = None) -> bool:
-    """把 `settings` 里**显式配置过**的值发布到 `os.environ`——过渡桥，新代码不要调用。
-
-    保留它是因为 `cloud_api` / `paths` 在 import 时调用，且引擎适配器尚未迁移。
-    等所有适配器都改读 `settings` 之后，本函数连同 `_LOADED` 一并删除。
-
-    只发布 `model_fields_set` 里的项，**不发布字段默认值**：适配器在用户未配置时
-    应当沿用它自己的默认值，而不是被这里猜出来的默认值覆盖。
-
-    Args:
-        override: `True` 时用配置值覆盖进程里已有的变量。默认 `False`，即
-            **进程环境变量优先**（与 python-dotenv 一致）——测试因此可以用
-            `monkeypatch.setenv("X", "")` 隔离某一项，而不会被 `.env` 抢回去。
-        verbose: 覆盖是否提示；默认在 stderr 是 tty 时提示。
-
-    Returns:
-        本次调用真的发布了变量时返回 True。
-    """
-    global _LOADED
-    if _LOADED:
-        return False
-    _LOADED = True
-
-    if verbose is None:
-        verbose = sys.stderr.isatty()
-
-    published = 0
-    # 只发布**显式配置过**的项（`model_fields_set`），不发布字段默认值。
-    # 否则本文件里的默认值会变成对适配器自身默认值的强制覆盖——适配器没被用户配置
-    # 时应当沿用它自己的默认（例如 Unity 的 runtime transport）。
-    for field_name in settings.model_fields_set:
-        name = FIELD_ENV_OF.get(field_name)
-        if name is None:
-            continue
-        value = _text(getattr(settings, field_name))
-        if not value:
-            continue
-        existing = os.environ.get(name)
-        if existing is not None and existing != value and verbose and override:
-            sys.stderr.write(f"[config] {name} in .env overrides the environment value\n")
-        if existing is not None and not override:
-            continue
-        os.environ[name] = value
-        published += 1
-    return published > 0
-
 
 def _missing_notes(missing_names: list[str]) -> list[str]:
     """按**实际缺失的类别**给提示，避免在只缺 Key 时大谈端点。"""

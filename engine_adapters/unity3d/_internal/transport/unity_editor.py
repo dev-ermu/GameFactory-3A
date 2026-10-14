@@ -21,6 +21,14 @@ from typing import Any, Mapping
 
 from ...config import UnityClientConfig
 
+from config import settings
+
+
+def _text(value: object) -> str:
+    """把 `settings` 字段值转成去空白字符串；`None` 与空值一律返回 `""`。"""
+    return "" if value is None else str(value).strip()
+
+
 
 def find_unity_binary(
     explicit: str | Path | None = None,
@@ -36,10 +44,7 @@ def find_unity_binary(
             )
             return existing or path
         return path
-    env_value = (
-        os.environ.get("A3GAME_UNITY_ROOT")
-        or os.environ.get("AAAGF_UNITY")
-    )
+    env_value = _text(settings.unity_root)
     if env_value:
         return Path(env_value)
 

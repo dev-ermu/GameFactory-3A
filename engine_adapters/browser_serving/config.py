@@ -1,20 +1,32 @@
-"""Configuration for browser serving and its local frontends."""
+"""Configuration for browser serving and its local frontends.
+
+取值一律走 `config.settings`（项目唯一配置源），不再读 `os.environ`；
+旧名回退链由 `Settings` 的 `validation_alias` 承担。
+"""
 
 import os
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 
+# 仓库根入 sys.path：`config` 是顶层模块，因此适配器不必 import `pipeline/`
+# 也能读到项目唯一的配置源（`model_require.md` R1.1）。
+_REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
 
-def _path_env(name: str) -> Path | None:
-    value = os.environ.get(name, "").strip()
-    return Path(value).expanduser().resolve(strict=False) if value else None
+from config import settings
 
 
-def _flag(name: str, default: bool) -> bool:
-    value = os.environ.get(name, "").strip().lower()
-    if not value:
-        return default
-    return value in {"1", "true", "yes", "on"}
+def _text(value: object) -> str:
+    """把 `settings` 字段值转成去空白字符串；`None` 与空值一律返回 `""`。"""
+    return "" if value is None else str(value).strip()
+
+
+def _optional_path(value: object) -> Path | None:
+    """把路径类配置转成 `Path`；未配置或空值返回 `None`。"""
+    text = _text(value)
+    return Path(text).expanduser().resolve(strict=False) if text else None
 
 
 @dataclass(frozen=True)
@@ -54,164 +66,68 @@ class BrowserServingConfig:
     render_offscreen: bool = True
     dry_run: bool = False
     pixel_use_frontend: bool = False
-    pixel_start_timeout: float = 120.0
     cg_video_enabled: bool = True
     cg_video_allow_cloud: bool = False
     cg_video_prebuilt_only: bool = False
+    pixel_start_timeout: float = 120.0
     cg_video_max_workers: int = 1
 
     @classmethod
-    def from_environment(cls) -> "BrowserServingConfig":
-        gateway_host = os.environ.get(
-            "A3GAME_BROWSER_GATEWAY_HOST",
-            "127.0.0.1",
+    def from_settings(cls) -> "BrowserServingConfig":
+        """按 `config.settings` 构造一份配置快照。"""
+        gateway_port = int(settings.browser_gateway_port)
+
+        public_url = _text(settings.browser_public_url) or (
+            f"http://127.0.0.1:{gateway_port}"
         )
-        gateway_port = int(
-            os.environ.get("A3GAME_BROWSER_GATEWAY_PORT", "7870")
+
+        runtime_host = (
+            _text(settings.unity_runtime_host)
+            or _text(settings.ue_runtime_host)
+            or "127.0.0.1"
         )
-        public_url = os.environ.get(
-            "A3GAME_BROWSER_PUBLIC_URL",
-            f"http://127.0.0.1:{gateway_port}",
-        ).rstrip("/")
+
         return cls(
-            gateway_host=gateway_host,
+            gateway_host=_text(settings.browser_gateway_host) or "127.0.0.1",
             gateway_port=gateway_port,
-            admin_host=os.environ.get(
-                "A3GAME_BROWSER_ADMIN_HOST",
-                "127.0.0.1",
+            admin_host=_text(settings.browser_admin_host) or "127.0.0.1",
+            admin_port=int(settings.browser_admin_port),
+            public_gateway_url=public_url.rstrip("/"),
+            browser_play_dir=_optional_path(settings.browser_play_dir),
+            upload_game_id=(
+                _text(settings.browser_upload_game_id) or "_browser_uploads"
             ),
-            admin_port=int(
-                os.environ.get("A3GAME_BROWSER_ADMIN_PORT", "7860")
-            ),
-            public_gateway_url=public_url,
-            browser_play_dir=_path_env(
-                "A3GAME_BROWSER_PLAY_DIR"
-            ),
-            upload_game_id=os.environ.get(
-                "A3GAME_BROWSER_UPLOAD_GAME_ID",
-                "_browser_uploads",
-            ),
-            upload_run_id=os.environ.get(
-                "A3GAME_BROWSER_UPLOAD_RUN_ID",
-                "browser_uploads",
-            ),
-            default_engine=os.environ.get(
-                "A3GAME_BROWSER_ENGINE",
-                "ue5",
-            ),
-            ue_project=_path_env("A3GAME_UE_PROJECT"),
-            ue_root=_path_env("A3GAME_UE_ROOT"),
-            ue_host=os.environ.get("A3GAME_UE_HOST", "127.0.0.1"),
-            ue_remote_port=int(
-                os.environ.get("A3GAME_UE_PORT", "30010")
-            ),
-            unity_project=_path_env("A3GAME_UNITY_PROJECT"),
-            unity_root=_path_env("A3GAME_UNITY_ROOT"),
-            unity_host=os.environ.get(
-                "A3GAME_UNITY_HOST",
-                "127.0.0.1",
-            ),
-            unity_port=int(
-                os.environ.get("A3GAME_UNITY_PORT", "30010")
-            ),
-            unity_webgl_build=_path_env(
-                "A3GAME_UNITY_WEBGL_BUILD"
-            ),
-            godot_project=_path_env("A3GAME_GODOT_PROJECT"),
-            godot_executable=_path_env("A3GAME_GODOT_EXECUTABLE"),
-            godot_host=os.environ.get(
-                "A3GAME_GODOT_HOST",
-                "127.0.0.1",
-            ),
-            godot_runtime_port=int(
-                os.environ.get("A3GAME_GODOT_RUNTIME_PORT", "30050")
-            ),
-            godot_auto_open_browser=_flag(
-                "A3GAME_GODOT_AUTO_OPEN_BROWSER",
-                False,
-            ),
-            runtime_host=os.environ.get(
-                "A3GAME_UNITY_RUNTIME_HOST",
-                os.environ.get(
-                    "A3GAME_UE_RUNTIME_HOST",
-                    "127.0.0.1",
-                ),
-            ),
-            base_runtime_port=int(
-                os.environ.get(
-                    "A3GAME_BROWSER_BASE_RUNTIME_PORT",
-                    "31020",
-                )
-            ),
-            pixel_host=os.environ.get(
-                "A3GAME_BROWSER_PIXEL_HOST",
-                "127.0.0.1",
-            ),
-            base_pixel_http_port=int(
-                os.environ.get(
-                    "A3GAME_BROWSER_BASE_PIXEL_HTTP_PORT",
-                    "18080",
-                )
-            ),
-            base_pixel_streamer_port=int(
-                os.environ.get(
-                    "A3GAME_BROWSER_BASE_PIXEL_STREAMER_PORT",
-                    "18888",
-                )
-            ),
-            base_pixel_sfu_port=int(
-                os.environ.get(
-                    "A3GAME_BROWSER_BASE_PIXEL_SFU_PORT",
-                    "18889",
-                )
-            ),
-            session_port_stride=int(
-                os.environ.get(
-                    "A3GAME_BROWSER_SESSION_PORT_STRIDE",
-                    "10",
-                )
-            ),
-            max_sessions=int(
-                os.environ.get(
-                    "A3GAME_BROWSER_MAX_SESSIONS",
-                    "8",
-                )
-            ),
-            preview_map=os.environ.get(
-                "A3GAME_BROWSER_PREVIEW_MAP",
-                "",
-            ).strip(),
-            render_offscreen=_flag(
-                "A3GAME_BROWSER_RENDER_OFFSCREEN",
-                True,
-            ),
-            dry_run=_flag("A3GAME_BROWSER_DRY_RUN", False),
-            pixel_use_frontend=_flag(
-                "A3GAME_BROWSER_PIXEL_USE_FRONTEND",
-                False,
-            ),
-            pixel_start_timeout=float(
-                os.environ.get(
-                    "A3GAME_BROWSER_PIXEL_START_TIMEOUT",
-                    "120",
-                )
-            ),
-            cg_video_enabled=_flag(
-                "A3GAME_BROWSER_CG_VIDEO_ENABLED",
-                True,
-            ),
-            cg_video_allow_cloud=_flag(
-                "A3GAME_BROWSER_CG_VIDEO_ALLOW_CLOUD",
-                False,
-            ),
-            cg_video_prebuilt_only=_flag(
-                "A3GAME_BROWSER_CG_VIDEO_PREBUILT_ONLY",
-                False,
-            ),
-            cg_video_max_workers=int(
-                os.environ.get(
-                    "A3GAME_BROWSER_CG_VIDEO_MAX_WORKERS",
-                    "1",
-                )
-            ),
+            upload_run_id=_text(settings.browser_upload_run_id) or "browser_uploads",
+            default_engine=_text(settings.browser_engine) or "ue5",
+            ue_project=_optional_path(settings.ue_project),
+            ue_root=_optional_path(settings.ue_root),
+            ue_host=_text(settings.ue_host) or "127.0.0.1",
+            ue_remote_port=int(settings.ue_port),
+            unity_project=_optional_path(settings.unity_project),
+            unity_root=_optional_path(settings.unity_root),
+            unity_host=_text(settings.unity_host) or "127.0.0.1",
+            unity_port=int(settings.unity_port),
+            unity_webgl_build=_optional_path(settings.unity_webgl_build),
+            godot_project=_optional_path(settings.godot_project),
+            godot_executable=_optional_path(settings.godot_executable),
+            godot_host=_text(settings.godot_host) or "127.0.0.1",
+            godot_runtime_port=int(settings.godot_runtime_port),
+            godot_auto_open_browser=bool(settings.godot_auto_open_browser),
+            runtime_host=runtime_host,
+            base_runtime_port=int(settings.browser_base_runtime_port),
+            pixel_host=_text(settings.browser_pixel_host) or "127.0.0.1",
+            base_pixel_http_port=int(settings.browser_base_pixel_http_port),
+            base_pixel_streamer_port=int(settings.browser_base_pixel_streamer_port),
+            base_pixel_sfu_port=int(settings.browser_base_pixel_sfu_port),
+            session_port_stride=int(settings.browser_session_port_stride),
+            max_sessions=int(settings.browser_max_sessions),
+            preview_map=_text(settings.browser_preview_map),
+            render_offscreen=bool(settings.browser_render_offscreen),
+            dry_run=bool(settings.browser_dry_run),
+            pixel_use_frontend=bool(settings.browser_pixel_use_frontend),
+            cg_video_enabled=bool(settings.browser_cg_video_enabled),
+            cg_video_allow_cloud=bool(settings.browser_cg_video_allow_cloud),
+            cg_video_prebuilt_only=bool(settings.browser_cg_video_prebuilt_only),
+            pixel_start_timeout=float(settings.browser_pixel_start_timeout),
+            cg_video_max_workers=int(settings.browser_cg_video_max_workers),
         )

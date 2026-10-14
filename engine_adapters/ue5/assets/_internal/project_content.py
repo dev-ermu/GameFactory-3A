@@ -4,11 +4,17 @@ import os
 from pathlib import Path
 from typing import Any
 
+from config import settings
+
+
+def _text(value: object) -> str:
+    """把 `settings` 字段值转成去空白字符串；`None` 与空值一律返回 `""`。"""
+    return "" if value is None else str(value).strip()
+
+
 
 def configured_project_content_dir() -> Path | None:
-    project_value = (
-        os.environ.get("A3GAME_UE_PROJECT", "").strip()
-    )
+    project_value = _text(settings.ue_project)
     if not project_value:
         return None
     project_file = Path(project_value).expanduser()

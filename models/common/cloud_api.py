@@ -61,7 +61,9 @@ def _load_project_env() -> None:
             return
 
     try:
-        config.load()
+        import config  # noqa: PLC0415
+
+        config.settings  # 触发 `.env` 解析（模块导入即完成）
     except Exception:  # pragma: no cover - configuration must never crash import
         logger.debug("[cloud_api] could not load .env", exc_info=True)
 

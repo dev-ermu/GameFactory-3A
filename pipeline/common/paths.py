@@ -56,10 +56,7 @@ import config as _config  # noqa: E402
 
 # 过渡桥：把 `.env` 发布进 `os.environ`，供**尚未迁移**的读取方使用——目前是 6 个
 # `engine_adapters/*/config.py`（它们在 `resolve()` 里读 `os.environ`）以及若干
-# `models/` / `scripts/`。等这些全部改读 `settings` 之后，本行与 `config.load()`
 # 一并删除。本模块自身的 `OUTPUT_ROOT` 已改读 `settings`，不再依赖这个副作用。
-_config.load()
-
 # ── Roots ─────────────────────────────────────────────────────────────────────
 
 REPO_ROOT = Path(__file__).resolve().parents[2]

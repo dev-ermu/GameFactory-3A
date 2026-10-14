@@ -61,7 +61,6 @@ python tests/harness/smoke.py --kind motion
 | 3D物体         | Tripo，其次是Meshy          | <https://platform.tripo3d.ai/api-keys>、<https://www.meshy.ai/api>                 | `TRIPO_API_KEY`、`MESHY_API_KEY` |
 | 图像/T-pose    | 通过火山引擎Ark平台调用的Seedream | <https://console.volcengine.com/ark>                                              | `ARK_API_KEY`          |
 | 音频           | 通过火山引擎调用的Seed Audio | <https://console.volcengine.com/speech/>                                          | `SEED_AUDIO_API_KEY`   |
-| CG视频         | 通过Ark平台调用的Seedance，其次是MiniMax Hailuo | <https://console.volcengine.com/ark>、<https://platform.minimax.io/user-center/basic-information/interface-key> | `ARK_API_KEY`、`MINIMAX_API_KEY` |
 
 所有配置项都要写入**`<REPO_PATH>/.env`**这个唯一的配置文件，该文件会`<REPO_PATH>/config.py`读取。
 
