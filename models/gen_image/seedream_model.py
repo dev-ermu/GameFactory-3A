@@ -1,355 +1,204 @@
+"""Seedream 图像生成封装（火山方舟）。
+
+火山方舟兼容 OpenAI 协议，因此这里使用官方 Python 包的 Images API
+`client.images.generate()`（规范 R3.1）。Base URL 由用户在 `.env` 中填写，
+代码原样传入，不做任何拼接（规范 R6.4）。
+
+主推模型为 `doubao-seedream-5-0-flash-260915`，支持 2K 尺寸、多图参考
+与图生图编辑。
+
+参考来源：https://console.volcengine.com/ark/region:cn-beijing/openManagement
+
+服务端生成结果的可复现性无法保证（规范 R3.4）：`seed` 会透传给服务端，
+但服务端不承诺确定性输出。
 """
-SeedreamModel — wrapper around Volcengine Ark's Seedream image-generation API.
 
-Interface parity with `QwenEditModel` (R6):
-  ``infer(image, prompt, seed=42, steps=40) -> PIL.Image``
-
-  ``steps`` is accepted for swappability but not forwarded — the Seedream API
-  does not expose a diffusion-step count.  ``image`` may be ``None`` for pure
-  text-to-image, or a ``PIL.Image`` for image-to-image / image editing.
-
-环境变量（统一写在 `<repo>/.env`，见 `.env.example`）：
-    ARK_API_KEY   在首次 infer() 调用时必需，构造时不需要。
-    ARK_API_BASE  在首次 infer() 调用时必需。Volcengine Ark 端点只在报错信息里作为
-                  示例给出，绝不会被静默采用——它并非在所有网络下都可达。
-"""
-
+import base64
 import io
-import logging
-import time
-from pathlib import Path
-from typing import Any, Optional
 
+import httpx2
+from openai import OpenAI
 from PIL import Image
 
-from models.common import cloud_api
+from models.base import BaseModel
+from models.common import errors
 
-logger = logging.getLogger(__name__)
+# 主推模型标识，建议直接使用。
+RECOMMENDED_MODEL_ID = "doubao-seedream-5-0-flash-260915"
 
-#: `.env` 变量名；URL 由用户填写在 `.env` 里，代码不保留 URL 字面量（R6.1）。
-ENV_KEY = "ARK_API_KEY"
-ENV_BASE = "ARK_API_BASE"
-DEFAULT_MODEL = "doubao-seedream-5-0-260128"
-
-MODEL_ALIASES: dict[str, str] = {
-    "seedream": DEFAULT_MODEL,
-    "seedream-5.0": DEFAULT_MODEL,
-    "seedream-5-0": DEFAULT_MODEL,
-    "seedream-3.0": "doubao-seedream-3-0-t2i-250415",
-    "seedream-3-0-t2i": "doubao-seedream-3-0-t2i-250415",
-    "seedream-3.0-t2i": "doubao-seedream-3-0-t2i-250415",
-}
-
-SUPPORTED_FORMATS = ("png", "jpeg", "jpg")
+# 服务商支持的尺寸预设。
+SUPPORTED_SIZES = ("1K", "2K", "4K")
 
 
-class SeedreamModel:
-    """Cloud image generation through Seedream (Doubao image model).
+class SeedreamModel(BaseModel):
+    """Seedream 图像生成与编辑模型。"""
 
-    The generation entry points are :meth:`infer` and :meth:`infer_and_save`,
-    matching the interface of ``QwenEditModel`` so the two are swappable in any
-    operator slot (R6).
-
-    When ``image`` is provided the model performs image-to-image editing;
-    when ``image`` is ``None`` it performs text-to-image generation.
-    """
-
-    PROVIDER = "seedream"
-    SUPPORTED_FORMATS = frozenset(SUPPORTED_FORMATS)
+    provider = "volcengine"
+    display_name = "Seedream"
 
     def __init__(
         self,
-        model_path: str = DEFAULT_MODEL,
-        device: str = "cpu",
+        model_id: str,
         *,
-        api_key: Optional[str] = None,
-        timeout: int = 300,
-        max_retries: int = 3,
-        cache_dir: Optional[str] = None,
-        output_format: str = "png",
-        size: str = "2048x2048",
-        watermark: bool = False,
+        size: str = "2K",
+        watermark: bool = True,
         response_format: str = "url",
-        api_base: Optional[str] = None,
-        http_timeout: int = 60,
+        api_key: str | None = None,
+        api_base: str | None = None,
+        timeout: int = 300,
+        poll_interval: float = 10.0,
+        max_retries: int = 3,
+        output_format: str = "png",
         verbose: bool = False,
-    ):
-        # [CONTRACT-DEVIATION C1] Version id, not a local weight path.
-        # [CONTRACT-DEVIATION C2] Kept for swappable model construction; ignored.
-        self.model_path = MODEL_ALIASES.get(str(model_path).lower(), model_path)
-        self.device = device
-        self.api_key = api_key
-        self.timeout = timeout
-        self.max_retries = max_retries
-        self.cache_dir = cache_dir
-        self.output_format = str(output_format).lower().lstrip(".")
+    ) -> None:
+        """保存 Seedream 特有参数，其余交给基类。"""
+        super().__init__(
+            model_id,
+            api_key=api_key,
+            api_base=api_base,
+            timeout=timeout,
+            poll_interval=poll_interval,
+            max_retries=max_retries,
+            output_format=output_format,
+            verbose=verbose,
+        )
+
+        if size not in SUPPORTED_SIZES:
+            raise ValueError(
+                f"size 只支持 {SUPPORTED_SIZES}，收到 {size!r}"
+            )
+
+        if response_format not in ("url", "b64_json"):
+            raise ValueError(
+                f"response_format 只支持 'url' 或 'b64_json'，收到 {response_format!r}"
+            )
+
         self.size = size
         self.watermark = watermark
         self.response_format = response_format
-        # [R6.1] 必填项，且在首次调用时才解析。端点由用户在 .env 里配置，代码
-        # 不含任何 URL 示例。
-        self.api_base = api_base
-        self.http_timeout = http_timeout
-        self.verbose = verbose
 
-        if self.output_format not in SUPPORTED_FORMATS:
-            raise ValueError(
-                f"output_format={self.output_format!r} is not supported by "
-                f"SeedreamModel; use one of {sorted(SUPPORTED_FORMATS)}"
-            )
+    def credential_spec(self) -> tuple[str, str]:
+        """返回火山方舟需要的配置项名。"""
+        return ("ark_api_key", "ark_api_base")
 
-        self._client: Optional[cloud_api.CloudAPIClient] = None
-        self._cache = cloud_api.ResponseCache(cache_dir, self.PROVIDER)
-        self.last_call_info: dict[str, Any] = {}
-
-    @property
-    def client(self) -> cloud_api.CloudAPIClient:
-        """首次使用时创建带鉴权的 HTTP 客户端（R6.1）。"""
-        if self._client is None:
-            key = cloud_api.require_api_key(
-                self.api_key, ENV_KEY, who="SeedreamModel"
-            )
-            base = cloud_api.require_api_base(
-                self.api_base, ENV_BASE, who="SeedreamModel"
-            )
-            self._client = cloud_api.CloudAPIClient(
-                base,
-                key,
-                timeout=self.http_timeout,
-                max_retries=self.max_retries,
-            )
-        return self._client
-
-    def unload(self) -> None:
-        """[C4] Close the HTTP session; safe before use and safe twice."""
-        if self._client is not None:
-            self._client.close()
-            self._client = None
-
-    close = unload
-
-    # -- payload ---------------------------------------------------------------
-
-    def _build_payload(
+    def request(
         self,
         prompt: str,
-        image: Optional[Image.Image],
-        seed: int,
-        provider_kwargs: dict[str, Any],
-    ) -> dict[str, Any]:
-        payload: dict[str, Any] = {
-            "model": self.model_path,
-            "prompt": prompt,
-            # [CONTRACT-DEVIATION C5] Forwarded, but not guaranteed deterministic.
-            "seed": seed,
-            "size": self.size,
-            "watermark": self.watermark,
-            "response_format": self.response_format,
-        }
-        if image is not None:
-            # Image-to-image: pass the reference as a base64 data URI.
-            png_bytes = cloud_api.image_to_png_bytes(image)
-            payload["image"] = cloud_api.image_to_data_uri(png_bytes)
-        payload.update(provider_kwargs)
-        return payload
-
-    def _cache_descriptor(
-        self,
-        prompt: str,
-        image: Optional[Image.Image],
-        seed: int,
-        payload: dict[str, Any],
-    ) -> dict[str, Any]:
-        image_hash: Optional[str] = None
-        if image is not None:
-            png_bytes = cloud_api.image_to_png_bytes(image)
-            image_hash = cloud_api.bytes_hash(png_bytes)
-        return {
-            "provider": self.PROVIDER,
-            "model": self.model_path,
-            "prompt": prompt,
-            "image_sha256": image_hash,
-            "seed": seed,
-            "payload": payload,
-            "output_format": self.output_format,
-        }
-
-    # -- API call --------------------------------------------------------------
-
-    @staticmethod
-    def _unwrap(response: Any) -> dict[str, Any]:
-        if not isinstance(response, dict):
-            raise cloud_api.CloudAPIError(
-                f"unexpected Seedream response type {type(response).__name__}: {response!r}"
-            )
-        if response.get("error"):
-            code = response.get("code")
-            message = response.get("error") if isinstance(response.get("error"), str) else response.get("message")
-            classified = cloud_api.classify_http_error(400, response)
-            raise type(classified)(
-                f"Seedream API error: {message}", payload=response,
-            )
-        code = response.get("code")
-        if code not in (None, 0, "0"):
-            message = response.get("message") or response.get("msg") or response
-            classified = cloud_api.classify_http_error(400, response)
-            raise type(classified)(
-                f"Seedream API error: code={code}: {message}", payload=response,
-            )
-        data = response.get("data")
-        if isinstance(data, list) and data:
-            return response
-        if isinstance(data, dict):
-            return response
-        return response
-
-    @staticmethod
-    def _extract_image_url(response: dict[str, Any]) -> str:
-        """Extract the generated image URL from the API response."""
-        data = response.get("data")
-        if isinstance(data, list) and data:
-            item = data[0]
-            if isinstance(item, dict):
-                url = item.get("url")
-                if isinstance(url, str) and url.startswith("http"):
-                    return url
-        raise cloud_api.CloudAPIError(
-            f"Seedream response has no image URL: {response}",
-            payload=response,
-        )
-
-    @staticmethod
-    def _extract_image_b64(response: dict[str, Any]) -> str:
-        """Extract a base64-encoded image from the API response."""
-        data = response.get("data")
-        if isinstance(data, list) and data:
-            item = data[0]
-            if isinstance(item, dict):
-                b64 = item.get("b64_json")
-                if isinstance(b64, str) and b64:
-                    return b64
-        raise cloud_api.CloudAPIError(
-            f"Seedream response has no b64_json field: {response}",
-            payload=response,
-        )
-
-    def _generate(self, payload: dict[str, Any]) -> bytes:
-        """POST to /images/generations and download the image bytes.
-
-        Seedream's API is synchronous — the image URL (or base64) is returned
-        in the same response, no polling needed.
-        """
-        response = self._unwrap(self.client.request(
-            "POST", "/images/generations", json_body=payload
-        ))
-
-        if self.response_format == "b64_json":
-            import base64
-            b64 = self._extract_image_b64(response)
-            return base64.b64decode(b64)
-
-        url = self._extract_image_url(response)
-        return self.client.download(url)
-
-    @staticmethod
-    def _decode_image(data: bytes) -> Image.Image:
-        """Decode raw image bytes into a PIL Image (RGB)."""
-        return Image.open(io.BytesIO(data)).convert("RGB")
-
-    # -- public API (matches QwenEditModel interface, R6) -----------------------
-
-    def infer(
-        self,
-        image: Optional[Image.Image] = None,
-        prompt: str = "",
+        image: Image.Image | None = None,
         seed: int = 42,
-        steps: int = 40,
-        **provider_kwargs: Any,
+        reference_images: list[Image.Image] | None = None,
+        n: int = 1,
+        steps: int | None = None,
     ) -> Image.Image:
-        """Generate (or edit) an image and return it as a PIL Image.
+        """生成一张图像并返回 PIL 图像。
 
         Args:
-            image:  Reference PIL image for image-to-image editing.
-                    Pass ``None`` for pure text-to-image.
-            prompt: Text prompt describing the desired output.
-            seed:   Random seed; server-side reproducibility is not guaranteed.
-            steps:  Accepted for interface parity with ``QwenEditModel`` but
-                    **not forwarded** — the Seedream API has no diffusion-step
-                    parameter.
-            **provider_kwargs: Seedream request fields overriding constructor
-                    defaults (e.g. ``size`` or ``watermark``).
+            prompt: 描述期望输出的文本提示词，不能为空。
+            image: 参考图，用于图生图编辑；传 `None` 则为纯文生图。
+            seed: 随机种子，会透传给服务端，但不保证结果可复现。
+            reference_images: 多张参考图，用于保持主体一致性。
+            n: 生成张数，本方法只返回第一张。
+            steps: 为插槽兼容而保留，Seedream 没有扩散步数参数，会被忽略。
 
         Returns:
-            Generated PIL image (RGB).
+            RGB 模式的 `PIL.Image.Image`。
         """
+        del steps
+
         if not prompt or not prompt.strip():
-            raise ValueError("prompt must be a non-empty string")
+            raise ValueError("Seedream 的 prompt 不能为空")
 
-        verbose = bool(provider_kwargs.pop("verbose", self.verbose))
-        payload = self._build_payload(prompt, image, seed, provider_kwargs)
-        cache_key = cloud_api.request_hash(
-            self._cache_descriptor(prompt, image, seed, payload)
+        client = self.openai_client()
+        result = self.call_with_retry(
+            lambda: self._generate(client, prompt, image, reference_images, seed, n)
         )
 
-        cached = self._cache.get(cache_key, ext=self.output_format)
-        if cached is not None:
-            self.last_call_info = {
-                "provider": self.PROVIDER,
-                "model": self.model_path,
-                "cached": True,
-                "cache_key": cache_key,
-                "bytes": len(cached),
-            }
-            return self._decode_image(cached)
+        return self._decode(result)
 
-        t0 = time.time()
-        data = self._generate(payload)
-        elapsed = time.time() - t0
-
-        self.last_call_info = {
-            "provider": self.PROVIDER,
-            "model": self.model_path,
-            "elapsed_sec": round(elapsed, 2),
-            "bytes": len(data),
-            "cached": False,
-        }
-        self._cache.put(
-            cache_key, data, self.last_call_info, ext=self.output_format
-        )
-        logger.info(
-            "[seedream] elapsed=%.1fs bytes=%d",
-            elapsed, len(data),
-        )
-        return self._decode_image(data)
-
-    def infer_and_save(
+    def _generate(
         self,
-        image: Optional[Image.Image] = None,
-        output_path: str = "",
-        prompt: str = "",
-        seed: int = 42,
-        steps: int = 40,
-        **provider_kwargs: Any,
-    ) -> str:
-        """[C7] Generate one image, save to the caller's path, and return it."""
-        if not output_path:
-            raise ValueError("output_path is required (model_require.md R1.2)")
-        result = self.infer(image, prompt=prompt, seed=seed, steps=steps,
-                            **provider_kwargs)
-        out = Path(output_path)
-        out.parent.mkdir(parents=True, exist_ok=True)
-        fmt = "JPEG" if self.output_format in ("jpeg", "jpg") else "PNG"
-        result.save(str(out), format=fmt)
-        return str(out)
-
-    # -- compatibility alias (matches QwenEditModel.edit) -----------------------
-
-    def edit(
-        self,
-        image: Image.Image,
+        client: OpenAI,
         prompt: str,
-        seed: int = 42,
-        steps: int = 40,
-    ) -> Image.Image:
-        """Compatibility alias; production operators use the canonical ``infer()``."""
-        return self.infer(image, prompt=prompt, seed=seed, steps=steps)
+        image: Image.Image | None,
+        reference_images: list[Image.Image] | None,
+        seed: int,
+        n: int,
+    ):
+        """调用 Images API 并返回原始响应对象。"""
+        extra_body: dict = {"watermark": self.watermark}
+        references = list(reference_images or [])
+
+        if image is not None:
+            references.insert(0, image)
+
+        if references:
+            extra_body["image"] = [_encode_image(item) for item in references]
+
+        return client.images.generate(
+            model=self.model_id,
+            prompt=prompt,
+            size=self.size,
+            response_format=self.response_format,
+            n=n,
+            extra_body={"seed": seed, **extra_body},
+        )
+
+    def _decode(self, result) -> Image.Image:
+        """把 Images API 的响应转换为 PIL 图像。
+
+        服务商可能返回图片 URL，也可能直接返回 base64；两条路径都要覆盖。
+        """
+        data = getattr(result, "data", None) or []
+
+        if not data:
+            raise errors.CloudModelServerError(
+                "Seedream 响应中没有图像数据，请确认模型标识与配额是否正确"
+            )
+
+        item = data[0]
+        url = getattr(item, "url", None)
+        encoded = getattr(item, "b64_json", None)
+
+        if url:
+            return Image.open(io.BytesIO(self._download(url))).convert("RGB")
+
+        if encoded:
+            return Image.open(io.BytesIO(base64.b64decode(encoded))).convert("RGB")
+
+        raise errors.CloudModelServerError(
+            f"Seedream 响应中既没有 url 也没有 b64_json：{item!r}"
+        )
+
+    def _download(self, url: str) -> bytes:
+        """下载图片字节，失败时归类为可重试的网络故障。"""
+        try:
+            with httpx2.Client(timeout=60.0, follow_redirects=True) as client:
+                response = client.get(url)
+
+                if response.status_code >= 500:
+                    raise errors.CloudModelServerError(
+                        f"下载 Seedream 结果时服务端返回 {response.status_code}"
+                    )
+
+                response.raise_for_status()
+                return response.content
+        except errors.CloudModelError:
+            raise
+        except Exception as exc:
+            raise errors.CloudModelNetworkError(
+                f"下载 Seedream 结果失败：{exc}"
+            ) from exc
+
+
+def _encode_image(image: Image.Image) -> str:
+    """把 PIL 图像编码为 PNG 的 base64 data URI。
+
+    规范 R3.2 要求输入是对象而非路径，因此这里接受 `PIL.Image.Image`，
+    由模型自行完成编码，不依赖调用方先把文件落到磁盘。
+    """
+    buffer = io.BytesIO()
+    image.convert("RGB").save(buffer, format="PNG")
+
+    encoded = base64.b64encode(buffer.getvalue()).decode("ascii")
+
+    return f"data:image/png;base64,{encoded}"

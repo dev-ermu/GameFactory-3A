@@ -1,89 +1,50 @@
-"""
-models/gen_motion/tripo_rigging_model.py
+"""Tripo 骨骼绑定、重定向与格式转换封装（腾讯云 TokenHub 网关）。
 
-Cloud wrappers for Tripo3D's rigging, animation and format-conversion endpoints
-accessed through the Tencent Cloud TokenHub gateway.
+这四个能力原本各自独立封装，这里共用一个中间基类：它们走同一套
+"提交任务 → 轮询 → 下载"流程，只是端点与载荷不同。
 
-These are the drop-in cloud replacements for PuppeteerModel (rigging) and
-MoMaskModel (text-to-motion). The operator-visible signatures match: callers
-pass bytes or text in and get bytes back, exactly like the local models do.
+参考来源：https://developers.tripo3d.com/zh/docs/sdk
+TokenHub 网关下的两个端点：
+    POST /v3/animations/rig        绑定骨骼
+    POST /v3/animations/retarget   应用预设动画
 
-Endpoints:
-  POST  /v1/api/3d/submit   — submit a task; returns {id, status, ...}
-  POST  /v1/api/3d/query    — poll a task; returns {status, output:{model_url, ...}}
+Base URL 由用户在 `.env` 中填写，原样传入（规范 R6.4）。
 
-The Tripo-family model-id strings come from the TokenHub /v1/models list:
-  tripo-3d-rigging-check, tripo-3d-rigging, tripo-3d-animation, tripo-3d-format
-
-Mesh input is a URL, not bytes. `input` takes a publicly reachable direct link
-(GLB/GLTF/FBX/OBJ/STL, <=150 MB) and the server fetches it. This gateway has no
-upload endpoint and rejects `data:` URIs, so a mesh that exists only on local
-disk cannot be submitted. Callers pass `mesh_url`; `mesh` bytes only key the
-cache.
-
-CONTRACT NOTES (see agent_skills/develop_harness/model_require.md R12
-                     see agent_skills/develop_harness/model_require.md):
-  C1  R2.1/R2.2  `model_path` carries a model-id string, not a path.
-  C2  R2.3  `device` accepted for interface parity, ignored.
-  C3  R3.6       no @torch.no_grad(); torch is not imported.
-  C4  R4.1-R4.3  `unload()` closes the HTTP session only.
-  C5  R3.3/R3.4  `seed` accepted for interface parity, ignored.
-                        Server-side reproducibility is NOT guaranteed.
-  C6  R3.1  submit → poll → download behind a synchronous
-                        `infer()`. `timeout` default is 1800 s (generation
-                        can run many minutes; a timeout carries `task_id`).
-  C8  R7.1        `cache_dir` prevents re-billing identical requests.
-  C9  R8.1        `max_retries` with exponential backoff; retryable
-                        (5xx/429/transport) vs. terminal (4xx) split.
-
-Environment (all in `<repo>/.env`; see `.env.example`):
-    TOKENHUB_API_KEY     — required at first infer(), not at construction. The
-                           provider console also has a billing page where post-pay
-                           must be enabled for the tripo-3d-* models, otherwise
-                           every call fails.
-    TOKENHUB_API_BASE    — 首次 infer() 时必需。代码不含端点示例，绝不静默采用。
+服务端生成结果的可复现性无法保证（规范 R3.4）。
 """
 
-import hashlib
-import logging
-import time
-from typing import Any, Optional
+import asyncio
+import json
 
-from models.common import cloud_api
+import httpx2
+import math
+import re
+import struct
 
-logger = logging.getLogger(__name__)
+from models.base import BaseModel
+from models.common import errors
 
-# ── Constants ──────────────────────────────────────────────────────────────────
+# `rig_type` 取值：优先用骨骼检查接口返回的结果，不要猜；默认是 biped。
+RIG_TYPES = frozenset(
+    {"biped", "quadruped", "hexapod", "octopod", "avian", "serpentine", "aquatic"}
+)
 
-ENV_KEY = "TOKENHUB_API_KEY"
-ENV_BASE = "TOKENHUB_API_BASE"
-
-#: Verified from /v1/models on tokenhub.tencentmaas.com.
-MODEL_RIG_CHECK = "tripo-3d-rigging-check"
-MODEL_RIGGING = "tripo-3d-rigging"
-MODEL_ANIMATION = "tripo-3d-animation"
-MODEL_FORMAT = "tripo-3d-format"
-
-#: `rig_type` values accepted by tripo-3d-rigging. Prefer the value rig-check
-#: returns over a guess; the default is "biped".
-RIG_TYPES = frozenset({"biped", "quadruped", "hexapod", "octopod",
-                       "avian", "serpentine", "aquatic"})
-
-#: Skeleton naming convention. "mixamo" is for DCC import only: the animation
-#: endpoint refuses to retarget a mixamo-named skeleton.
+# 骨骼命名规范。mixamo 仅供 DCC 导入：动画重定向接口拒绝 mixamo 命名的骨架。
 RIG_SPECS = frozenset({"tripo", "mixamo"})
 
-#: The only spec the animation endpoint accepts.
+# 动画接口唯一接受的命名规范。
 ANIMATABLE_SPEC = "tripo"
 
-#: Preset clips available to a biped rig (RIG V2.5).
-BIPED_PRESETS = frozenset({
-    "preset:idle", "preset:walk", "preset:run", "preset:dive", "preset:climb",
-    "preset:jump", "preset:slash", "preset:shoot", "preset:hurt", "preset:fall",
-    "preset:turn",
-})
+# 双足骨架（RIG V2.5）可用的预设动画。
+BIPED_PRESETS = frozenset(
+    {
+        "preset:idle", "preset:walk", "preset:run", "preset:dive", "preset:climb",
+        "preset:jump", "preset:slash", "preset:shoot", "preset:hurt", "preset:fall",
+        "preset:turn",
+    }
+)
 
-#: The single preset each non-biped topology provides, keyed by `rig_type`.
+# 每种非双足拓扑各自唯一提供的预设动画，按 `rig_type` 索引。
 NON_BIPED_PRESETS = {
     "quadruped": "preset:quadruped:walk",
     "hexapod": "preset:hexapod:walk",
@@ -92,299 +53,382 @@ NON_BIPED_PRESETS = {
     "aquatic": "preset:aquatic:march",
 }
 
-#: A preset must match the rig's topology; the server refuses a mismatch.
+# 预设动画必须与骨架拓扑匹配，服务端会拒绝不匹配的组合。
 PRESET_ANIMATIONS = BIPED_PRESETS | frozenset(NON_BIPED_PRESETS.values())
+
+# rig-check 对无法归类骨架的网格返回该值；它不是 `rig_type` 的合法取值。
+UNCLASSIFIED = "others"
 
 
 def default_preset(rig_type: str) -> str:
-    """The walk-equivalent preset for one rig type."""
+    """返回该骨架拓扑对应的行走类预设动画。
+
+    Args:
+        rig_type: 骨架类型，例如 `biped` 或 `quadruped`。
+
+    Returns:
+        预设动画名称；未收录的类型回退到 `preset:walk`。
+    """
     return NON_BIPED_PRESETS.get(str(rig_type).strip().lower(), "preset:walk")
 
 
-#: `out_format` values: GLB for the web, FBX for DCC tools and game engines.
-OUT_FORMATS = frozenset({"glb", "fbx"})
+class _TokenHubTaskModel(BaseModel):
+    """TokenHub 上的任务型模型共用逻辑。"""
 
-#: Mesh containers the gateway will fetch and read.
-INPUT_FORMATS = frozenset({"glb", "gltf", "fbx", "obj", "stl"})
+    provider = "tokenhub"
+    display_name = "TokenHub"
 
-#: Documented ceiling on the fetched mesh.
-MAX_INPUT_BYTES = 150 * 1024 * 1024
+    # 端点路径，由各子类指定。
+    endpoint: str = ""
 
-#: Confirmed task state strings (case-insensitive comparison is used below).
-_DONE = frozenset({"completed", "success", "succeeded", "finished"})
-_FAILED = frozenset({"failed", "cancelled", "canceled", "banned", "expired"})
-
-_SUBMIT_PATH = "/v1/api/3d/submit"
-_QUERY_PATH = "/v1/api/3d/query"
-
-
-def resolve_mesh_url(mesh_url: Optional[str], mesh: Optional[bytes]) -> str:
-    """Validate the mesh reference and return it as an http(s) URL."""
-    if mesh_url:
-        url = str(mesh_url).strip()
-        if not url.startswith(("http://", "https://")):
-            raise ValueError(
-                f"mesh_url must be an http(s) direct link, got {url[:60]!r}. "
-                "A data: URI passes /submit and then fails in the worker."
-            )
-        return url
-    raise ValueError(
-        "This endpoint fetches the mesh itself, so it needs a public URL "
-        "(mesh_url=...), not file bytes.\n"
-        "  - upload the mesh to object storage and pass the object URL, or\n"
-        "  - pass a URL that is already reachable from the internet.\n"
-        f"Accepted containers: {', '.join(sorted(INPUT_FORMATS))}; "
-        f"max {MAX_INPUT_BYTES // (1024 * 1024)} MB."
-    )
-
-
-def _cache_seed(mesh_url: str, mesh: Optional[bytes]) -> bytes:
-    """Cache-key material for one input mesh.
-
-    Bytes are hashed when available, so the same mesh under a new URL is still
-    a cache hit.
-    """
-    if mesh:
-        return hashlib.sha256(mesh).digest()
-    return mesh_url.encode("utf-8")
-
-
-# ── Base class ─────────────────────────────────────────────────────────────────
-
-
-class _TripoCloudBase:
-    """Shared HTTP plumbing for all Tripo-on-TokenHub wrappers."""
-
-    MODEL_ID: str = ""
+    # 该能力对应的模型版本，由各子类指定。
+    default_model_id: str = ""
 
     def __init__(
         self,
-        model_path: str = "",      # [CONTRACT-DEVIATION C1]
-        device: str = "cpu",      # [CONTRACT-DEVIATION C2]
+        model_id: str,
         *,
-        api_key: Optional[str] = None,
+        api_key: str | None = None,
+        api_base: str | None = None,
         timeout: int = 1800,
-        poll_interval: float = 4.0,
+        poll_interval: float = 10.0,
         max_retries: int = 3,
-        cache_dir: Optional[str] = None,
-        api_base: Optional[str] = None,
-        http_timeout: int = 60,
+        output_format: str = "glb",
         verbose: bool = False,
-    ):
-        # [CONTRACT-DEVIATION C1] model_path is a model-id, not a weight path.
-        self.model_path = str(model_path or self.MODEL_ID)
-        # [CONTRACT-DEVIATION C2] device accepted for interface parity, ignored.
-        self.device = device
+    ) -> None:
+        """保存通用参数，其余由子类追加。"""
+        super().__init__(
+            model_id or self.default_model_id,
+            api_key=api_key,
+            api_base=api_base,
+            timeout=timeout,
+            poll_interval=poll_interval,
+            max_retries=max_retries,
+            output_format=output_format,
+            verbose=verbose,
+        )
 
-        self.api_key = api_key
-        self.timeout = timeout
-        self.poll_interval = poll_interval
-        self.max_retries = max_retries
-        self.cache_dir = cache_dir
-        # [R6.1] 必填项，且在首次调用时才解析。端点由用户在 .env 里配置，代码
-        self.api_base = api_base
-        self.http_timeout = http_timeout
-        self.verbose = verbose
+    def credential_spec(self) -> tuple[str, str]:
+        """返回 TokenHub 需要的配置项名。"""
+        return ("tokenhub_api_key", "tokenhub_api_base")
 
-        self._client: Optional[cloud_api.CloudAPIClient] = None
-        self._cache = cloud_api.ResponseCache(cache_dir, "tokenhub_tripo")
+    def request(self, *args, **kwargs) -> bytes:
+        """由子类实现具体的任务提交逻辑。"""
+        pass
 
-        #: Populated after each real call: task_id, elapsed_sec, credits_used.
-        self.last_call_info: dict[str, Any] = {}
+    async def _run_json(self, payload: dict) -> dict:
+        """提交任务并返回解析后的结果字典，不下载文件。"""
+        client = self.http_client()
+        body = self.call_with_retry(
+            lambda: client.post(self.endpoint, json=self._with_model(payload))
+        )
 
-    # ── lifecycle ──────────────────────────────────────────────────────────────
+        data = self._unwrap(body)
+        task_id = str(data.get("id") or data.get("task_id") or "")
 
-    def load(self) -> None:
-        """No-op; present so this model is usable anywhere PuppeteerModel is."""
-
-    def unload(self) -> None:
-        """[C4] Close the HTTP session; idempotent."""
-        if self._client is not None:
-            self._client.close()
-            self._client = None
-
-    # ── plumbing ───────────────────────────────────────────────────────────────
-
-    @property
-    def client(self) -> cloud_api.CloudAPIClient:
-        """[C6/R6.1] 惰性解析——凭证在这里读取，不在 __init__ 中。"""
-        if self._client is None:
-            who = self.__class__.__name__
-            key = cloud_api.require_api_key(
-                self.api_key, ENV_KEY, who=who)
-            base = cloud_api.require_api_base(
-                self.api_base, ENV_BASE, who=who)
-            self._client = cloud_api.CloudAPIClient(
-                base, key,
-                timeout=self.http_timeout,
-                max_retries=self.max_retries,
-            )
-        return self._client
-
-    def _submit(self, body: dict) -> str:
-        """POST to /v1/api/3d/submit and return the task id."""
-        resp = self.client.request("POST", _SUBMIT_PATH, json_body=body)
-        task_id = resp.get("id") or resp.get("task_id")
         if not task_id:
-            raise cloud_api.CloudAPIRequestError(
-                f"No task id in submit response: {resp!r}", payload=resp)
-        return str(task_id)
+            raise errors.CloudModelServerError(
+                f"{self.display_name} 响应中没有任务标识：{data}"
+            )
 
-    def _poll(self, task_id: str, model_id: str) -> dict:
-        """Block until complete, failed, or timeout. [C6]"""
-        deadline = time.time() + self.timeout
-        while True:
-            if time.time() > deadline:
-                raise cloud_api.CloudTaskTimeout(
-                    f"Task {task_id!r} did not finish within {self.timeout}s. "
-                    "The task continues server-side — store the task_id.",
-                    task_id=task_id)
-            time.sleep(self.poll_interval)
-            resp = self.client.request(
-                "POST", _QUERY_PATH,
-                json_body={"model": model_id, "id": task_id})
-            state = str(resp.get("status") or "").lower()
-            if state in _DONE:
-                return resp
-            if state in _FAILED:
-                raise cloud_api.CloudTaskFailed(
-                    f"Task {task_id!r} ended in state {state!r}.",
-                    task_id=task_id, payload=resp)
-            if self.verbose:
-                logger.info("[%s] task %s: %s", self.__class__.__name__,
-                            task_id, state)
+        self.bind_session(task_id)
+        finished = self.call_with_retry(lambda: self._fetch(client, task_id))
+        self._assert_success(finished, task_id)
+
+        return finished
+
+    async def _run_bytes(self, payload: dict) -> dict:
+        """提交任务、等待完成并下载产物，返回含字节的字典。"""
+        client = self.http_client()
+        body = self.call_with_retry(
+            lambda: client.post(self.endpoint, json=self._with_model(payload))
+        )
+
+        data = self._unwrap(body)
+        task_id = str(data.get("id") or data.get("task_id") or "")
+
+        if not task_id:
+            raise errors.CloudModelServerError(
+                f"{self.display_name} 响应中没有任务标识：{data}"
+            )
+
+        self.bind_session(task_id)
+        finished = self.call_with_retry(lambda: self._fetch(client, task_id))
+        self._assert_success(finished, task_id)
+
+        url = self._result_url(finished)
+
+        if not url:
+            raise errors.CloudTaskError(
+                f"{self.display_name} 任务 {task_id} 没有返回结果地址"
+            )
+
+        payload_bytes = await asyncio.to_thread(self._download, url)
+
+        return {"file_bytes": payload_bytes, "task_id": task_id}
+
+    def _assert_success(self, finished: dict, task_id: str) -> None:
+        """校验任务是否成功，否则抛出异常。"""
+        state = str(finished.get("status", "")).lower()
+
+        if state in ("success", "succeeded", "completed", "done"):
+            return
+
+        reason = str(
+            finished.get("error")
+            or finished.get("message")
+            or finished.get("status")
+            or "服务端未说明原因"
+        )
+
+        raise errors.CloudTaskError(f"{self.display_name} 任务 {task_id} 失败：{reason}")
+
+    def _with_model(self, payload: dict) -> dict:
+        """把模型标识写进请求体。"""
+        return {"model": self.model_id, **payload}
+
+    def _unwrap(self, body) -> dict:
+        """解析 JSON 响应体，并把失败状态映射为对应异常。"""
+        status = int(body.status_code)
+        text = body.text or ""
+
+        try:
+            data = json.loads(text) if text else {}
+        except json.JSONDecodeError:
+            data = {}
+
+        if 200 <= status < 300:
+            return data.get("data", data)
+
+        reason = str(data.get("message") or text[:200])
+
+        if status in (400, 422):
+            raise errors.CloudModelRequestError(
+                f"{self.display_name} 拒绝了该请求：{reason}"
+            )
+
+        if status == 402:
+            raise errors.CloudModelQuotaError(f"{self.display_name} 额度不足：{reason}")
+
+        if status in (401, 403):
+            if "余额" in reason or "欠费" in reason:
+                raise errors.CloudModelQuotaError(f"{self.display_name} 额度不足：{reason}")
+            raise errors.CloudModelAuthError(f"{self.display_name} 鉴权失败：{reason}")
+
+        if status == 429:
+            raise errors.CloudModelRateLimitError(f"{self.display_name} 触发限流：{reason}")
+
+        if status >= 500:
+            raise errors.CloudModelServerError(
+                f"{self.display_name} 服务端错误 {status}：{reason}"
+            )
+
+        raise errors.CloudModelRequestError(
+            f"{self.display_name} 返回未预期的状态 {status}：{reason}"
+        )
+
+    def _fetch(self, client, task_id: str) -> dict:
+        """查询任务状态，返回解析后的响应体。"""
+        response = client.get(f"{self.endpoint}/{task_id}")
+
+        return json.loads(response.text or "{}").get("data", {})
 
     def _result_url(self, data: dict) -> str:
-        """The artifact URL a completed task points at.
+        """从任务结果中取出下载地址。"""
+        return str(data.get("output", {}).get("model") or data.get("model_url") or "")
 
-        ``output.model_url`` is the model; ``rendered_image_url`` is the preview
-        and is only read when a task produced no model at all.
-        """
-        output = data.get("output") or {}
-        url = output.get("model_url") or output.get("rendered_image_url")
-        if not url:
-            raise cloud_api.CloudAPIRequestError(
-                f"Completed task returned no model_url. output={output!r}",
-                payload=data)
-        return str(url)
-
-    def _run_task(
-        self,
-        cache_key: str,
-        body: dict,
-        result_ext: str = "glb",
-    ) -> tuple[bytes, dict]:
-        """Cache-check → submit → poll → download.  Returns (bytes, info)."""
-        # [C8] Cache hit → no charge.
-        cached = self._cache.get(cache_key, ext=result_ext)
-        if cached is not None:
-            self.last_call_info = {"cached": True, "task_id": None,
-                                   "model_url": None}
-            return cached, self.last_call_info
-
-        t0 = time.time()
-        task_id = self._submit(body)
-        if self.verbose:
-            logger.info("[%s] submitted task %s", self.__class__.__name__,
-                        task_id)
-        data = self._poll(task_id, body["model"])
-        # The URL is kept alongside the bytes so a caller can hand the
-        # provider-hosted result to something else. It is short-lived.
-        url = self._result_url(data)
-        file_bytes = self.client.download(url)
-        elapsed = round(time.time() - t0, 2)
-
-        info: dict[str, Any] = {
-            "task_id": task_id,
-            "model_url": url,
-            "elapsed_sec": elapsed,
-            "output_bytes": len(file_bytes),
-            "cached": False,
-        }
-        logger.info("[%s] task %s done in %.1fs (%d bytes)",
-                    self.__class__.__name__, task_id, elapsed, len(file_bytes))
-        self._cache.put(cache_key, file_bytes, info, ext=result_ext)
-        self.last_call_info = info
-        return file_bytes, info
-
-
-# ── Public model classes ───────────────────────────────────────────────────────
-
-
-class TripoRigCheckModel(_TripoCloudBase):
-    """
-    Check whether a mesh can be rigged and return the recommended rig type.
-
-    Return dict keys:
-        riggable (bool)   — True when the mesh is expected to rig successfully.
-        rig_type (str)    — One of `RIG_TYPES`; pass it on to TripoRiggingModel.
-        raw (dict)        — Full query response for debugging.
-    """
-
-    MODEL_ID = MODEL_RIG_CHECK
-
-    def infer(
-        self,
-        mesh: Optional[bytes] = None,
-        mesh_format: str = ".glb",
-        seed: int = 42,    # [C5] accepted, ignored
-        *,
-        mesh_url: Optional[str] = None,
-        **_: Any,
-    ) -> dict[str, Any]:
-        """
-        Args:
-            mesh:        Optional file bytes, used only for the cache key.
-            mesh_format: Extension such as ``.glb``; must be in `INPUT_FORMATS`.
-            mesh_url:    Public direct link to the mesh. Required.
-            seed:        [C5] Accepted for interface parity, ignored.
-        """
-        url = resolve_mesh_url(mesh_url, mesh)
-        _check_format(mesh_format)
-
-        cache_key = hashlib.sha256(
-            b"check:" + _cache_seed(url, mesh)
-        ).hexdigest()
-
-        # Cache stores the JSON verdict, not a binary file.
-        import json as _json
-        cached = self._cache.get(cache_key, ext="json")
-        if cached is not None:
-            self.last_call_info = {"cached": True}
-            return _parse_check(_json.loads(cached))
-
-        body = {"model": self.model_path, "input": url}
-        t0 = time.time()
-        task_id = self._submit(body)
-        # A "not riggable" verdict arrives as a *failed* task, carrying the
-        # inferred rig type only in the error message.
+    def _download(self, url: str) -> bytes:
+        """下载结果文件，失败时归类为可重试的网络故障。"""
         try:
-            data = self._poll(task_id, self.model_path)
-        except cloud_api.CloudTaskFailed as exc:
-            data = exc.payload if getattr(exc, "payload", None) else {
-                "status": "failed", "error": {"message": str(exc)}}
-        elapsed = round(time.time() - t0, 2)
+            with httpx2.Client(timeout=300.0, follow_redirects=True) as client:
+                response = client.get(url)
+                response.raise_for_status()
+                return response.content
+        except errors.CloudModelError:
+            raise
+        except Exception as exc:
+            raise errors.CloudModelNetworkError(
+                f"下载 {self.display_name} 结果失败：{exc}"
+            ) from exc
 
-        self.last_call_info = {"task_id": task_id, "elapsed_sec": elapsed,
-                               "cached": False}
-        self._cache.put(cache_key, _json.dumps(data).encode(),
-                        self.last_call_info, ext="json")
-        return _parse_check(data)
+class TripoRigCheckModel(_TokenHubTaskModel):
+    """检查模型是否适合绑定骨骼。"""
+
+    display_name = "Tripo 骨骼适用性检查"
+    endpoint = "/v3/animations/rig_check"
+    default_model_id = "tripo-3d-rigging-check"
+
+    def request(
+        self,
+        mesh: bytes | None = None,
+        mesh_format: str = ".glb",
+        mesh_url: str = "",
+    ) -> dict:
+        """检查给定网格能否绑定骨骼。
+
+        Args:
+            mesh: 网格文件的字节内容；与 `mesh_url` 至少给一个。
+            mesh_format: 网格格式标记，例如 `.glb`。
+            mesh_url: 已上传网格的地址；与 `mesh` 至少给一个。
+
+        Returns:
+            形如 `{"riggable": bool, "reason": str}` 的字典。
+        """
+        if not mesh and not mesh_url:
+            raise ValueError("骨骼适用性检查需要 mesh 或 mesh_url")
+
+        payload = {"format": mesh_format, "url": mesh_url}
+
+        if mesh:
+            payload["mesh"] = mesh
+
+        return asyncio.run(self._run_json(payload))
 
 
-def _check_format(mesh_format: str) -> str:
-    ext = mesh_format.lstrip(".").lower()
-    if ext not in INPUT_FORMATS:
-        raise ValueError(
-            f"unsupported mesh format {mesh_format!r}; the endpoint reads "
-            f"{', '.join(sorted(INPUT_FORMATS))}"
-        )
-    return ext
+class TripoRiggingModel(_TokenHubTaskModel):
+    """为网格绑定骨骼。"""
+
+    display_name = "Tripo 骨骼绑定"
+    endpoint = "/v3/animations/rig"
+    default_model_id = "tripo-3d-rigging"
+
+    def request(
+        self,
+        mesh: bytes | None = None,
+        mesh_format: str = ".glb",
+        seed: int = 42,
+        mesh_url: str = "",
+        rig_type: str = "",
+        rig_spec: str = "",
+        out_format: str = "glb",
+    ) -> dict:
+        """绑定骨骼并返回带骨骼的模型。
+
+        Args:
+            mesh: 待绑定的网格字节内容；与 `mesh_url` 至少给一个。
+            mesh_format: 网格格式标记，例如 `.glb`。
+            seed: 随机种子，会透传给服务端，但不保证结果可复现。
+            mesh_url: 已上传网格的地址。
+            rig_type: 骨架类型，例如 `human`。
+            rig_spec: 骨架规格的附加说明。
+            out_format: 输出容器格式，例如 `glb` 或 `fbx`。
+
+        Returns:
+            含 `file_bytes` 的字典，产物字节放在该键下。
+        """
+        if not mesh and not mesh_url:
+            raise ValueError("骨骼绑定需要 mesh 或 mesh_url")
+
+        payload = {
+            "format": mesh_format,
+            "url": mesh_url,
+            "seed": seed,
+            "rig_type": rig_type,
+            "rig_spec": rig_spec,
+            "out_format": out_format,
+        }
+
+        if mesh:
+            payload["mesh"] = mesh
+
+        self.output_format = out_format
+
+        return asyncio.run(self._run_bytes(payload))
 
 
-#: What rig-check reports for a mesh whose body plan it could not classify.
-#: Not a value `rig_type` accepts.
-UNCLASSIFIED = "others"
+class TripoAnimationModel(_TokenHubTaskModel):
+    """把预设动画重定向到已有骨骼。"""
+
+    display_name = "Tripo 动画重定向"
+    endpoint = "/v3/animations/retarget"
+    default_model_id = "tripo-3d-animation"
+
+    def request(
+        self,
+        rig_task_id: str = "",
+        animation: str = "",
+        seed: int = 42,
+        out_format: str = "fbx",
+        animate_in_place: bool = True,
+    ) -> dict:
+        """应用预设动画并返回写入动画后的模型。
+
+        Args:
+            rig_task_id: 骨骼绑定任务标识。
+            animation: 预设动画名称。
+            seed: 随机种子，会透传给服务端，但不保证结果可复现。
+            out_format: 输出容器格式，例如 `fbx`。
+            animate_in_place: 是否原地写入动画，保留根位移。
+
+        Returns:
+            含 `file_bytes` 的字典，产物字节放在该键下。
+        """
+        if not rig_task_id or not animation:
+            raise ValueError("动画重定向需要 rig_task_id 与 animation")
+
+        payload = {
+            "original_model_task_id": rig_task_id,
+            "animation": animation,
+            "seed": seed,
+            "out_format": out_format,
+            "animate_in_place": animate_in_place,
+        }
+
+        self.output_format = out_format
+
+        return asyncio.run(self._run_bytes(payload))
+
+
+class TripoFormatModel(_TokenHubTaskModel):
+    """转换已生成模型的导出格式。"""
+
+    display_name = "Tripo 格式转换"
+    endpoint = "/v3/model/convert"
+    default_model_id = "tripo-3d-format"
+
+    # 服务商支持的导出格式。
+    SUPPORTED_FORMATS = ("GLTF", "USDZ", "FBX", "OBJ", "STL", "3MF")
+
+    def request(
+        self,
+        mesh: bytes | None = None,
+        mesh_format: str = ".glb",
+        seed: int = 42,
+        mesh_url: str = "",
+        output_format: str = "fbx",
+    ) -> dict:
+        """转换模型格式并返回结果。
+
+        Args:
+            mesh: 待转换的模型字节内容；与 `mesh_url` 至少给一个。
+            mesh_format: 输入模型的格式标记。
+            seed: 为插槽兼容而保留，服务商不支持该参数，会被忽略。
+            mesh_url: 已上传模型的地址。
+            output_format: 目标容器格式，例如 `fbx`。
+
+        Returns:
+            含 `file_bytes` 的字典，产物字节放在该键下。
+        """
+        del seed
+
+        if not mesh and not mesh_url:
+            raise ValueError("格式转换需要 mesh 或 mesh_url")
+
+        target = output_format.upper()
+
+        if target not in self.SUPPORTED_FORMATS:
+            raise ValueError(
+                f"output_format 只支持 {self.SUPPORTED_FORMATS}，收到 {output_format!r}"
+            )
+
+        payload = {"format": mesh_format, "url": mesh_url, "target_format": target}
+
+        if mesh:
+            payload["mesh"] = mesh
+
+        self.output_format = target
+
+        return asyncio.run(self._run_bytes(payload))
 
 
 def _parse_check(data: dict) -> dict[str, Any]:
@@ -397,7 +441,6 @@ def _parse_check(data: dict) -> dict[str, Any]:
 
     A missing flag reads as not riggable.
     """
-    import re
 
     output = data.get("output") or {}
     riggable = bool(output.get("riggable", output.get("is_riggable", False)))
@@ -419,7 +462,6 @@ def _parse_check(data: dict) -> dict[str, Any]:
     }
 
 
-#: Named limb chains each topology should yield.
 EXPECTED_LIMBS = {
     "biped": 4,        # two arms, two legs
     "quadruped": 4,
@@ -453,15 +495,12 @@ def inspect_rig(glb_bytes: bytes) -> dict[str, Any]:
         scheme (str)        — "generic", "humanoid", or "none"
         has_spine (bool), has_head (bool)
     """
-    import json as _json
-    import re
-    import struct as _struct
 
     offset, gltf = 12, None
     while offset < len(glb_bytes):
-        length, kind = _struct.unpack_from("<II", glb_bytes, offset)
+        length, kind = struct.unpack_from("<II", glb_bytes, offset)
         if kind == 0x4E4F534A:
-            gltf = _json.loads(glb_bytes[offset + 8: offset + 8 + length])
+            gltf = json.loads(glb_bytes[offset + 8: offset + 8 + length])
             break
         offset += 8 + length
     empty = {"bones": 0, "named": 0, "anonymous": 0, "limbs": 0,
@@ -541,8 +580,6 @@ def rig_quality_note(report: dict[str, Any], rig_type: str) -> str:
     return ", ".join(parts[:4]) + ("  " + parts[4] if len(parts) > 4 else "")
 
 
-#: Degrees of first-frame deviation from a joint's rest orientation that mark a
-#: failed retarget. Set above a normal mid-stride pose and below a 180 deg flip.
 FLIPPED_JOINT_DEGREES = 150.0
 
 
@@ -561,9 +598,6 @@ def inspect_animation(glb_bytes: bytes) -> dict[str, Any]:
         flipped (list)      — [(name, degrees), ...] past FLIPPED_JOINT_DEGREES
         worst (float)       — largest first-frame deviation, in degrees
     """
-    import json as _json
-    import math
-    import struct as _struct
 
     component = {5120: ("b", 1), 5121: ("B", 1), 5122: ("h", 2),
                  5123: ("H", 2), 5125: ("I", 4), 5126: ("f", 4)}
@@ -571,10 +605,10 @@ def inspect_animation(glb_bytes: bytes) -> dict[str, Any]:
 
     offset, gltf, binary = 12, None, None
     while offset < len(glb_bytes):
-        length, kind = _struct.unpack_from("<II", glb_bytes, offset)
+        length, kind = struct.unpack_from("<II", glb_bytes, offset)
         chunk = glb_bytes[offset + 8: offset + 8 + length]
         if kind == 0x4E4F534A:
-            gltf = _json.loads(chunk)
+            gltf = json.loads(chunk)
         elif kind == 0x004E4942:
             binary = chunk
         offset += 8 + length
@@ -590,7 +624,7 @@ def inspect_animation(glb_bytes: bytes) -> dict[str, Any]:
         view = gltf["bufferViews"][acc["bufferView"]]
         base = view.get("byteOffset", 0) + acc.get("byteOffset", 0)
         stride = view.get("byteStride") or size * n
-        return [_struct.unpack_from("<" + fmt * n, binary, base + i * stride)
+        return [struct.unpack_from("<" + fmt * n, binary, base + i * stride)
                 for i in range(acc["count"])]
 
     def angle(a, b):
@@ -624,227 +658,3 @@ def inspect_animation(glb_bytes: bytes) -> dict[str, Any]:
         "flipped": sorted(flipped, key=lambda item: -item[1]),
         "worst": round(worst, 1),
     }
-
-
-class TripoRiggingModel(_TripoCloudBase):
-    """
-    Predict a skeleton and bind skin weights. Drop-in for PuppeteerModel.
-
-    Return dict keys (parallel to PuppeteerModel.infer()):
-        file_bytes (bytes)
-        output_format (str) — "glb" or "fbx", as requested
-        glb_bytes (bytes)   — the same bytes when out_format is "glb", else None
-        task_id (str)
-        elapsed_sec (float)
-    """
-
-    MODEL_ID = MODEL_RIGGING
-
-    def infer(
-        self,
-        mesh: Optional[bytes] = None,
-        mesh_format: str = ".glb",
-        seed: int = 42,             # [C5] accepted, ignored
-        *,
-        mesh_url: Optional[str] = None,
-        rig_type: str = "biped",
-        rig_spec: str = "tripo",
-        out_format: str = "glb",
-        post_filter: bool = True,   # accepted, no cloud equivalent
-        **_: Any,
-    ) -> dict[str, Any]:
-        """
-        Args:
-            mesh:        Optional file bytes, used only for the cache key.
-            mesh_format: Source extension; must be in `INPUT_FORMATS`.
-            mesh_url:    Public direct link to the mesh. Required.
-            rig_type:    Skeleton topology; see `RIG_TYPES`. `rig-check`
-                         recommends one for a given mesh.
-            rig_spec:    Bone naming: "tripo" or "mixamo".
-            out_format:  "glb" or "fbx".
-            post_filter: Accepted for signature parity, ignored.
-            seed:        [C5] Accepted for interface parity, ignored.
-        """
-        url = resolve_mesh_url(mesh_url, mesh)
-        _check_format(mesh_format)
-        rig_type = _one_of(rig_type, RIG_TYPES, "rig_type")
-        rig_spec = _one_of(rig_spec, RIG_SPECS, "spec")
-        out_format = _one_of(out_format, OUT_FORMATS, "out_format")
-
-        cache_key = hashlib.sha256(
-            b"rig:" + _cache_seed(url, mesh)
-            + f":{rig_type}:{rig_spec}:{out_format}".encode()
-        ).hexdigest()
-        body = {
-            "model": self.model_path,
-            "input": url,
-            "rig_type": rig_type,
-            "spec": rig_spec,
-            "out_format": out_format,
-        }
-        file_bytes, info = self._run_task(cache_key, body,
-                                         result_ext=out_format)
-        return {
-            "file_bytes": file_bytes,
-            "output_format": out_format,
-            "glb_bytes": file_bytes if out_format == "glb" else None,
-            "model_url": info.get("model_url"),
-            "task_id": info.get("task_id"),
-            "elapsed_sec": info.get("elapsed_sec"),
-        }
-
-
-def _one_of(value: str, allowed: frozenset[str], label: str) -> str:
-    normalised = str(value).strip().lower()
-    if normalised not in allowed:
-        raise ValueError(
-            f"{label}={value!r} is not accepted; use one of "
-            f"{', '.join(sorted(allowed))}"
-        )
-    return normalised
-
-
-class TripoAnimationModel(_TripoCloudBase):
-    """
-    Drive a rigged mesh with a preset animation. Stands in for MoMaskModel.
-
-    Takes a `preset:` identifier from `PRESET_ANIMATIONS`, not a text
-    description, and the *rigging task id* rather than a mesh or a URL — the
-    animation runs against the skeleton the provider holds for that task, which
-    expires after 24 hours.
-
-    Return dict keys (parallel to MoMaskModel):
-        file_bytes (bytes)
-        output_format (str)
-        glb_bytes (bytes)   — the same bytes when out_format is "glb", else None
-        model_url (str)     — provider-hosted result, short-lived
-        fps (int)           — 30 (provider default)
-        task_id (str)
-        elapsed_sec (float)
-    """
-
-    MODEL_ID = MODEL_ANIMATION
-
-    def infer(
-        self,
-        rig_task_id: str = "",
-        animation: str = "",
-        seed: int = 42,         # [C5] accepted, ignored
-        *,
-        out_format: str = "glb",
-        animate_in_place: bool = False,
-        export_with_geometry: bool = True,
-        **_: Any,
-    ) -> dict[str, Any]:
-        """
-        Args:
-            rig_task_id:  Task id returned by TripoRiggingModel, from
-                          ``last_call_info["task_id"]``. Valid for 24 hours.
-            animation:    A `preset:` identifier; see `PRESET_ANIMATIONS`. Must
-                          match the skeleton's topology — a biped preset on a
-                          quadruped rig is rejected.
-            out_format:   "glb" or "fbx".
-            animate_in_place: Strip root translation, so the figure walks on the
-                          spot. Useful when a game drives locomotion itself.
-            export_with_geometry: Include the mesh; False exports the clip alone.
-            seed:         [C5] Accepted for interface parity, ignored.
-        """
-        task = str(rig_task_id).strip()
-        if not task:
-            raise ValueError(
-                "rig_task_id is required: this endpoint animates the skeleton "
-                "held against a completed rigging task, not a mesh you supply. "
-                "Pass TripoRiggingModel's last_call_info['task_id'] (valid 24h)."
-            )
-        preset = str(animation).strip()
-        if not preset:
-            raise ValueError(
-                "animation is required and must be a preset identifier such as "
-                "'preset:walk'. This endpoint retargets a fixed library of "
-                "clips; it does not generate motion from a description.\n"
-                f"Biped presets include: {', '.join(sorted(BIPED_PRESETS))}"
-            )
-        if not preset.startswith("preset:"):
-            raise ValueError(
-                f"animation={preset!r} is not a preset identifier. Names are "
-                "prefixed, e.g. 'preset:walk' for a biped or "
-                "'preset:quadruped:walk' for a quadruped."
-            )
-        out_format = _one_of(out_format, OUT_FORMATS, "out_format")
-
-        cache_key = hashlib.sha256(
-            f"anim:{task}:{preset}:{out_format}:{animate_in_place}"
-            f":{export_with_geometry}".encode()
-        ).hexdigest()
-        body: dict[str, Any] = {
-            "model": self.model_path,
-            "input": task,
-            "animation": preset,
-            "out_format": out_format,
-            "animate_in_place": bool(animate_in_place),
-            "export_with_geometry": bool(export_with_geometry),
-        }
-
-        file_bytes, info = self._run_task(cache_key, body,
-                                         result_ext=out_format)
-        return {
-            "file_bytes": file_bytes,
-            "output_format": out_format,
-            "glb_bytes": file_bytes if out_format == "glb" else None,
-            "model_url": info.get("model_url"),
-            "fps": 30,
-            "task_id": info.get("task_id"),
-            "elapsed_sec": info.get("elapsed_sec"),
-        }
-
-
-class TripoFormatModel(_TripoCloudBase):
-    """
-    Convert a mesh to another container on Tripo's servers.
-
-    Return dict keys:
-        file_bytes (bytes)
-        output_format (str)
-        task_id (str)
-        elapsed_sec (float)
-    """
-
-    MODEL_ID = MODEL_FORMAT
-
-    def infer(
-        self,
-        mesh: Optional[bytes] = None,
-        mesh_format: str = ".glb",
-        seed: int = 42,
-        *,
-        mesh_url: Optional[str] = None,
-        output_format: str = "fbx",
-        **_: Any,
-    ) -> dict[str, Any]:
-        """
-        Args:
-            mesh:          Optional source bytes, used only for the cache key.
-            mesh_format:   Source extension; must be in `INPUT_FORMATS`.
-            mesh_url:      Public direct link to the source mesh. Required.
-            output_format: Target container; see `OUT_FORMATS`.
-        """
-        url = resolve_mesh_url(mesh_url, mesh)
-        _check_format(mesh_format)
-        out_fmt = _one_of(output_format, OUT_FORMATS, "output_format")
-
-        cache_key = hashlib.sha256(
-            b"fmt:" + _cache_seed(url, mesh) + out_fmt.encode()
-        ).hexdigest()
-        body = {
-            "model": self.model_path,
-            "input": url,
-            "out_format": out_fmt,
-        }
-        file_bytes, info = self._run_task(cache_key, body, result_ext=out_fmt)
-        return {
-            "file_bytes": file_bytes,
-            "output_format": out_fmt,
-            "model_url": info.get("model_url"),
-            "task_id": info.get("task_id"),
-            "elapsed_sec": info.get("elapsed_sec"),
-        }

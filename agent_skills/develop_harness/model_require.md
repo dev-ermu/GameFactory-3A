@@ -4,7 +4,7 @@
 
 > **为了让消费级设备也能运行，本仓库不考虑使用本地权重模型，使用云端大模型API**。如Tripo、Meshy、Seedream、Seedance、Seed Audio 等。
 
-> 必需接口：每个模型都必须实现 `__init__()` 和 `infer()`。
+> 必需接口：每个模型都必须实现 `__init__()` 和 `request()`。
 > 每个模型对应一个文件：`<REPO_PATH>/models/<家族名>/<模型名>_model.py`，类名为 `<名称>Model`。
 > 模型专用的辅助函数应放在`<REPO_PATH>/models/<家族名>/<模型名>_utils/`目录下。
 
@@ -28,7 +28,7 @@
 
 ### R1.2 — 唯一例外情况
 
-仅当服务商返回的产物无法合理驻留内存时，才允许提供 `infer_and_save(..., output_path)` 这类便捷方法（例如Tripo返回的GLB文件自带纹理图集）。相关要求如下：
+仅当服务商返回的产物无法合理驻留内存时，才允许提供 `request_and_save(..., output_path)` 这类便捷方法（例如Tripo返回的GLB文件自带纹理图集）。相关要求如下：
 
 - 输出路径由调用方传入，模型内部绝不能直接生成该路径；
 - 需对父目录执行`mkdir(parents=True, exist_ok=True)`操作；
