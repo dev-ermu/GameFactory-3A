@@ -1,185 +1,347 @@
 """
-AudioGen batch/demo runner.
+AudioGen batch/single runner.
 
-One registered ``audio`` task exposes two asset routes, both served by the
-Seed Audio cloud API:
-  * ``audio_type=dialogue``     -> Seed Audio dialogue
-  * ``audio_type=sound_effect`` -> Seed Audio sound effects
+一次运行只做一件事，由子命令决定：
+
+* ``batch``    读 jsonl 任务清单批量执行——``--game`` 定位某个游戏的任务集，
+               ``--tasks`` 直接指定文件；
+* ``single``   用命令行参数就地拼一条任务，不读 jsonl。
+
+单条模式的内容输入只有 ``--prompt``，生成哪一路由 ``--audio-type`` 指定——模型
+把 text 与 prompt 当同一个输入槽（见 ``SeedAudioModel._build_request``）。
+
+两条路径的参数是同构的：单条模式的每个参数都对应 jsonl 里的一个字段，所以单条
+模式既是快速试听，也是批处理任务的样板。字段与
+``outputs/samples/<game>/audio/audio_tasks.jsonl`` 一致::
+
+    game_id  task_id  audio_type  text  prompt  speaker_id
+    emotion  language  sound_category  duration_sec  sample_rate  seed
+
+两种模式各有各的参数表：把对方的参数传进来会被 argparse 直接拒绝
+（unrecognized arguments），不会被静默忽略。
+
+进度与结果走标准库 ``logging``（级别 INFO，默认输出到 stderr），因此 stdout
+不承载日志，管道里可以放心使用。
 
 Examples:
-    python pipeline/assets_gen/gen_audio/run.py --game gameA_cyberpunk_shooter
-    python pipeline/assets_gen/gen_audio/run.py --only-audio-type dialogue
-    python pipeline/assets_gen/gen_audio/run.py --audio-type dialogue \
-        --text "发现目标" --task-id spotted_target
-    python pipeline/assets_gen/gen_audio/run.py --audio-type sound_effect \
-        --prompt "a single futuristic rifle shot" --task-id rifle_shot
-    python pipeline/assets_gen/gen_audio/run.py --audio-type dialogue \
+    # 批量：跑某个游戏的全部 audio 任务
+    python pipeline/assets_gen/gen_audio/run.py batch --game gameA_fighting_arena_unity
+
+    # 批量：只跑一路，跳过另一个模型
+    python pipeline/assets_gen/gen_audio/run.py batch --audio-type dialogue
+
+    # 单条：一句台词
+    python pipeline/assets_gen/gen_audio/run.py single --audio-type dialogue \\
+        --prompt "发现目标" --task-id spotted_target
+
+    # 单条：一个音效
+    python pipeline/assets_gen/gen_audio/run.py single --audio-type sound_effect \\
+        --prompt "a single close futuristic rifle shot" --task-id rifle_shot
 """
 
 import argparse
 import json
-import os
-
-from config import settings
-
-
-def _text(value: object) -> str:
-    """把 `settings` 字段值转成去空白字符串；`None` 与空值一律返回 `""`。"""
-    return "" if value is None else str(value).strip()
-
-
-import sys
+import logging
 from pathlib import Path
+import sys
+from typing import TYPE_CHECKING, Any
 
 _REPO_ROOT = Path(__file__).resolve().parents[3]
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
+from config import settings
 
+from operators.gen_audio.operator import GenAudioOperator  # noqa: E402
 from pipeline.common import config, paths  # noqa: E402
+
+if TYPE_CHECKING:
+    from models.gen_audio.seed_audio_model import SeedAudioModel
+
+logger = logging.getLogger(__name__)
 
 TASK_KIND = "audio"
 DEFAULT_SEED_AUDIO_MODEL = "seed-audio-1.0"
-DEFAULT_TASKS = paths.collect_jsonl(TASK_KIND)
+
+#: 单个任务的等待上限，秒。与 `SeedAudioModel` 的默认值一致。
+DEFAULT_TASK_TIMEOUT = 600
+
+#: `audio_type` 的合法取值。
+AUDIO_TYPES = ("dialogue", "sound_effect")
 
 
 def load_seed_audio_model(
     mode: str,
     model_id: str = DEFAULT_SEED_AUDIO_MODEL,
     speaker_id: str | None = None,
-    api_base: str | None = None,
-    timeout: int = 600,
-):
-    """Load the Seed Audio wrapper for one AudioGen slot."""
+    timeout: int = DEFAULT_TASK_TIMEOUT,
+) -> "SeedAudioModel":
+    """为一个 AudioGen 槽位加载 Seed Audio 封装。
+
+    延迟 import：`SeedAudioModel` 会连带拉起 numpy / requests / openai，而
+    参数解析与 `--help` 都不需要它们。
+
+    Args:
+        mode: 槽位用途，`dialogue` 或 `sound_effect`，仅用于日志。
+        model_id: 要调用的 API 模型标识。
+        speaker_id: dialogue 槽位的默认发音人；留空则交给算子运行时决定。
+        timeout: 单个任务的等待上限，秒。
+
+    Returns:
+        配置好的 `SeedAudioModel`。
+    """
     from models.gen_audio.seed_audio_model import SeedAudioModel
 
-    print(f"[run] Loading SeedAudioModel ({mode}) from API model: {model_id}")
+    logger.info("Loading SeedAudioModel (%s) from API model: %s", mode, model_id)
+
     return SeedAudioModel(
         model_id,
         speaker_id=speaker_id or "",
-        api_base=api_base,
         timeout=timeout,
         verbose=True,
     )
 
 
-def make_operator(
-    dialogue_model=None,
-    sound_effect_model=None,
-    output_dir: str | None = None,
-    run_id: str = paths.DEFAULT_RUN_ID,
-    default_game_id: str | None = None,
-):
-    """Wire the two model slots into the model-agnostic AudioGen operator."""
-    from operators.gen_audio.operator import GenAudioOperator
-
-    return GenAudioOperator(
-        dialogue_model=dialogue_model,
-        sound_effect_model=sound_effect_model,
-        output_dir=output_dir,
-        run_id=run_id,
-        default_game_id=default_game_id,
-    )
-
-
-def generate(inp: dict, operator) -> dict:
-    """Generate one audio asset."""
-    return operator.run(inp)
-
-
 def run_from_jsonl(
     tasks_path: str,
-    operator,
+    operator: GenAudioOperator,
     game_filter: str | None = None,
     audio_type_filter: str | None = None,
-) -> list[dict]:
-    """Run AudioGen tasks, optionally restricting dialogue or sound effects."""
-    results = []
+) -> list[dict[str, Any]]:
+    """逐条执行 jsonl 里的任务，可选按游戏或 audio_type 过滤。
+
+    Args:
+        tasks_path: 任务清单路径。
+        operator: 已装配好的算子。
+        game_filter: 只跑该游戏的任务。
+        audio_type_filter: 只跑该 `audio_type` 的任务。
+
+    Returns:
+        每个成功任务的 `operator.run()` 结果。
+    """
+    results: list[dict[str, Any]] = []
+
     for task, game_id in paths.iter_tasks(tasks_path, game_filter=game_filter):
         audio_type = task.get("audio_type", "sound_effect")
+
         if audio_type_filter and audio_type != audio_type_filter:
             continue
-        print(
-            f"[run] game={game_id}  task_id={task.get('task_id', '?')}  "
-            f"audio_type={audio_type}"
+
+        logger.info(
+            "game=%s  task_id=%s  audio_type=%s",
+            game_id, task.get("task_id", "?"), audio_type,
         )
-        result = generate(task, operator)
-        print(f"       -> audio={result['audio_path']}  ({result['elapsed_sec']}s)")
+
+        result = operator.run(task)
+
+        logger.info("  -> audio=%s  (%ss)", result["audio_path"], result["elapsed_sec"])
         results.append(result)
+
     return results
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser(description="Generate dialogue and game SFX assets.")
+def build_parser() -> argparse.ArgumentParser:
+    """构造命令行解析器。
+
+    模式由子命令决定：`batch`读jsonl文件批量执行，`single`用参数就地拼一条
+    任务。两种模式的参数各自挂在对应子命令上。
+    """
+    common = _common_parser()
+    parser = argparse.ArgumentParser(
+        description="Generate dialogue and game SFX assets.",
+        epilog="用 '<command> --help' 查看某一模式的完整参数。",
+    )
+    subparsers = parser.add_subparsers(dest="command", required=True)
+
+    batch = subparsers.add_parser(
+        "batch",
+        parents=[common],
+        help="Read a jsonl task list and run every task.",
+        description="Read a jsonl task list and run every task.",
+    )
+    batch.add_argument(
+        "--tasks",
+        default=None,
+        help="Explicit jsonl path (overrides the --game task-list lookup)",
+    )
+    batch.add_argument(
+        "--audio-type",
+        choices=AUDIO_TYPES,
+        default=None,
+        help="Run only this route (default: both).",
+    )
+
+    single = subparsers.add_parser(
+        "single",
+        parents=[common],
+        help="Build one task from the flags below and generate it.",
+        description="Build one task from the flags below and generate it.",
+    )
+    _add_single_args(single)
+
+    return parser
+
+
+def _common_parser() -> argparse.ArgumentParser:
+    """两种模式共享的参数，由子命令通过 `parents=` 继承。
+
+    `--run-id` 与 `--out-dir` 放进互斥分组：`--out-dir` 走旧的扁平布局，产物
+    按 `<out-dir>/<task_id>.wav` 直接落盘，`run_id` 在这条路径上不参与任何决策，
+    同时给出只会让人以为它生效了。
+    """
+    parser = argparse.ArgumentParser(add_help=False)
+
     parser.add_argument(
         "--seed-audio-model",
-        default=_text(settings.seed_audio_model) or DEFAULT_SEED_AUDIO_MODEL,
+        default=settings.seed_audio_model,
         help="Seed Audio API model id.",
     )
     parser.add_argument(
-        "--seed-audio-api-base",
-        default=config.settings.seed_audio_api_base,
-        help="Override the Seed Audio API root configured in .env.",
+        "--speaker-id",
+        default=settings.seed_audio_speaker_id,
+        help="Speaker resource id; a task's own speaker_id wins over it.",
     )
     parser.add_argument(
-        "--seed-audio-speaker-id",
-        default=_text(settings.seed_audio_speaker_id) or None,
-        help="Optional Seed Audio speaker resource id; Qwen speaker names are not reused.",
-    )
-    parser.add_argument(
-        "--seed-audio-sample-rate",
-        type=int,
-        default=24_000,
-        choices=[8000, 16000, 24000, 32000, 44100, 48000],
-    )
-    parser.add_argument(
-        "--seed-audio-timeout",
-        type=int,
-        default=300,
-        help="Per-request HTTP timeout in seconds for Seed Audio.",
-    )
-    parser.add_argument("--game", default=None,
-                        help=f"Game project id. Known: {paths.list_games() or '<none>'}")
-    parser.add_argument("--tasks", default=None,
-                        help="Explicit jsonl path (overrides the --game task-list lookup)")
-    parser.add_argument("--run-id", default=paths.DEFAULT_RUN_ID,
-                        help="Run directory name; 'auto' for a timestamp")
-    parser.add_argument("--out-dir", default=None,
-                        help="Legacy flat output dir; bypasses the per-game layout")
-    parser.add_argument(
-        "--only-audio-type",
-        choices=["dialogue", "sound_effect"],
+        "--game",
         default=None,
-        help="Batch mode: run only one route and avoid loading the unused model.",
+        help=f"Game project id. Known: {paths.list_games() or '<none>'}",
     )
-    # Single-demo mode.
-    parser.add_argument("--audio-type", choices=["dialogue", "sound_effect"], default=None)
-    parser.add_argument("--text", default=None, help="Exact dialogue text (single-demo mode)")
-    parser.add_argument("--prompt", default=None, help="SFX prompt (single-demo mode)")
-    parser.add_argument("--task-id", default="demo")
-    parser.add_argument("--speaker-id", default="Vivian")
-    parser.add_argument("--emotion", default="")
-    parser.add_argument("--delivery", default="")
-    parser.add_argument("--language", default="Auto")
-    parser.add_argument("--sound-category", choices=["one_shot", "ambience", "foley"],
-                        default="one_shot")
-    parser.add_argument("--duration-sec", type=float, default=None)
-    parser.add_argument("--sample-rate", type=int, default=None)
-    parser.add_argument("--seed", type=int, default=42)
-    args = parser.parse_args()
+    parser.add_argument(
+        "--timeout",
+        type=int,
+        default=DEFAULT_TASK_TIMEOUT,
+        help="Seconds to wait for one task",
+    )
 
-    run_id = paths.new_run_id() if args.run_id == "auto" else args.run_id
-    single_demo = args.audio_type is not None or args.text is not None or args.prompt is not None
+    layout = parser.add_mutually_exclusive_group()
+    layout.add_argument(
+        "--run-id",
+        default=paths.DEFAULT_RUN_ID,
+        help="Run directory name; 'auto' for a timestamp",
+    )
+    layout.add_argument(
+        "--out-dir",
+        default=None,
+        help="Legacy flat output dir; bypasses the per-game layout",
+    )
+
+    return parser
+
+
+def _add_single_args(parser: argparse.ArgumentParser) -> None:
+    """单条模式专有的参数。
+
+    `--prompt` 是唯一的内容输入，要生成哪一路由 `--audio-type` 指定。模型层本来
+    就把两者当同一个东西：`SeedAudioModel.request` 的 `text` 与 `prompt` 是二选一
+    的别名，`_build_request` 最终都落到请求体的 `text` 字段上，所以没必要为
+    dialogue 再分设一个 `--text`。
+    """
+    parser.add_argument(
+        "--audio-type",
+        choices=AUDIO_TYPES,
+        required=True,
+        help="Which route to generate: dialogue or sound_effect.",
+    )
+    parser.add_argument(
+        "--prompt",
+        required=True,
+        help="Content for the model. For dialogue this is the spoken line.",
+    )
+
+    parser.add_argument("--task-id", default=None, help="Task id (default: demo)")
+    parser.add_argument("--emotion", default=None, help="Delivery emotion")
+    parser.add_argument("--delivery", default=None, help="Extra delivery direction")
+    parser.add_argument("--language", default=None, help="Language tag (default: Auto)")
+    parser.add_argument(
+        "--sample-rate",
+        type=int,
+        default=None,
+        help="Requested sample rate; the operator resamples to it",
+    )
+    parser.add_argument("--seed", type=int, default=None, help="Random seed (default: 42)")
+
+    sfx_only = parser.add_argument_group(
+        "sound_effect only",
+        "Only used when --audio-type sound_effect.",
+    )
+    sfx_only.add_argument(
+        "--sound-category",
+        choices=["one_shot", "ambience", "foley"],
+        default=None,
+        help="SFX category (default: one_shot)",
+    )
+    sfx_only.add_argument(
+        "--duration-sec",
+        type=float,
+        default=None,
+        help="Requested duration in seconds",
+    )
+
+
+def build_single_task(args: argparse.Namespace) -> dict[str, Any]:
+    """把命令行参数拼成一条任务，字段与 jsonl 任务一致。
+
+    `--prompt` 落到该路真正消费的字段上：dialogue 用 `text`，sound_effect 用
+    `prompt`（见 `GenAudioOperator.run`）。
+
+    只写有值的键：算子对缺失字段有自己的默认值（例如 `speaker_id` 缺省为
+    "Vivian"），显式塞 None 反而会被算子 `str()` 成 "None"。
+
+    Args:
+        args: 已解析的命令行参数。
+
+    Returns:
+        可直接交给算子运行的任务字典。
+    """
     route = args.audio_type
-    if single_demo and route is None:
-        route = "dialogue" if args.text is not None else "sound_effect"
-    if single_demo:
-        if route == "dialogue" and not args.text:
-            parser.error("A dialogue demo requires --text.")
-        if route == "sound_effect" and not args.prompt:
-            parser.error("A sound-effect demo requires --prompt.")
+    task: dict[str, Any] = {
+        "task_id": args.task_id or "demo",
+        "audio_type": route,
+        "language": args.language or "Auto",
+        "emotion": args.emotion or "",
+        "delivery": args.delivery or "",
+        "seed": 42 if args.seed is None else args.seed,
+    }
 
-    active_filter = route if single_demo else args.only_audio_type
+    if args.game:
+        task["game_id"] = args.game
 
+    if route == "dialogue":
+        task["text"] = args.prompt
+    else:
+        task["prompt"] = args.prompt
+
+    if args.speaker_id:
+        task["speaker_id"] = args.speaker_id
+
+    if route == "sound_effect":
+        task["sound_category"] = args.sound_category or "one_shot"
+
+    if args.duration_sec is not None:
+        task["duration_sec"] = args.duration_sec
+
+    if args.sample_rate is not None:
+        task["sample_rate"] = args.sample_rate
+
+    return task
+
+
+def build_operator(
+    args: argparse.Namespace,
+    active_filter: str | None,
+    run_id: str,
+) -> GenAudioOperator:
+    """按需要加载模型槽位并装配算子。
+
+    只加载本次要跑的那一路，避免为用不到的模型做无效初始化。
+
+    Args:
+        args: 已解析的命令行参数。
+        active_filter: 本次要跑的 `audio_type`；`None` 表示两路都跑（批量模式）。
+        run_id: 输出目录名。
+
+    Returns:
+        装配好的 `GenAudioOperator`。
+    """
     # 在加载模型之前先失败：Seed Audio 槽位需要 `.env` 配置。
     if active_filter != "sound_effect":
         config.require_cloud_or_exit(("seed_audio",), context="dialogue slot")
@@ -189,68 +351,86 @@ def main() -> None:
 
     dialogue_model = None
     sound_effect_model = None
+
     if active_filter != "sound_effect":
         dialogue_model = load_seed_audio_model(
             "dialogue",
             model_id=args.seed_audio_model,
-            speaker_id=args.seed_audio_speaker_id,
-            api_base=args.seed_audio_api_base,
-            timeout=args.seed_audio_timeout,
+            speaker_id=args.speaker_id,
+            timeout=args.timeout,
         )
+
     if active_filter != "dialogue":
         sound_effect_model = load_seed_audio_model(
             "sound_effect",
             model_id=args.seed_audio_model,
-            api_base=args.seed_audio_api_base,
-            timeout=args.seed_audio_timeout,
+            timeout=args.timeout,
         )
-    operator = make_operator(
-        dialogue_model,
-        sound_effect_model,
+
+    return GenAudioOperator(
+        dialogue_model=dialogue_model,
+        sound_effect_model=sound_effect_model,
         output_dir=args.out_dir,
         run_id=run_id,
         default_game_id=args.game,
     )
 
-    if single_demo:
-        task = {
-            "game_id": args.game,
-            "task_id": args.task_id,
-            "audio_type": route,
-            "text": args.text,
-            "prompt": args.prompt,
-            "speaker_id": args.speaker_id,
-            "emotion": args.emotion,
-            "delivery": args.delivery,
-            "language": args.language,
-            "sound_category": args.sound_category if route == "sound_effect" else None,
-            "duration_sec": args.duration_sec,
-            "sample_rate": args.sample_rate,
-            "seed": args.seed,
-        }
-        print(f"[run] Done: {generate(task, operator)}")
-        return
+
+def run_single(args: argparse.Namespace) -> None:
+    """单条模式：用命令行拼一条任务，生成一份音频。"""
+    run_id = paths.new_run_id() if args.run_id == "auto" else args.run_id
+    operator = build_operator(args, args.audio_type, run_id)
+
+    logger.info("Done: %s", operator.run(build_single_task(args)))
+
+
+def run_batch(args: argparse.Namespace) -> None:
+    """批量模式：读 jsonl 逐条生成，并按游戏写汇总。"""
+    run_id = paths.new_run_id() if args.run_id == "auto" else args.run_id
+    operator = build_operator(args, args.audio_type, run_id)
 
     tasks_path = paths.resolve_tasks_path(TASK_KIND, args.tasks, args.game)
-    print(f"[run] run_id={run_id}  tasks={paths.rel_to_repo(tasks_path)}")
+
+    logger.info("run_id=%s  tasks=%s", run_id, paths.rel_to_repo(tasks_path))
+
     results = run_from_jsonl(
         str(tasks_path),
         operator,
         game_filter=args.game,
-        audio_type_filter=args.only_audio_type,
+        audio_type_filter=args.audio_type,
     )
+
     if not results:
-        print("[run] No matching tasks — nothing to do.")
+        logger.warning("No matching tasks — nothing to do.")
         return
 
     if args.out_dir:
+        # 旧的扁平布局：汇总写在产物旁边，只给调试用。
         summary_path = Path(args.out_dir) / "results_summary.json"
         summary_path.parent.mkdir(parents=True, exist_ok=True)
         summary_path.write_text(json.dumps(results, indent=2, ensure_ascii=False))
-        print(f"[run] Wrote summary -> {summary_path}")
-    else:
-        for summary_path in paths.write_results_summary(results, TASK_KIND, run_id):
-            print(f"[run] Wrote summary -> {paths.rel_to_repo(summary_path)}")
+        logger.info("Wrote summary -> %s", summary_path)
+        return
+
+    for summary_path in paths.write_results_summary(results, TASK_KIND, run_id):
+        logger.info("Wrote summary -> %s", paths.rel_to_repo(summary_path))
+
+
+def main() -> None:
+    # 可执行入口必须自己配置日志：不配置时根 logger 停在默认的 WARNING 级别，
+    # 全部 INFO 输出会静默消失。库代码不配置日志，入口必须。
+    
+    LOG_FORMAT = " %(levelname)s: %(message)s"
+    logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
+
+    parser = build_parser()
+    args = parser.parse_args()
+
+    if args.command == "batch":
+        run_batch(args)
+        return
+
+    run_single(args)
 
 
 if __name__ == "__main__":

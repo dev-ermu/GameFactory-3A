@@ -16,7 +16,7 @@
 import base64
 import io
 
-import httpx2
+import requests
 from openai import OpenAI
 from PIL import Image
 
@@ -35,6 +35,8 @@ class SeedreamModel(BaseModel):
 
     provider = "volcengine"
     display_name = "Seedream"
+    api_key_field = "ark_api_key"
+    api_base_field = "ark_api_base"
 
     def __init__(
         self,
@@ -43,8 +45,6 @@ class SeedreamModel(BaseModel):
         size: str = "2K",
         watermark: bool = True,
         response_format: str = "url",
-        api_key: str | None = None,
-        api_base: str | None = None,
         timeout: int = 300,
         poll_interval: float = 10.0,
         max_retries: int = 3,
@@ -54,8 +54,6 @@ class SeedreamModel(BaseModel):
         """保存 Seedream 特有参数，其余交给基类。"""
         super().__init__(
             model_id,
-            api_key=api_key,
-            api_base=api_base,
             timeout=timeout,
             poll_interval=poll_interval,
             max_retries=max_retries,
@@ -76,10 +74,6 @@ class SeedreamModel(BaseModel):
         self.size = size
         self.watermark = watermark
         self.response_format = response_format
-
-    def credential_spec(self) -> tuple[str, str]:
-        """返回火山方舟需要的配置项名。"""
-        return ("ark_api_key", "ark_api_base")
 
     def request(
         self,
@@ -172,16 +166,15 @@ class SeedreamModel(BaseModel):
     def _download(self, url: str) -> bytes:
         """下载图片字节，失败时归类为可重试的网络故障。"""
         try:
-            with httpx2.Client(timeout=60.0, follow_redirects=True) as client:
-                response = client.get(url)
+            response = requests.get(url, timeout=(30.0, 60.0))
 
-                if response.status_code >= 500:
-                    raise errors.CloudModelServerError(
-                        f"下载 Seedream 结果时服务端返回 {response.status_code}"
-                    )
+            if response.status_code >= 500:
+                raise errors.CloudModelServerError(
+                    f"下载 Seedream 结果时服务端返回 {response.status_code}"
+                )
 
-                response.raise_for_status()
-                return response.content
+            response.raise_for_status()
+            return response.content
         except errors.CloudModelError:
             raise
         except Exception as exc:

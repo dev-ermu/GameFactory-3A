@@ -1,13 +1,14 @@
-"""豆包语音（Seed Audio）音频生成封装。
+"""豆包语音（Seed Audio）模型生成封装。
 
-豆包语音没有提供 OpenAI 协议接口，因此这里走原生 HTTP 路径：Base URL 由
-用户在 `.env` 中填写，代码原样使用，不做任何拼接（规范 R6.4）。鉴权用
-`X-Api-Key` 单头，这是新版控制台的推荐方式。
+Seed Audio没有提供OpenAI协议接口。因此按照官方文档发送HTTP请求：
+HTTP请求头部需包含
+{
+    "Content-Type": "application/json",
+    "X-Api-Key": "<your_api_key>",
+    "X-Api-Request-Id": str(uuid.uuid4()),
+}
 
-参考来源：https://docs.volcengine.com/docs/6561/2550782
-
-服务端生成结果的可复现性无法保证（规范 R3.4）：豆包语音不提供种子参数，
-即使传了也会被忽略。
+官方文档：https://docs.volcengine.com/docs/6561/2550782
 """
 
 import base64
@@ -15,8 +16,8 @@ import io
 import json
 import wave
 
-import httpx2
 import numpy as np
+import requests
 
 from models.base import BaseModel
 from models.common import errors
@@ -27,17 +28,16 @@ MAX_DURATION_SEC = 120.0
 
 class SeedAudioModel(BaseModel):
     """豆包语音音频生成模型。"""
-
-    provider = "volcengine"
-    display_name = "豆包语音"
+    provider = "豆包语音-火山引擎"
+    display_name = "seed audio 1.0"
+    api_key_field = "seed_audio_api_key"
+    api_base_field = "seed_audio_api_base"
 
     def __init__(
         self,
         model_id: str,
         *,
         speaker_id: str = "",
-        api_key: str | None = None,
-        api_base: str | None = None,
         timeout: int = 600,
         poll_interval: float = 10.0,
         max_retries: int = 3,
@@ -47,8 +47,6 @@ class SeedAudioModel(BaseModel):
         """保存豆包语音特有参数，其余交给基类。"""
         super().__init__(
             model_id,
-            api_key=api_key,
-            api_base=api_base,
             timeout=timeout,
             poll_interval=poll_interval,
             max_retries=max_retries,
@@ -56,10 +54,6 @@ class SeedAudioModel(BaseModel):
             verbose=verbose,
         )
         self.speaker_id = speaker_id
-
-    def credential_spec(self) -> tuple[str, str]:
-        """返回豆包语音需要的配置项名。"""
-        return ("seed_audio_api_key", "seed_audio_api_base")
 
     def auth_headers(self, api_key: str) -> dict[str, str]:
         """豆包语音使用 `X-Api-Key` 单头鉴权。"""
@@ -116,9 +110,12 @@ class SeedAudioModel(BaseModel):
             reference_text=reference_text,
         )
 
+        # todo 垃圾AI，我叫他不要使用client.post，它还是继续使用
         client = self.http_client()
         response = self.call_with_retry(
-            lambda: client.post("/api/v3/tts/create", json=payload)
+            lambda: client.post(
+                self.api_base, json=payload, timeout=(30.0, float(self.timeout))
+            )
         )
         body = self._parse_body(response)
 
@@ -180,7 +177,7 @@ class SeedAudioModel(BaseModel):
 
         return payload
 
-    def _parse_body(self, response: httpx2.Response) -> dict:
+    def _parse_body(self, response: requests.Response) -> dict:
         """解析响应并把 HTTP 状态映射为对应异常。
 
         对应规范 R8.2 与 R8.3：判定依据是响应体内容而非仅状态码，

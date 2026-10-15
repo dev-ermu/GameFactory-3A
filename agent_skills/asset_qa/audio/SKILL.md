@@ -57,7 +57,7 @@ pip install -r requirements.txt
 ```
 
 ```bash
-python pipeline/assets_gen/gen_audio/run.py --only-audio-type sound_effect --no-auto-download
+python pipeline/assets_gen/gen_audio/run.py batch --audio-type sound_effect
 ```
 
 ## 五、Seed Audio
@@ -84,22 +84,20 @@ export SEED_AUDIO_SPEAKER_ID=<已注册的Seed Audio发音人资源ID>
 
 ### Seed Audio命令
 
+单条模式的内容输入只有`--prompt`：模型把文本与提示词当同一个输入槽，对话时它就是要合成的台词，音效时它就是音效描述。生成哪一路由`--audio-type`指定。
+
 生成对话音频：
 
 ```bash
-python pipeline/assets_gen/gen_audio/run.py \
-  --dialogue-backend seed_audio \
-  --audio-type dialogue \
-  --text "发现目标" \
+python pipeline/assets_gen/gen_audio/run.py single --audio-type dialogue \
+  --prompt "发现目标" \
   --task-id spotted_target
 ```
 
 生成音效：
 
 ```bash
-python pipeline/assets_gen/gen_audio/run.py \
-  --sound-effect-backend seed_audio \
-  --audio-type sound_effect \
+python pipeline/assets_gen/gen_audio/run.py single --audio-type sound_effect \
   --prompt "a single close futuristic rifle shot, dry, no music" \
   --duration-sec 2 \
   --task-id rifle_shot
@@ -108,9 +106,7 @@ python pipeline/assets_gen/gen_audio/run.py \
 通过JSONL批量文件同时生成两类音频：
 
 ```bash
-python pipeline/assets_gen/gen_audio/run.py \
-  --dialogue-backend seed_audio \
-  --sound-effect-backend seed_audio \
+python pipeline/assets_gen/gen_audio/run.py batch \
   --game gameA_cyberpunk_shooter
 ```
 

@@ -98,10 +98,10 @@ OpenAI的两种格式都需要OpenAI这个Python包。Anthropic Message API则�
 
 | # | 规则 |
 |---|------|
-| R6.1 | **API密钥和API基础URL均在首次调用时读取**，而非构造对象时读取。模型对象的构造不应要求凭证——因为 `<REPO_PATH>/tests/harness/` 会实例化它。 |
-| R6.2 | 若API密钥或API基础URL缺失，应快速报错，同时指明缺失的**配置项名**。 |
-| R6.3 | **API基础URL是必填项，不可设置默认值，代码实现不可以随意猜测**。服务商可能随时更换API基础URL。 |
-| R6.4 | 相信用户填写的API密钥，API基础URL。调用API时直接输入，不要进行再次URL拼接，或修改URL。 |
+| R6.1 | **API Key或API Base URL在构造对象时读取**。 |
+| R6.2 | 若API Key或API Base URL缺失，应快速报错，同时指明缺失的**配置项名**。 |
+| R6.3 | **API基础URL是必填项，不可设置默认值，代码实现不允许随意猜测**。服务商可能随时更换API基础URL。 |
+| R6.4 | 相信用户填写的API key，API Base URL。调用API时直接输入，不要进行再次URL拼接，或修改URL。 |
 
 ---
 

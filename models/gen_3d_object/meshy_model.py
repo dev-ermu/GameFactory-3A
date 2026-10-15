@@ -30,13 +30,13 @@ class MeshyModel(BaseModel):
 
     provider = "meshy"
     display_name = "Meshy3D（暂不可用）"
+    api_key_field = "meshy_api_key"
+    api_base_field = "meshy_api_base"
 
     def __init__(
         self,
         model_id: str,
         *,
-        api_key: str | None = None,
-        api_base: str | None = None,
         timeout: int = 1800,
         poll_interval: float = 10.0,
         max_retries: int = 0,
@@ -46,18 +46,12 @@ class MeshyModel(BaseModel):
         """接受与其他三维后端一致的构造参数，便于上层无差别切换。"""
         super().__init__(
             model_id,
-            api_key=api_key,
-            api_base=api_base,
             timeout=timeout,
             poll_interval=poll_interval,
             max_retries=max_retries,
             output_format=output_format,
             verbose=verbose,
         )
-
-    def credential_spec(self) -> tuple[str, str]:
-        """返回该后端原计划使用的配置项名。"""
-        return ("meshy_api_key", "meshy_api_base")
 
     def request(
         self,

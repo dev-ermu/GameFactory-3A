@@ -15,11 +15,11 @@ Base URL 由用户在 `.env` 中填写，原样传入（规范 R6.4）。
 
 import asyncio
 import json
-
-import httpx2
 import math
 import re
 import struct
+
+import requests
 
 from models.base import BaseModel
 from models.common import errors
@@ -77,6 +77,8 @@ class _TokenHubTaskModel(BaseModel):
 
     provider = "tokenhub"
     display_name = "TokenHub"
+    api_key_field = "tokenhub_api_key"
+    api_base_field = "tokenhub_api_base"
 
     # 端点路径，由各子类指定。
     endpoint: str = ""
@@ -88,8 +90,6 @@ class _TokenHubTaskModel(BaseModel):
         self,
         model_id: str,
         *,
-        api_key: str | None = None,
-        api_base: str | None = None,
         timeout: int = 1800,
         poll_interval: float = 10.0,
         max_retries: int = 3,
@@ -99,18 +99,12 @@ class _TokenHubTaskModel(BaseModel):
         """保存通用参数，其余由子类追加。"""
         super().__init__(
             model_id or self.default_model_id,
-            api_key=api_key,
-            api_base=api_base,
             timeout=timeout,
             poll_interval=poll_interval,
             max_retries=max_retries,
             output_format=output_format,
             verbose=verbose,
         )
-
-    def credential_spec(self) -> tuple[str, str]:
-        """返回 TokenHub 需要的配置项名。"""
-        return ("tokenhub_api_key", "tokenhub_api_base")
 
     def request(self, *args, **kwargs) -> bytes:
         """由子类实现具体的任务提交逻辑。"""
@@ -120,7 +114,11 @@ class _TokenHubTaskModel(BaseModel):
         """提交任务并返回解析后的结果字典，不下载文件。"""
         client = self.http_client()
         body = self.call_with_retry(
-            lambda: client.post(self.endpoint, json=self._with_model(payload))
+            lambda: client.post(
+                self.api_base + self.endpoint,
+                json=self._with_model(payload),
+                timeout=(30.0, float(self.timeout)),
+            )
         )
 
         data = self._unwrap(body)
@@ -141,7 +139,11 @@ class _TokenHubTaskModel(BaseModel):
         """提交任务、等待完成并下载产物，返回含字节的字典。"""
         client = self.http_client()
         body = self.call_with_retry(
-            lambda: client.post(self.endpoint, json=self._with_model(payload))
+            lambda: client.post(
+                self.get_base_url() + self.endpoint,
+                json=self._with_model(payload),
+                timeout=(30.0, float(self.timeout)),
+            )
         )
 
         data = self._unwrap(body)
@@ -229,7 +231,10 @@ class _TokenHubTaskModel(BaseModel):
 
     def _fetch(self, client, task_id: str) -> dict:
         """查询任务状态，返回解析后的响应体。"""
-        response = client.get(f"{self.endpoint}/{task_id}")
+        response = client.get(
+            f"{self.get_base_url()}{self.endpoint}/{task_id}",
+            timeout=(30.0, float(self.timeout)),
+        )
 
         return json.loads(response.text or "{}").get("data", {})
 
@@ -240,10 +245,9 @@ class _TokenHubTaskModel(BaseModel):
     def _download(self, url: str) -> bytes:
         """下载结果文件，失败时归类为可重试的网络故障。"""
         try:
-            with httpx2.Client(timeout=300.0, follow_redirects=True) as client:
-                response = client.get(url)
-                response.raise_for_status()
-                return response.content
+            response = requests.get(url, timeout=(30.0, 300.0))
+            response.raise_for_status()
+            return response.content
         except errors.CloudModelError:
             raise
         except Exception as exc:

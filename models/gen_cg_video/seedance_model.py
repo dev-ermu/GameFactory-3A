@@ -35,6 +35,8 @@ class SeedanceModel(BaseModel):
 
     provider = "volcengine"
     display_name = "Seedance"
+    api_key_field = "ark_api_key"
+    api_base_field = "ark_api_base"
 
     def __init__(
         self,
@@ -42,8 +44,6 @@ class SeedanceModel(BaseModel):
         *,
         size: str = "720p",
         watermark: bool = False,
-        api_key: str | None = None,
-        api_base: str | None = None,
         timeout: int = 1800,
         poll_interval: float = 10.0,
         max_retries: int = 3,
@@ -53,8 +53,6 @@ class SeedanceModel(BaseModel):
         """保存 Seedance 特有参数，其余交给基类。"""
         super().__init__(
             model_id,
-            api_key=api_key,
-            api_base=api_base,
             timeout=timeout,
             poll_interval=poll_interval,
             max_retries=max_retries,
@@ -67,10 +65,6 @@ class SeedanceModel(BaseModel):
 
         self.size = size
         self.watermark = watermark
-
-    def credential_spec(self) -> tuple[str, str]:
-        """返回火山方舟需要的配置项名。"""
-        return ("ark_api_key", "ark_api_base")
 
     def request(self, video_input: VideoGenerationInput) -> bytes:
         """生成一段视频并返回 MP4 字节。

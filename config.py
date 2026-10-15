@@ -193,6 +193,31 @@ def _text(value: Any) -> str:
     return str(value).strip()
 
 
+def get_str(field_name: str) -> str:
+    """按字段名读取 `settings` 的值，返回去空白字符串。
+
+    字段名是 `Settings` 上的声明（不是环境变量名），例如
+    `"tripo_api_key"`、`"seed_audio_api_base"`。字段是否存在由本模块
+    判定并抛出 `ConfigError`——调用方（`models/`）不需要也不应该
+    自己检查字段名，那会把配置事实复制到每个模型封装里。
+
+    Args:
+        field_name: `Settings` 的字段名。
+
+    Returns:
+        字段值的去空白字符串；值为 `None` 或空白时返回 `""`。
+
+    Raises:
+        ConfigError: 字段名未在 `Settings` 上声明。
+    """
+    fields = Settings.model_fields
+
+    if field_name not in fields:
+        raise ConfigError(f"未知的配置项 {field_name!r}：该配置项不存在！")
+
+    return _text(getattr(settings, field_name))
+
+
 # ── 云服务商的必需配置项 ───────────────────────────────────────────────────────
 #: 服务商短标识 -> 报错里显示的可读名称。**只用于提示信息**，不参与取值。
 CLOUD_LABELS: dict[str, str] = {

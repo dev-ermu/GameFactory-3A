@@ -14,7 +14,7 @@ Base URL 由用户在 `.env` 中填写，原样传给 SDK（规范 R6.4）。
 
 import asyncio
 
-import httpx2
+import requests
 from tripo3d import TripoClient
 from tripo3d.models import TaskStatus
 
@@ -47,6 +47,8 @@ class TripoModel(BaseModel):
 
     provider = "tripo"
     display_name = "Tripo3D"
+    api_key_field = "tripo_api_key"
+    api_base_field = "tripo_api_base"
 
     def __init__(
         self,
@@ -58,8 +60,6 @@ class TripoModel(BaseModel):
         quad: bool = False,
         texture_quality: str = "standard",
         geometry_quality: str = "standard",
-        api_key: str | None = None,
-        api_base: str | None = None,
         timeout: int = 1800,
         poll_interval: float = 10.0,
         max_retries: int = 3,
@@ -69,8 +69,6 @@ class TripoModel(BaseModel):
         """保存 Tripo 特有参数，其余交给基类。"""
         super().__init__(
             model_id,
-            api_key=api_key,
-            api_base=api_base,
             timeout=timeout,
             poll_interval=poll_interval,
             max_retries=max_retries,
@@ -94,10 +92,6 @@ class TripoModel(BaseModel):
         self.quad = quad
         self.texture_quality = texture_quality
         self.geometry_quality = geometry_quality
-
-    def credential_spec(self) -> tuple[str, str]:
-        """返回 Tripo 需要的配置项名。"""
-        return ("tripo_api_key", "tripo_api_base")
 
     def request(
         self,
@@ -145,6 +139,7 @@ class TripoModel(BaseModel):
         payload = self.request(image, "", seed, decimation_target, texture_size)
 
         return self.save_payload(payload, output_path)
+    
     async def _generate(
         self,
         image: bytes | None,
@@ -154,9 +149,8 @@ class TripoModel(BaseModel):
         texture_size: int | None,
     ) -> bytes:
         """在事件循环中完成提交、轮询与下载三步。"""
-        api_key, api_base = self.resolve_credential()
 
-        async with TripoClient(api_key=api_key, v3_base_url=api_base) as client:
+        async with TripoClient(api_key=self.api_key, v3_base_url=self.api_base) as client:
             task_id = await self._submit(client, image, prompt, seed, decimation_target)
             task = await client.wait_for_task(
                 task_id,
@@ -259,10 +253,9 @@ class TripoModel(BaseModel):
     def _download(self, url: str) -> bytes:
         """下载模型文件，失败时归类为可重试的网络故障。"""
         try:
-            with httpx2.Client(timeout=120.0, follow_redirects=True) as client:
-                response = client.get(url)
-                response.raise_for_status()
-                return response.content
+            response = requests.get(url, timeout=(30.0, 120.0))
+            response.raise_for_status()
+            return response.content
         except errors.CloudModelError:
             raise
         except Exception as exc:
