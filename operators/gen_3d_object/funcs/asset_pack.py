@@ -25,30 +25,30 @@ from typing import Any
 
 from pipeline.common import paths
 
-#: Registered task kind - keys into paths.TASK_* tables.
+# Registered task kind - keys into paths.TASK_* tables.
 TASK_KIND = "3d_object"
 
-#: Base for every asset URL. Khronos maintains the glTF sample library and
-#: ships it CC0, which is the point: a generated asset has licence questions,
-#: a downloaded one has none.
+# Base for every asset URL. Khronos maintains the glTF sample library and
+# ships it CC0, which is the point: a generated asset has licence questions,
+# a downloaded one has none.
 _KHRONOS = (
     "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets"
     "/main/Models"
 )
 
-#: Cache root. Under outputs/ rather than a user-level cache directory so a
-#: deleted checkout does not leave hundreds of megabytes behind.
+# Cache root. Under outputs/ rather than a user-level cache directory so a
+# deleted checkout does not leave hundreds of megabytes behind.
 CACHE_ROOT = paths.OUTPUT_ROOT / "_asset_pack_cache"
 
-#: Seconds before a download is abandoned. The files are tens of megabytes, so
-#: this is generous on purpose - a slow link should not look like a broken one.
+# Seconds before a download is abandoned. The files are tens of megabytes, so
+# this is generous on purpose - a slow link should not look like a broken one.
 DOWNLOAD_TIMEOUT = 120
 
-#: asset_id -> one entry per published model.
-#:
-#: `asset_type` is what a consumer asks for, not what the file happens to be:
-#: a caller saying "avatar" wants something it can put a skeleton on, and the
-#: library has exactly one entry that qualifies.
+# asset_id -> one entry per published model.
+#
+# `asset_type` is what a consumer asks for, not what the file happens to be:
+# a caller saying "avatar" wants something it can put a skeleton on, and the
+# library has exactly one entry that qualifies.
 ASSET_PACK: dict[str, dict[str, Any]] = {
     "box": {
         "asset_type": "prop",

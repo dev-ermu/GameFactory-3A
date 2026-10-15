@@ -66,63 +66,63 @@ from engine_adapters.blender.game import (  # noqa: E402
     assets, camera_rigs, clips, figures, hud, kernel, materials, prims,
 )
 
-#: How far ahead of the eye a shot starts. The shooter's own body is in the
-#: scene and a ray from inside it hits the shooter; nudging past the collision
-#: radius is cheaper and more predictable than hiding the body and forcing a
-#: depsgraph rebuild on every trigger pull.
+# How far ahead of the eye a shot starts. The shooter's own body is in the
+# scene and a ray from inside it hits the shooter; nudging past the collision
+# radius is cheaper and more predictable than hiding the body and forcing a
+# depsgraph rebuild on every trigger pull.
 # 子弹发射点相对于眼睛位置的前移距离。玩家的身体本身存在于场景中，从体内发出的射线会命中玩家自身；将发射点设置在碰撞半径之外，比隐藏身体并每次扣动扳机时都触发依赖图重建要更简便且可控。
 MUZZLE_OFFSET = 0.75
 
-#: Ticks a tracer / flash / spark stays visible.
+# Ticks a tracer / flash / spark stays visible.
 # 拖尾特效/闪光特效/火花特效的可见时长（单位： tick）。
 VFX_HOLD = 3
 
-#: Visible streak length. Hitscan still goes the full weapon range.
+# Visible streak length. Hitscan still goes the full weapon range.
 TRACER_METRES = 1.6
 TRACER_RADIUS = 0.0045
 TRACER_RADIUS_ENEMY = 0.0035
 
-#: How far a human player may look up or down. Short of 90° on purpose: at
-#: exactly straight up the yaw axis and the view axis coincide and the horizon
-#: spins around the crosshair.
+# How far a human player may look up or down. Short of 90° on purpose: at
+# exactly straight up the yaw axis and the view axis coincide and the horizon
+# spins around the crosshair.
 #  可见的子弹轨迹长度。射线扫描的实际杀伤范围仍可达武器的全射程。
 MAX_PITCH = 85.0
 
-#: Sprint multiplier on `move_speed` while the run key is held.
+# Sprint multiplier on `move_speed` while the run key is held.
 RUN_MULTIPLIER = 1.55
 
-#: Height an enemy figure is normalised to, in metres. Measured off the collider
-#: it stands over rather than off a person: the block figure is 2.0 m to the crown
-#: of its head sphere, and since those blocks remain the hurtbox, matching them is
-#: what keeps the silhouette on screen and the shape being shot at in agreement.
+# Height an enemy figure is normalised to, in metres. Measured off the collider
+# it stands over rather than off a person: the block figure is 2.0 m to the crown
+# of its head sphere, and since those blocks remain the hurtbox, matching them is
+# what keeps the silhouette on screen and the shape being shot at in agreement.
 FIGURE_HEIGHT = 2.0
 
-#: How far forward an enemy holds its arms, 0 hanging to 1 level. Short of level
-#: so the weapon still reads as carried rather than presented.
+# How far forward an enemy holds its arms, 0 hanging to 1 level. Short of level
+# so the weapon still reads as carried rather than presented.
 ENEMY_AIM = 0.82
 
-#: Length a weapon model is normalised to, in metres.
+# Length a weapon model is normalised to, in metres.
 WEAPON_LENGTH = 0.46
 
-#: Where the viewmodel sits in camera space (+X right, +Y up, -Z forward).
-#: Further forward (more −Z) so a scoped rifle's optic sits in frame instead
-#: of living inside the near clip / filling the corner as a stock close-up.
+# Where the viewmodel sits in camera space (+X right, +Y up, -Z forward).
+# Further forward (more −Z) so a scoped rifle's optic sits in frame instead
+# of living inside the near clip / filling the corner as a stock close-up.
 WEAPON_MOUNT = (0.06, -0.14, -0.46)
 
-#: Poly Haven firearms: longest axis is X, muzzle at **+X**.
-#: Rx(+90) Ry(+90) Rz(180) sends +X -> −Z (camera forward) with sights up.
-#: The previous Ry(−90) pointed the muzzle at the lens; this is a 180° yaw flip.
+# Poly Haven firearms: longest axis is X, muzzle at **+X**.
+# Rx(+90) Ry(+90) Rz(180) sends +X -> −Z (camera forward) with sights up.
+# The previous Ry(−90) pointed the muzzle at the lens; this is a 180° yaw flip.
 VIEWMODEL_ROTATION = (radians(90.0), radians(90.0), radians(180.0))
 
-#: Same guns on an actor that faces +Y: Rz(+90) sends +X to +Y.
+# Same guns on an actor that faces +Y: Rz(+90) sends +X to +Y.
 HELD_WEAPON_ROTATION = (0.0, 0.0, radians(90.0))
 
-#: Mixamo (Soldier / Michelle) already faces +Y after the glTF importer's
-#: Y-up -> Z-up conversion. The Kenney default of 180 would turn them around.
+# Mixamo (Soldier / Michelle) already faces +Y after the glTF importer's
+# Y-up -> Z-up conversion. The Kenney default of 180 would turn them around.
 MIXAMO_YAW = 0.0
 
-#: Planar keep-out for a Mixamo soldier. Shoulders and the walk cycle's
-#: planted foot sit ~0.55 m off the root; 0.45 left them inside crates.
+# Planar keep-out for a Mixamo soldier. Shoulders and the walk cycle's
+# planted foot sit ~0.55 m off the root; 0.45 left them inside crates.
 BODY_RADIUS = 0.64
 
 

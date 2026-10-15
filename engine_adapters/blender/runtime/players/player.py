@@ -29,14 +29,14 @@ class Player:
     obj_name: str
     action_name: Optional[str] = None
 
-    #: Metres per second. Blender is metric, so these are literal speeds.
+    # Metres per second. Blender is metric, so these are literal speeds.
     walk_speed: float = 2.0
     run_speed: float = 5.0
-    #: Initial upward speed of a jump, in m/s.
+    # Initial upward speed of a jump, in m/s.
     jump_velocity: float = 4.0
 
-    #: Input older than this is treated as "no input". Without it a character
-    #: keeps walking forever when a controller disconnects mid-stride.
+    # Input older than this is treated as "no input". Without it a character
+    # keeps walking forever when a controller disconnects mid-stride.
     input_timeout: float = 0.6
     last_input_time: float = 0.0
 
@@ -47,7 +47,7 @@ class Player:
     run: bool = False
     jump: bool = False
 
-    #: Vertical speed carried between ticks by the jump integrator.
+    # Vertical speed carried between ticks by the jump integrator.
     z_velocity: float = 0.0
 
     @property

@@ -59,21 +59,21 @@ if str(_REPO_ROOT) not in sys.path:
 from config import settings  # noqa: E402
 from pipeline.common import config, paths  # noqa: E402
 
-#: Registered task kind — keys into paths.TASK_* tables.
+# Registered task kind — keys into paths.TASK_* tables.
 TASK_KIND = "3d_object"
 
 DEFAULT_TASKS = paths.collect_jsonl(TASK_KIND)
 
-#: backend -> (default "ckpt", env var holding an override).
-#: The "ckpt" is a model **version id**, not a weight location
-#: (model_require.md R2.1) — the flag stays `--ckpt` so the operator
-#: and every caller keep one vocabulary.
+# backend -> (default "ckpt", env var holding an override).
+# The "ckpt" is a model **version id**, not a weight location
+# (model_require.md R2.1) — the flag stays `--ckpt` so the operator
+# and every caller keep one vocabulary.
 BACKENDS: dict[str, tuple[str, str]] = {
     "tripo": ("v3.1-20260211", "TRIPO_MODEL"),
     "meshy": ("meshy-6", "MESHY_MODEL"),
 }
 
-#: 全部后端都是闭源云 API，都需要在 `.env` 里配置对应服务商。
+# 全部后端都是闭源云 API，都需要在 `.env` 里配置对应服务商。
 CLOUD_BACKENDS = ("tripo", "meshy")
 
 

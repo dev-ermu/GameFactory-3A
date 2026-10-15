@@ -42,16 +42,16 @@ import time
 from pathlib import Path
 from typing import Iterable, Optional, Sequence
 
-#: Channels baked when a caller does not name any.
+# Channels baked when a caller does not name any.
 DEFAULT_CHANNELS = ("location", "rotation_euler")
 
-#: Tone mapping for a game frame; see `configure_render` for why not the default.
-#: Lives here rather than at its use site because the interactive path has to set
-#: the same value on the same scene setting, and a viewport that tone-maps
-#: differently from the video makes a session useless as a preview of it.
+# Tone mapping for a game frame; see `configure_render` for why not the default.
+# Lives here rather than at its use site because the interactive path has to set
+# the same value on the same scene setting, and a viewport that tone-maps
+# differently from the video makes a session useless as a preview of it.
 VIEW_TRANSFORM = "Standard"
 
-#: Curves that must step rather than blend.
+# Curves that must step rather than blend.
 _STEP_CHANNELS = {"hide_render", "hide_viewport"}
 
 

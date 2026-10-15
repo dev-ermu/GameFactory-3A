@@ -22,10 +22,10 @@ from math import cos, radians, sin
 
 from .stage import CAMERA, PIVOT
 
-#: Straight up and straight down are where a yaw-then-pitch camera gimbal locks.
+# Straight up and straight down are where a yaw-then-pitch camera gimbal locks.
 PITCH_LIMIT = 89.0
 
-#: Metres. Stops a scroll wheel from pushing the camera through the subject.
+# Metres. Stops a scroll wheel from pushing the camera through the subject.
 MIN_DISTANCE = 0.3
 
 
@@ -36,7 +36,7 @@ class CameraController:
         self.pitch = pitch
         self.distance = distance
         self.pan_y = 0.0
-        #: Starts at eye height rather than at the pivot, which is on the floor.
+        # Starts at eye height rather than at the pivot, which is on the floor.
         self.pan_z = 1.0
 
     def apply_input(self, yaw_delta: float = 0.0, pitch_delta: float = 0.0,

@@ -39,18 +39,18 @@ SUPPORTED_MODES = frozenset(
         "reference_to_video",
     }
 )
-#: 规范后端名。MiniMax 的视频模型有两个容易混淆的名字：
-#:
-#: * **MiniMax H3**（市场名亦作 Hailuo 3）—— API model id ``minimax-video-h3``，
-#:   输出 4-15 秒，支持文生 / 首帧 / 首尾帧 / 多模态参考生成。
-#: * **MiniMax-Hailuo-2.3** —— 另一代模型，API model id ``minimax-video-v2.3``，
-#:   只支持文生与首帧，时长仅 6 或 10 秒。
-#:
-#: 本仓库使用的始终是前者。二者的时长约束不同，混用会让按 H3 文档写出的
-#: 提示词被按 2.3 的规则拒掉，因此这里统一用全称，不再接受 `h3` 简写。
+# 规范后端名。MiniMax 的视频模型有两个容易混淆的名字：
+#
+# * **MiniMax H3**（市场名亦作 Hailuo 3）—— API model id ``minimax-video-h3``，
+#   输出 4-15 秒，支持文生 / 首帧 / 首尾帧 / 多模态参考生成。
+# * **MiniMax-Hailuo-2.3** —— 另一代模型，API model id ``minimax-video-v2.3``，
+#   只支持文生与首帧，时长仅 6 或 10 秒。
+#
+# 本仓库使用的始终是前者。二者的时长约束不同，混用会让按 H3 文档写出的
+# 提示词被按 2.3 的规则拒掉，因此这里统一用全称，不再接受 `h3` 简写。
 MINIMAX_H3_BACKEND = "minimax-h3"
 
-#: MiniMax H3 的输出时长区间（秒）。
+# MiniMax H3 的输出时长区间（秒）。
 MINIMAX_H3_MIN_DURATION = 4
 MINIMAX_H3_MAX_DURATION = 15
 
@@ -58,7 +58,7 @@ BACKEND_ALIASES = {
     MINIMAX_H3_BACKEND: MINIMAX_H3_BACKEND,
     "seedance": "seedance",
 }
-#: 走云端 API 的后端。本地权重运行时已移除，因此这就是全部后端。
+# 走云端 API 的后端。本地权重运行时已移除，因此这就是全部后端。
 CLOUD_BACKENDS = frozenset(set(BACKEND_ALIASES.values()))
 IDENTIFIER_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,127}$")
 ALLOWED_OPTION_KEYS = frozenset(
@@ -199,8 +199,8 @@ class CgVideoGateway:
             strict=False
         )
         self._model_factory = model_factory or self._default_model_factory
-        #: 是否使用真实的云端模型工厂。注入桩工厂的网关只在本地造假数据，
-        #: 因此不要求 `allow_cloud` 许可。
+        # 是否使用真实的云端模型工厂。注入桩工厂的网关只在本地造假数据，
+        # 因此不要求 `allow_cloud` 许可。
         self._bills_cloud = model_factory is None
         self._operator_factory = operator_factory or self._default_operator_factory
         self._executor = ThreadPoolExecutor(

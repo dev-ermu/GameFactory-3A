@@ -51,18 +51,18 @@ from typing import Optional, Sequence
 
 from . import materials, prims
 
-#: Blender's default sensor width, in mm. Camera FOV is derived from it.
+# Blender's default sensor width, in mm. Camera FOV is derived from it.
 # Blender默认的传感器宽度，单位为毫米。相机视野由此推导而来。
 SENSOR_MM = 36.0
 
-#: How far in front of the lens the HUD plane sits.
-#:
-#: Held deliberately close — beyond `make_camera`'s 0.05 clip start, but nearer
-#: than anything a game is likely to parent to the camera. A first-person
-#: viewmodel is also camera-parented, and at the metre this used to sit at the
-#: gun rendered *in front of* the ammo counter and covered it. Widget sizes are
-#: derived from this distance and the lens, so moving the plane does not move
-#: anything on screen.
+# How far in front of the lens the HUD plane sits.
+#
+# Held deliberately close — beyond `make_camera`'s 0.05 clip start, but nearer
+# than anything a game is likely to parent to the camera. A first-person
+# viewmodel is also camera-parented, and at the metre this used to sit at the
+# gun rendered *in front of* the ammo counter and covered it. Widget sizes are
+# derived from this distance and the lens, so moving the plane does not move
+# anything on screen.
 
 # HUD平面距离镜头的前方距离。
 # 该数值特意设得较近——超过`make_camera`设定的0.05米裁剪起始距离，但又比游戏中可能作为相机子物体的物体更靠近镜头。

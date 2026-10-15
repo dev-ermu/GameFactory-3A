@@ -34,7 +34,7 @@ FLOOR = "stage_floor"
 KEY_LIGHT = "stage_key_light"
 FILL_LIGHT = "stage_fill_light"
 
-#: Metres. Big enough that a human-scale character is not standing on a coin.
+# Metres. Big enough that a human-scale character is not standing on a coin.
 FLOOR_SIZE = 10.0
 
 

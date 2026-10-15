@@ -62,10 +62,7 @@ logger = logging.getLogger(__name__)
 TASK_KIND = "audio"
 DEFAULT_SEED_AUDIO_MODEL = "seed-audio-1.0"
 
-#: 单个任务的等待上限，秒。与 `SeedAudioModel` 的默认值一致。
-DEFAULT_TASK_TIMEOUT = 600
-
-#: `audio_type` 的合法取值。
+# audio_type的合法取值
 AUDIO_TYPES = ("dialogue", "sound_effect")
 
 
@@ -140,23 +137,52 @@ def run_from_jsonl(
 
 
 def build_parser() -> argparse.ArgumentParser:
-    """构造命令行解析器。
+    """构造命令行解析器"""
+    common_parser = argparse.ArgumentParser(add_help=False)
+    common_parser.add_argument(
+        "--seed-audio-model",
+        default=settings.seed_audio_model,
+        help="Seed Audio API model id.",
+    )
+    common_parser.add_argument(
+        "--speaker-id",
+        default=settings.seed_audio_speaker_id,
+        help="Speaker resource id; a task's own speaker_id wins over it.",
+    )
+    common_parser.add_argument(
+        "--game",
+        default=None,
+        help=f"Game project id. Known: {paths.list_games() or '<none>'}",
+    )
+    common_parser.add_argument(
+        "--timeout",
+        type=int,
+        default=600,
+        help="Seconds to wait for one task",
+    )
 
-    模式由子命令决定：`batch`读jsonl文件批量执行，`single`用参数就地拼一条
-    任务。两种模式的参数各自挂在对应子命令上。
-    """
-    common = _common_parser()
+    layout = common_parser.add_mutually_exclusive_group()
+    layout.add_argument(
+        "--run-id",
+        default=paths.DEFAULT_RUN_ID,
+        help="Run directory name; 'auto' for a timestamp",
+    )
+    layout.add_argument(
+        "--out-dir",
+        default=None,
+        help="Legacy flat output dir; bypasses the per-game layout",
+    )
+
+    # 子命令，分为批量执行，单次执行两种模式
     parser = argparse.ArgumentParser(
-        description="Generate dialogue and game SFX assets.",
-        epilog="用 '<command> --help' 查看某一模式的完整参数。",
+        description="Generate dialogue and game SFX assets."
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
-
     batch = subparsers.add_parser(
         "batch",
-        parents=[common],
+        parents=[common_parser],
         help="Read a jsonl task list and run every task.",
-        description="Read a jsonl task list and run every task.",
+        description="批量执行任务，从指定jsonl文件中读取任务信息",
     )
     batch.add_argument(
         "--tasks",
@@ -170,96 +196,38 @@ def build_parser() -> argparse.ArgumentParser:
         help="Run only this route (default: both).",
     )
 
+    # 单次执行模式
     single = subparsers.add_parser(
         "single",
-        parents=[common],
+        parents=[common_parser],
         help="Build one task from the flags below and generate it.",
-        description="Build one task from the flags below and generate it.",
+        description="单次执行任务，从参数中获取任务信息",
     )
-    _add_single_args(single)
-
-    return parser
-
-
-def _common_parser() -> argparse.ArgumentParser:
-    """两种模式共享的参数，由子命令通过 `parents=` 继承。
-
-    `--run-id` 与 `--out-dir` 放进互斥分组：`--out-dir` 走旧的扁平布局，产物
-    按 `<out-dir>/<task_id>.wav` 直接落盘，`run_id` 在这条路径上不参与任何决策，
-    同时给出只会让人以为它生效了。
-    """
-    parser = argparse.ArgumentParser(add_help=False)
-
-    parser.add_argument(
-        "--seed-audio-model",
-        default=settings.seed_audio_model,
-        help="Seed Audio API model id.",
-    )
-    parser.add_argument(
-        "--speaker-id",
-        default=settings.seed_audio_speaker_id,
-        help="Speaker resource id; a task's own speaker_id wins over it.",
-    )
-    parser.add_argument(
-        "--game",
-        default=None,
-        help=f"Game project id. Known: {paths.list_games() or '<none>'}",
-    )
-    parser.add_argument(
-        "--timeout",
-        type=int,
-        default=DEFAULT_TASK_TIMEOUT,
-        help="Seconds to wait for one task",
-    )
-
-    layout = parser.add_mutually_exclusive_group()
-    layout.add_argument(
-        "--run-id",
-        default=paths.DEFAULT_RUN_ID,
-        help="Run directory name; 'auto' for a timestamp",
-    )
-    layout.add_argument(
-        "--out-dir",
-        default=None,
-        help="Legacy flat output dir; bypasses the per-game layout",
-    )
-
-    return parser
-
-
-def _add_single_args(parser: argparse.ArgumentParser) -> None:
-    """单条模式专有的参数。
-
-    `--prompt` 是唯一的内容输入，要生成哪一路由 `--audio-type` 指定。模型层本来
-    就把两者当同一个东西：`SeedAudioModel.request` 的 `text` 与 `prompt` 是二选一
-    的别名，`_build_request` 最终都落到请求体的 `text` 字段上，所以没必要为
-    dialogue 再分设一个 `--text`。
-    """
-    parser.add_argument(
+    single.add_argument(
         "--audio-type",
         choices=AUDIO_TYPES,
         required=True,
         help="Which route to generate: dialogue or sound_effect.",
     )
-    parser.add_argument(
+    single.add_argument(
         "--prompt",
         required=True,
         help="Content for the model. For dialogue this is the spoken line.",
     )
 
-    parser.add_argument("--task-id", default=None, help="Task id (default: demo)")
-    parser.add_argument("--emotion", default=None, help="Delivery emotion")
-    parser.add_argument("--delivery", default=None, help="Extra delivery direction")
-    parser.add_argument("--language", default=None, help="Language tag (default: Auto)")
-    parser.add_argument(
+    single.add_argument("--task-id", default=None, help="Task id (default: demo)")
+    single.add_argument("--emotion", default=None, help="Delivery emotion")
+    single.add_argument("--delivery", default=None, help="Extra delivery direction")
+    single.add_argument("--language", default=None, help="Language tag (default: Auto)")
+    single.add_argument(
         "--sample-rate",
         type=int,
         default=None,
         help="Requested sample rate; the operator resamples to it",
     )
-    parser.add_argument("--seed", type=int, default=None, help="Random seed (default: 42)")
+    single.add_argument("--seed", type=int, default=None, help="Random seed (default: 42)")
 
-    sfx_only = parser.add_argument_group(
+    sfx_only = single.add_argument_group(
         "sound_effect only",
         "Only used when --audio-type sound_effect.",
     )
@@ -275,6 +243,8 @@ def _add_single_args(parser: argparse.ArgumentParser) -> None:
         default=None,
         help="Requested duration in seconds",
     )
+
+    return parser
 
 
 def build_single_task(args: argparse.Namespace) -> dict[str, Any]:
@@ -420,7 +390,7 @@ def main() -> None:
     # 可执行入口必须自己配置日志：不配置时根 logger 停在默认的 WARNING 级别，
     # 全部 INFO 输出会静默消失。库代码不配置日志，入口必须。
     
-    LOG_FORMAT = " %(levelname)s: %(message)s"
+    LOG_FORMAT = "%(levelname)s: %(message)s"
     logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
 
     parser = build_parser()

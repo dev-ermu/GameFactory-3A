@@ -43,7 +43,7 @@ if str(_REPO_ROOT) not in sys.path:
 
 from pipeline.common import config, paths  # noqa: E402
 
-#: Registered task kind — keys into paths.TASK_* tables.
+# Registered task kind — keys into paths.TASK_* tables.
 TASK_KIND = "tpose"
 
 # Default model identifiers. The selected backend decides which one is used

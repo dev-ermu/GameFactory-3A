@@ -124,7 +124,7 @@ BLENDER_MOTION_IMPORTER = (
 USAGES = ("asset", "vfx_standalone", "vfx_particle", "motion")
 KINDS = ("mesh", "motion")
 
-#: `both` predates the Godot and Blender routes and retains its UE + Unity meaning.
+# `both` predates the Godot and Blender routes and retains its UE + Unity meaning.
 ENGINE_SETS = {
     "both": ["ue5", "unity"],
     "all": ["ue5", "unity", "godot", "blender"],

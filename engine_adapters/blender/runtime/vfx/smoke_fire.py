@@ -28,11 +28,11 @@ Blender的流体系统需要同时用到这两个物体，因此它们的名称�
 
 from typing import Tuple
 
-#: Voxels along the domain's longest axis. 32 is coarse and quick to bake; the
-#: Blender default of 64 is already slow enough to notice on a preview box.
+# Voxels along the domain's longest axis. 32 is coarse and quick to bake; the
+# Blender default of 64 is already slow enough to notice on a preview box.
 DEFAULT_RESOLUTION = 32
 
-#: Frames the emitter stays open.
+# Frames the emitter stays open.
 DEFAULT_LIFETIME_FRAMES = 120
 
 

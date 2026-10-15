@@ -26,8 +26,8 @@ from typing import Optional, Sequence
 
 from . import assets
 
-#: Input socket names on the Principled BSDF. Renamed in 4.0 ("Emission" became
-#: "Emission Color"); this package targets 4.x and up, where these are stable.
+# Input socket names on the Principled BSDF. Renamed in 4.0 ("Emission" became
+# "Emission Color"); this package targets 4.x and up, where these are stable.
 _BASE_COLOR = "Base Color"
 _EMISSION_COLOR = "Emission Color"
 _EMISSION_STRENGTH = "Emission Strength"
@@ -99,8 +99,8 @@ def glow(name: str, color: Sequence[float], strength: float = 6.0, alpha: float 
                  emission_strength=strength, alpha=alpha)
 
 
-#: Map suffix -> the Principled input it drives. Matches what
-#: `scripts/fetch_polyhaven.py` writes, so a fetched surface needs no renaming.
+# Map suffix -> the Principled input it drives. Matches what
+# `scripts/fetch_polyhaven.py` writes, so a fetched surface needs no renaming.
 TEXTURE_SUFFIXES = {"diff": _BASE_COLOR, "rough": "Roughness", "nor_gl": "Normal"}
 
 

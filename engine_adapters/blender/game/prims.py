@@ -204,7 +204,7 @@ def show(obj, on: bool) -> None:
     obj.hide_viewport = not on
 
 
-#: The name of the shared do-not-draw material, so the whole scene reuses one.
+# The name of the shared do-not-draw material, so the whole scene reuses one.
 VEIL_MATERIAL = "aaagf_veil"
 
 

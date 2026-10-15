@@ -43,7 +43,7 @@ if str(_REPO_ROOT) not in sys.path:
 PASSED: list[str] = []
 FAILED: list[tuple[str, str]] = []
 
-#: A URL the stub accepts and no real call is ever made against.
+# A URL the stub accepts and no real call is ever made against.
 STUB_MESH_URL = "https://stub.invalid/tpose_body_lo.glb"
 
 
@@ -57,9 +57,9 @@ def check(name: str, condition: bool, detail: str = "") -> bool:
     return bool(condition)
 
 
-#: Humanoid meshes to try, in preference order. These are build products of the
-#: 3AGameFactory knight demo, not fixtures — absent from a fresh checkout, which
-#: is why the test falls back to a URL-only run when none is present.
+# Humanoid meshes to try, in preference order. These are build products of the
+# 3AGameFactory knight demo, not fixtures — absent from a fresh checkout, which
+# is why the test falls back to a URL-only run when none is present.
 _MESH_CANDIDATES = (
     "outputs/runs/*/*/assets/3d_object/*/parts/tpose_body_lo.glb",
     "outputs/runs/*/*/assets/3d_object/*/parts/tpose_body.glb",

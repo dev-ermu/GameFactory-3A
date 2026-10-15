@@ -17,10 +17,10 @@ collision belongs in the game engine `../../import_generated/` feeds.
 from enum import Enum
 from math import radians
 
-#: m/s². Blender's own default, so a jump here reads like a jump in the viewport.
+# m/s². Blender's own default, so a jump here reads like a jump in the viewport.
 GRAVITY = -9.8
 
-#: Below this height the character counts as standing on the ground.
+# Below this height the character counts as standing on the ground.
 GROUND_EPSILON = 1e-3
 
 

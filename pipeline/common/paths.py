@@ -64,14 +64,14 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 OUTPUTS_ROOT = REPO_ROOT / "outputs"
 SAMPLES_ROOT = OUTPUTS_ROOT / "samples"
 
-#: Output root — 即 `Settings.output_root`（`.env` 里的 `AAAGF_OUTPUT_ROOT`），
-#: 默认 `<repo>/outputs/runs`。
+# Output root — 即 `Settings.output_root`（`.env` 里的 `AAAGF_OUTPUT_ROOT`），
+# 默认 `<repo>/outputs/runs`。
 OUTPUT_ROOT = Path(_config.settings.output_root).expanduser()
 
-#: Used when a task carries no game association (ad-hoc single-image demos).
+# Used when a task carries no game association (ad-hoc single-image demos).
 UNASSIGNED_GAME = "_scratch"
 
-#: Run id used when the caller does not ask for a fresh timestamped one.
+# Run id used when the caller does not ask for a fresh timestamped one.
 DEFAULT_RUN_ID = "default"
 
 LATEST_LINK = "latest"
@@ -79,7 +79,7 @@ LATEST_LINK = "latest"
 
 # ── Task kinds ────────────────────────────────────────────────────────────────
 
-#: task_kind -> layer directory. Every registered kind is an asset kind.
+# task_kind -> layer directory. Every registered kind is an asset kind.
 TASK_LAYER: dict[str, str] = {
     "3d_object": "assets",
     "tpose": "assets",
@@ -88,7 +88,7 @@ TASK_LAYER: dict[str, str] = {
     "audio": "assets",
 }
 
-#: task_kind -> directory name inside ``samples/<game_id>/``.
+# task_kind -> directory name inside ``samples/<game_id>/``.
 TASK_INPUT_DIR: dict[str, str] = {
     "3d_object": "3D_object",
     "tpose": "tpose",
@@ -97,7 +97,7 @@ TASK_INPUT_DIR: dict[str, str] = {
     "audio": "audio",
 }
 
-#: task_kind -> per-game task list filename inside ``TASK_INPUT_DIR``.
+# task_kind -> per-game task list filename inside ``TASK_INPUT_DIR``.
 TASK_JSONL: dict[str, str] = {
     "3d_object": "object_tasks.jsonl",
     "tpose": "tpose_tasks.jsonl",
@@ -106,7 +106,7 @@ TASK_JSONL: dict[str, str] = {
     "audio": "audio_tasks.jsonl",
 }
 
-#: task_kind -> cross-game aggregate jsonl under ``samples/``.
+# task_kind -> cross-game aggregate jsonl under ``samples/``.
 TASK_COLLECT_JSONL: dict[str, str] = {
     "3d_object": "3D_object_gen_collect.jsonl",
     "tpose": "tpose_gen_collect.jsonl",
@@ -115,7 +115,7 @@ TASK_COLLECT_JSONL: dict[str, str] = {
     "audio": "audio_gen_collect.jsonl",
 }
 
-#: Layer-A kinds only — what ``pipeline/assets_gen/`` covers.
+# Layer-A kinds only — what ``pipeline/assets_gen/`` covers.
 ASSET_TASK_KINDS = tuple(k for k, v in TASK_LAYER.items() if v == "assets")
 
 

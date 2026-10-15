@@ -47,16 +47,16 @@ from typing import Optional
 from . import controls as controls_mod
 from . import recorder
 
-#: How many simulation steps one frame may run to catch up. Beyond this the
-#: session accepts being behind: the alternative is a stall that gets longer
-#: every frame, which is how a slow render turns into a frozen window.
+# How many simulation steps one frame may run to catch up. Beyond this the
+# session accepts being behind: the alternative is a stall that gets longer
+# every frame, which is how a slow render turns into a frozen window.
 # 单帧内最多可执行的模拟步数，用于追赶延迟的帧。超过该数值后，
 # 程序允许存在延迟：否则每帧延迟都会不断累积，最终导致画面卡顿，慢速渲染甚至会令窗口完全冻结。
 MAX_CATCHUP_TICKS = 4
 
-#: Viewport shading. `MATERIAL` is EEVEE with the scene's materials and is what
-#: makes the emissive HUD and the glow pools read; `RENDERED` also works but
-#: pays for the world's ambient sampling every frame.
+# Viewport shading. `MATERIAL` is EEVEE with the scene's materials and is what
+# makes the emissive HUD and the glow pools read; `RENDERED` also works but
+# pays for the world's ambient sampling every frame.
 # 视口着色模式。`MATERIAL`模式采用EEVEE引擎并应用场景材质，
 # 能正确显示发光式HUD和光晕效果；`RENDERED`模式虽也可行，但每帧都要进行全局环境采样，性能开销更大。
 VIEW_SHADING = "MATERIAL"
@@ -209,8 +209,8 @@ class Session:
         self.ticks = 0
         self.frames_drawn = 0
         self.paused = False
-        #: Why the session ended, for the play report. "quit" is the player's
-        #: choice; anything else is the game deciding it is over.
+        # Why the session ended, for the play report. "quit" is the player's
+        # choice; anything else is the game deciding it is over.
         self.reason = "running"
         self._pause_held = False
         self._debt = 0.0
@@ -309,7 +309,7 @@ def make_operator(game, source, *, on_quit=None, session=None):
     bpy = _bpy()
     session = session if session is not None else Session(game, source)
 
-    #: Blender reports these as events but they are not input.
+    # Blender reports these as events but they are not input.
     IGNORED = {"TIMER", "TIMER_REPORT", "TIMER0", "TIMER1", "TIMER_JOBS",
                "TIMER_AUTOSAVE", "NONE"}
 

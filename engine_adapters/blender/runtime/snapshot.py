@@ -25,13 +25,13 @@ from typing import Tuple
 
 from ..render_preview import enable_cycles, hide_gl_only_objects
 
-#: Where output lands when a command names no path. Under the runtime package
-#: rather than the working directory, so a session started from anywhere leaves
-#: its artifacts somewhere findable.
+# Where output lands when a command names no path. Under the runtime package
+# rather than the working directory, so a session started from anywhere leaves
+# its artifacts somewhere findable.
 DEFAULT_OUT_DIR = Path(__file__).resolve().parent / "outputs"
 
-#: Engines that need a GL context. Asking for one is honoured, but it falls
-#: back rather than aborting when the context turns out not to exist.
+# Engines that need a GL context. Asking for one is honoured, but it falls
+# back rather than aborting when the context turns out not to exist.
 GL_ENGINES = frozenset(("BLENDER_EEVEE", "BLENDER_EEVEE_NEXT", "BLENDER_WORKBENCH"))
 
 

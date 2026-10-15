@@ -22,8 +22,8 @@ from typing import Optional
 
 from .resolver import resolve
 
-#: Files that carry animation. FBX is what the retargeter writes; BVH is what
-#: most motion generators emit.
+# Files that carry animation. FBX is what the retargeter writes; BVH is what
+# most motion generators emit.
 ACTION_SUFFIXES = (".fbx", ".bvh")
 
 

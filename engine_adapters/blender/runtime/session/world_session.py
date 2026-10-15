@@ -36,13 +36,13 @@ from typing import Dict, List
 
 
 class ControlMode(Enum):
-    #: One controller, nobody else gets a say.
+    # One controller, nobody else gets a say.
     EXCLUSIVE = "exclusive"
-    #: Several controllers; the highest `priority` wins each frame.
+    # Several controllers; the highest `priority` wins each frame.
     PRIORITY = "priority"
-    #: Inputs are blended rather than arbitrated — human plus assist policy.
+    # Inputs are blended rather than arbitrated — human plus assist policy.
     ASSISTED = "assisted"
-    #: Bound for the camera feed only; input is ignored.
+    # Bound for the camera feed only; input is ignored.
     OBSERVING = "observing"
 
 
@@ -60,8 +60,8 @@ class Controller:
     controller_id: str
     participant_id: str = ""
     world_id: str = ""
-    #: `human` or `agent`. The runtime treats them alike; the distinction is
-    #: for whoever is reading the session snapshot.
+    # `human` or `agent`. The runtime treats them alike; the distinction is
+    # for whoever is reading the session snapshot.
     kind: str = "human"
     online: bool = True
 
@@ -90,7 +90,7 @@ class InputState:
     jump: bool = False
     yaw: float = 0.0
     pitch: float = 0.0
-    #: Sender's counter. Lets a receiver drop packets that arrived out of order.
+    # Sender's counter. Lets a receiver drop packets that arrived out of order.
     sequence: int = 0
     timestamp_seconds: float = 0.0
 
@@ -101,8 +101,8 @@ class WorldSessionManager:
         self.participants: Dict[str, Participant] = {}
         self.controllers: Dict[str, Controller] = {}
         self.bindings: Dict[str, ControlBinding] = {}
-        #: Newest input per controller. Only the last one per tick matters, so
-        #: this is a slot rather than a queue — late packets replace, not pile up.
+        # Newest input per controller. Only the last one per tick matters, so
+        # this is a slot rather than a queue — late packets replace, not pile up.
         self.latest_inputs: Dict[str, InputState] = {}
 
     # ── Registry ──────────────────────────────────────────────────────────────

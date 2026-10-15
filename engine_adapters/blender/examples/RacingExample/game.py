@@ -61,15 +61,15 @@ from engine_adapters.blender.game import (  # noqa: E402
     assets, camera_rigs, hud, kernel, materials, prims,
 )
 
-#: Full steering lock, in radians of front-wheel angle. Also the clamp inside
-#: `Car.drive`, so a human holding a direction cannot ask for more lock than the
-#: rivals' pursuit controller can.
+# Full steering lock, in radians of front-wheel angle. Also the clamp inside
+# `Car.drive`, so a human holding a direction cannot ask for more lock than the
+# rivals' pursuit controller can.
 # 最大转向角度，以前轮旋转的弧度表示。该数值也是`Car.drive`函数中的限制值，因此人类驾驶员无法要求超过对手追逐控制器所能达到的转向幅度。
 MAX_STEER_LOCK = 0.62
 
-#: Bumper to bumper, in metres — the size of the car built from primitives. A
-#: model named by the task is normalised to this, so an asset authored at any
-#: scale sits on the same grid slots and reads the same against the track width.
+# Bumper to bumper, in metres — the size of the car built from primitives. A
+# model named by the task is normalised to this, so an asset authored at any
+# scale sits on the same grid slots and reads the same against the track width.
 # 车辆从车头到车尾的长度，单位为米——也就是由基础几何体构成的车辆尺寸。任务中命名的模型会以此为标准进行归一化，这样无论以何种比例制作的资产都能在同一网格位置上摆放，且与赛道宽度的对应关系也保持一致。
 CAR_LENGTH = 4.3
 
@@ -791,10 +791,10 @@ class RacingCircuit(kernel.Game):
                      lap_time=round(lap_time, 2),
                      avg_speed_kmh=round(travelled / max(lap_time, 0.01) * 3.6, 1))
 
-    #: Metres one car must be clear by before the running order changes. Two
-    #: cars side by side differ by centimetres of arc length and would otherwise
-    #: swap places every tick, turning a single wheel-to-wheel battle into
-    #: dozens of "overtakes".
+    # Metres one car must be clear by before the running order changes. Two
+    # cars side by side differ by centimetres of arc length and would otherwise
+    # swap places every tick, turning a single wheel-to-wheel battle into
+    # dozens of "overtakes".
     ORDER_DEADBAND = 2.5
 
     def _order(self) -> list:

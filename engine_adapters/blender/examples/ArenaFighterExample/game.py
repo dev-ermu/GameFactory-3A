@@ -65,19 +65,19 @@ from engine_adapters.blender.game import (  # noqa: E402
 
 IDLE, WALK, ATTACK, BLOCK, HITSTUN, KO = "idle", "walk", "attack", "block", "hitstun", "ko"
 
-#: How long a human's attack press is remembered while the fighter is busy.
-#: Six frames at 30 Hz is 200 ms — long enough to press just before recovery
-#: ends, short enough that a press cannot come out a second later as a surprise.
+# How long a human's attack press is remembered while the fighter is busy.
+# Six frames at 30 Hz is 200 ms — long enough to press just before recovery
+# ends, short enough that a press cannot come out a second later as a surprise.
 # 格斗者处于忙碌状态时，人类输入的攻击指令会被保留多久。
 # 在30Hz的帧率下，6个tick对应200毫秒——这个时间足够让玩家在攻击恢复结束前按下按键，
 # 又短到不会让玩家在几秒后突然按下按键制造意外效果。
 INPUT_BUFFER_TICKS = 6
 
-#: Skeleton heights, in metres above the floor. Collected here because the body
-#: is assembled from stacked primitives and the segments have to meet: a figure
-#: whose hips are a centimetre above its legs reads as broken from ten metres
-#: away, and the legs-to-total ratio is most of what makes it read as a person
-#: rather than a bollard.
+# Skeleton heights, in metres above the floor. Collected here because the body
+# is assembled from stacked primitives and the segments have to meet: a figure
+# whose hips are a centimetre above its legs reads as broken from ten metres
+# away, and the legs-to-total ratio is most of what makes it read as a person
+# rather than a bollard.
 # 骨骼高度，单位为米，指相对于地面的高度。将这些数值汇总于此是因为角色模型由多个基础几何体堆叠而成，各部位必须衔接紧密：
 # 如果角色的髋部比腿部高出1厘米，从十米外看就会显得畸形；而腿部与整体身高的比例正是判断其是否为人类而非路障的关键。
 LEG_HALF = 0.39      # legs span 0 .. 0.78
@@ -87,32 +87,32 @@ ARM_Z = 1.22
 HEAD_Z = 1.62        # top of head ≈ 1.82 m
 SHOULDER_X = 0.10    # inside the torso, so the arm is never rooted in mid-air
 
-#: Height a character model is normalised to, in metres: the crown of the block
-#: figure's head sphere. Quoted off the blocks rather than off a person because
-#: the blocks are what the pose — and therefore the hitbox — is measured in, and a
-#: model that does not agree with them punches from the wrong shoulder.
-#: 角色模型的标准化高度，单位为米：即角色头部球体所在位置。此处参考的是方块尺寸而非真人尺寸，因为姿势——进而碰撞箱——都是基于方块尺寸来衡量的；若模型尺寸与方块不符，就会导致出拳动作偏离正确位置。
+# Height a character model is normalised to, in metres: the crown of the block
+# figure's head sphere. Quoted off the blocks rather than off a person because
+# the blocks are what the pose — and therefore the hitbox — is measured in, and a
+# model that does not agree with them punches from the wrong shoulder.
+# 角色模型的标准化高度，单位为米：即角色头部球体所在位置。此处参考的是方块尺寸而非真人尺寸，因为姿势——进而碰撞箱——都是基于方块尺寸来衡量的；若模型尺寸与方块不符，就会导致出拳动作偏离正确位置。
 FIGURE_HEIGHT = HEAD_Z + 0.20
 
-#: Yaw, in the actor convention `figures.face` speaks (0 is +Y), that turns a
-#: figure to look down +X. Fighters face along the fight line, so a fighter's
-#: `facing` of +-1 is this angle times that sign.
-#: 按照角色设定中`figures.face`的定义，使角色面向+X方向的偏航角（0对应+Y方向）。格斗角色通常沿战斗线朝向对手，因此当角色的`facing`值为±1时，对应的就是该角度乘以相应符号。
+# Yaw, in the actor convention `figures.face` speaks (0 is +Y), that turns a
+# figure to look down +X. Fighters face along the fight line, so a fighter's
+# `facing` of +-1 is this angle times that sign.
+# 按照角色设定中`figures.face`的定义，使角色面向+X方向的偏航角（0对应+Y方向）。格斗角色通常沿战斗线朝向对手，因此当角色的`facing`值为±1时，对应的就是该角度乘以相应符号。
 FACING_YAW = -90.0
 
-#: Which arm throws the lead punch. `figures.reach` takes >= 0 as the right one,
-#: and the block body's lead arm is on the same side.
-#: 负责打出先手拳的手臂。`figures.reach`中将≥0的值定义为右手，而方块模型的先手手臂也位于同一侧。
+# Which arm throws the lead punch. `figures.reach` takes >= 0 as the right one,
+# and the block body's lead arm is on the same side.
+# 负责打出先手拳的手臂。`figures.reach`中将≥0的值定义为右手，而方块模型的先手手臂也位于同一侧。
 LEAD_ARM = 1
 
-#: Where the layers of the back of the stage sit, in metres along +Y.
-#:
-#: Separated rather than shared, and the numbers are the whole reason this is a
-#: named block: the kit's wall is 1.2 m deep once scaled and its column 1.2 m
-#: square, so putting both on the primitive pillar's own y buries one inside the
-#: other and the two z-fight into a smear of stone. The columns stand *proud* of
-#: the wall, which is what an engaged column does anyway, and the clutter stands
-#: clear of both — and of the fight, which is the front two thirds of the stage.
+# Where the layers of the back of the stage sit, in metres along +Y.
+#
+# Separated rather than shared, and the numbers are the whole reason this is a
+# named block: the kit's wall is 1.2 m deep once scaled and its column 1.2 m
+# square, so putting both on the primitive pillar's own y buries one inside the
+# other and the two z-fight into a smear of stone. The columns stand *proud* of
+# the wall, which is what an engaged column does anyway, and the clutter stands
+# clear of both — and of the fight, which is the front two thirds of the stage.
 
 # 舞台背面各层结构在+Y方向上的位置，单位为米。
 # 这些数值被分开设定而非共用，也正是它们让这块区域被命名为独立方块的原因：缩放后道具墙的深度为1.2米，其柱子的截面也为1.2米见方；
@@ -122,9 +122,9 @@ WALL_Y = 5.0
 COLUMN_Y = 4.2
 CLUTTER_Y = (3.05, 3.65)
 
-#: How far the arms come up when a fighter is merely standing. Not zero: a
-#: fighting game's idle is a stance, and arms hanging at the sides read as a
-#: bystander who wandered into the ring.
+# How far the arms come up when a fighter is merely standing. Not zero: a
+# fighting game's idle is a stance, and arms hanging at the sides read as a
+# bystander who wandered into the ring.
 # 格斗角色处于站立状态时双臂抬升的高度。该值不为零：格斗游戏中的待机状态其实是一种防御姿态，若双臂垂在身侧，看起来就像误入赛场的外人。
 IDLE_GUARD = 0.34
 
@@ -168,9 +168,9 @@ class Fighter:
         self.taken = 0
         self.opponent: "Fighter" | None = None
         self.lean = 0.0
-        #: Metres of ground covered, for the stride cycle. Distance rather than a
-        #: clock, so the legs stop when the fighter does — see `figures.walk`.
-        #: 角色移动时覆盖的地面距离，用于步幅循环计算。此处采用距离而非时间计时，这样当角色停止移动时双腿也会随之停下——详见`figures.walk`。
+        # Metres of ground covered, for the stride cycle. Distance rather than a
+        # clock, so the legs stop when the fighter does — see `figures.walk`.
+        # 角色移动时覆盖的地面距离，用于步幅循环计算。此处采用距离而非时间计时，这样当角色停止移动时双腿也会随之停下——详见`figures.walk`。
         self.walked = 0.0
         self._last_x = x
 
@@ -544,8 +544,8 @@ class ArenaFighter(kernel.Game):
         "hitstun_ticks": 9,
         "block_stun_ticks": 5,
         "combo_window_ticks": 22,
-        #: Index into `fighters` that a human takes when playing. 0 is the one
-        #: on the left, which is the side the camera favours.
+        # Index into `fighters` that a human takes when playing. 0 is the one
+        # on the left, which is the side the camera favours.
         # 玩家操控的角色在fighters列表中的索引。0代表左侧角色，也是摄像机偏好的一侧。
         "human_fighter": 0,
     }

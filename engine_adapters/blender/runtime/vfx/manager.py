@@ -16,20 +16,20 @@ and leaking one leaves an invisible simulation running in every later render.
 
 from typing import List, Optional, Tuple
 
-#: Prefix on every object the runtime spawns as an effect. Shared with
-#: `scene.blend_scene.RUNTIME_PREFIXES` so `clear_scene` sweeps these too.
+# Prefix on every object the runtime spawns as an effect. Shared with
+# `scene.blend_scene.RUNTIME_PREFIXES` so `clear_scene` sweeps these too.
 VFX_PREFIX = "vfx_"
 
 
 class VFXManager:
-    #: What `trigger` accepts. `smoke` and `fire` share a backend.
+    # What `trigger` accepts. `smoke` and `fire` share a backend.
     KINDS = ("particle", "geometry_nodes", "grease_pencil", "smoke", "fire")
 
     def __init__(self) -> None:
         self._spawned: List[str] = []
         self._counter = 0
-        #: Set once a fluid simulation has existed in this process. Removing
-        #: the objects does not clear it — see `Subsystem.shutdown`.
+        # Set once a fluid simulation has existed in this process. Removing
+        # the objects does not clear it — see `Subsystem.shutdown`.
         self.spawned_fluid = False
 
     def _next_name(self, kind: str) -> str:

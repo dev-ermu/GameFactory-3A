@@ -19,7 +19,7 @@ from typing import Tuple
 
 TEMPLATES = ("impact_lines", "ring")
 
-#: Spokes in an `impact_lines` burst, or segments approximating a `ring`.
+# Spokes in an `impact_lines` burst, or segments approximating a `ring`.
 DEFAULT_SEGMENTS = 8
 
 

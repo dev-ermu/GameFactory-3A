@@ -64,10 +64,10 @@ from typing import Any, Optional
 
 from PIL import Image
 
-#: Registered task kind for this operator (see pipeline/common/paths.py).
+# Registered task kind for this operator (see pipeline/common/paths.py).
 TASK_KIND = "3d_object"
 
-#: Artifact filename used by the per-game layout.
+# Artifact filename used by the per-game layout.
 GLB_FILENAME = "model.glb"
 
 

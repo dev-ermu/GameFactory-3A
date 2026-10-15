@@ -68,13 +68,13 @@ def _load_project_env() -> None:
         logger.debug("[cloud_api] could not load .env", exc_info=True)
 
 
-#: 在任何 wrapper 读取变量之前，先用 `.env` 填充 os.environ。
+# 在任何 wrapper 读取变量之前，先用 `.env` 填充 os.environ。
 _load_project_env()
 
-#: HTTP statuses worth retrying — transient by nature.
+# HTTP statuses worth retrying — transient by nature.
 RETRYABLE_STATUS: frozenset[int] = frozenset({408, 409, 425, 429, 500, 502, 503, 504})
 
-#: HTTP statuses that will never succeed on retry: bad request, auth, quota.
+# HTTP statuses that will never succeed on retry: bad request, auth, quota.
 TERMINAL_STATUS: frozenset[int] = frozenset({400, 401, 402, 403, 404, 405, 413, 415, 422})
 
 

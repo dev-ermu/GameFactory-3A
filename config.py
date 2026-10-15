@@ -20,13 +20,13 @@ from typing import Any
 from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-#: 仓库根目录 —— 本文件就放在这里，所以只需向上一级。
+# 仓库根目录 —— 本文件就放在这里，所以只需向上一级。
 REPO_ROOT: Path = Path(__file__).resolve().parent
 
-#: 用户唯一需要编辑的文件。
+# 用户唯一需要编辑的文件。
 ENV_FILE: Path = REPO_ROOT / ".env"
 
-#: 随仓库提交的模板。
+# 随仓库提交的模板。
 ENV_EXAMPLE_FILE: Path = REPO_ROOT / ".env.example"
 
 
@@ -160,7 +160,7 @@ class Settings(BaseSettings):
     outputs_dir: str = "./tests/data"
 
 
-#: 全局唯一实例。模块导入即完成 `.env` 解析。
+# 全局唯一实例。模块导入即完成 `.env` 解析。
 settings = Settings()
 
 
@@ -177,7 +177,7 @@ def _alias_of(name: str, field: Any) -> str:
     return str(getattr(alias, "choices", alias)[0])
 
 
-#: `Settings` 字段名 -> `.env` 里的键名
+# `Settings` 字段名 -> `.env` 里的键名
 FIELD_ENV_OF: dict[str, str] = {
     _name: _alias_of(_name, _field)
     for _name, _field in Settings.model_fields.items()
@@ -219,7 +219,7 @@ def get_str(field_name: str) -> str:
 
 
 # ── 云服务商的必需配置项 ───────────────────────────────────────────────────────
-#: 服务商短标识 -> 报错里显示的可读名称。**只用于提示信息**，不参与取值。
+# 服务商短标识 -> 报错里显示的可读名称。**只用于提示信息**，不参与取值。
 CLOUD_LABELS: dict[str, str] = {
     "tripo": "Tripo3D",
     "meshy": "Meshy",
@@ -228,9 +228,9 @@ CLOUD_LABELS: dict[str, str] = {
     "tokenhub": "Tencent Cloud TokenHub (Tripo rigging / animation)",
 }
 
-#: 每个云服务商必需的字段后缀 -> `.env` 片段里的占位提示。
-#: 端点必填而非带默认值：公开端点并非在所有网络下都可达，硬编码回退会一直表现得像
-#: 「配置正常」，直到第一次计费调用失败。
+# 每个云服务商必需的字段后缀 -> `.env` 片段里的占位提示。
+# 端点必填而非带默认值：公开端点并非在所有网络下都可达，硬编码回退会一直表现得像
+# 「配置正常」，直到第一次计费调用失败。
 _CLOUD_REQUIRED: tuple[tuple[str, str], ...] = (
     ("api_base", "<API base URL, required>"),
     ("api_key", "<API key, required>"),

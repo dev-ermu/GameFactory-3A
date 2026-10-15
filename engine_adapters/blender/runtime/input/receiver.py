@@ -28,8 +28,8 @@ import socket
 import threading
 from typing import Callable, Optional
 
-#: A command is small. This is the practical ceiling on a UDP payload and any
-#: sane command fits many times over, so a larger one means a malformed sender.
+# A command is small. This is the practical ceiling on a UDP payload and any
+# sane command fits many times over, so a larger one means a malformed sender.
 # 指令数据量较小。这是UDP数据包的实际容量上限，任何合理的指令都能被多次封装进去，因此若数据包过大则说明发送方存在格式错误。
 MAX_DATAGRAM = 65535
 

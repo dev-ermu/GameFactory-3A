@@ -49,7 +49,7 @@ from pipeline.common.code_mapping import (
 
 GODOT_EXECUTABLE: Path = settings.godot_executable
 
-#: 适配器每次返回必须正好是这七个key
+# 适配器每次返回必须正好是这七个key
 RESULT_KEYS = {
     "ok",
     "operation",

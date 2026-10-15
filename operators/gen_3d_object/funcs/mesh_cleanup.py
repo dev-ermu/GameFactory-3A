@@ -46,25 +46,25 @@ keeps its wide base and a narrow one does not acquire confetti.
 from pathlib import Path
 from typing import Any
 
-#: Thinner than this fraction of the model's height counts as a sheet.
+# Thinner than this fraction of the model's height counts as a sheet.
 SHEET_THICKNESS = 0.02
 
-#: Only components whose top lies below this height can be floor.
+# Only components whose top lies below this height can be floor.
 FLOOR_CEILING = 0.25
 
-#: How far outside the object's own footprint debris must lie. Slack
-#: enough that a splayed base — boots, a tree's roots — is kept.
+# How far outside the object's own footprint debris must lie. Slack
+# enough that a splayed base — boots, a tree's roots — is kept.
 FOOTPRINT_SLACK = 1.1
 
-#: Ignore only degenerate scraps. This was originally set at 8 faces, on
-#: the reasoning that a handful of triangles is not worth the risk — which
-#: was exactly wrong: the floor's rubble arrives as *hundreds* of 7-face
-#: patches, and the guard kept every one of them. Both tests below are
-#: conservative on their own terms, so size adds nothing.
+# Ignore only degenerate scraps. This was originally set at 8 faces, on
+# the reasoning that a handful of triangles is not worth the risk — which
+# was exactly wrong: the floor's rubble arrives as *hundreds* of 7-face
+# patches, and the guard kept every one of them. Both tests below are
+# conservative on their own terms, so size adds nothing.
 MIN_COMPONENT_FACES = 2
 
-#: Refuse to remove more than this: past it the diagnosis was wrong and
-#: the object really is a flat thing.
+# Refuse to remove more than this: past it the diagnosis was wrong and
+# the object really is a flat thing.
 MAX_REMOVED_FRACTION = 0.4
 
 

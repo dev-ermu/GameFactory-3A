@@ -15,7 +15,7 @@ authored as part of the set.
 
 from typing import Tuple
 
-#: Frames the emitter stays open. Short: this is an impact, not a fountain.
+# Frames the emitter stays open. Short: this is an impact, not a fountain.
 EMISSION_FRAMES = 5
 
 SHAPES = ("sphere", "cube")

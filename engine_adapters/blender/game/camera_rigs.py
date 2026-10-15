@@ -38,7 +38,7 @@ consistent once is why the shooting code can aim with the camera's own numbers.
 from math import cos, radians, sin
 from typing import Optional, Sequence
 
-#: Straight up and straight down gimbal-lock a yaw-then-pitch camera.
+# Straight up and straight down gimbal-lock a yaw-then-pitch camera.
 PITCH_LIMIT = 88.0
 
 

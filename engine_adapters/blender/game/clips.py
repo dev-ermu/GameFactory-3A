@@ -23,7 +23,7 @@ from typing import Optional
 
 from . import assets, prims
 
-#: role -> names a pack might have used. First match on the imported action wins.
+# role -> names a pack might have used. First match on the imported action wins.
 ALIASES = {
     "idle": ("Idle", "idle", "Idle_A", "Idle_B", "Idle_Combat", "Standing",
              "Rest", "BreathingIdle", "Idle_Neutral", "Survey", "survey"),

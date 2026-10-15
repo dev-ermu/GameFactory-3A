@@ -25,8 +25,8 @@ DEFAULT_EDITOR_TIMEOUT = 300
 DEFAULT_IMPORT_TIMEOUT = 300
 DEFAULT_IMPORT_ROOT = "assets/imported"
 
-#: 本适配器支持的最低 Godot 版本。`4.4` 是 `res://` 资源 UID 与
-#: `--import` 行为稳定的起点；更低版本的导入产物布局不同，测试与运行都不可靠。
+# 本适配器支持的最低 Godot 版本。`4.4` 是 `res://` 资源 UID 与
+# `--import` 行为稳定的起点；更低版本的导入产物布局不同，测试与运行都不可靠。
 MINIMUM_GODOT_VERSION: tuple[int, int] = (4, 4)
 DEFAULT_AVATAR_DEST = "assets/imported/avatars"
 DEFAULT_MOTION_DEST = "assets/imported/motions"

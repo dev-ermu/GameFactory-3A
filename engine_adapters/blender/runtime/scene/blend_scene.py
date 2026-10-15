@@ -25,7 +25,7 @@ from pathlib import Path
 
 from ..assets.resolver import resolve
 
-#: Name prefixes owned by the runtime rather than by the loaded scene.
+# Name prefixes owned by the runtime rather than by the loaded scene.
 RUNTIME_PREFIXES = ("player_", "vfx_")
 
 

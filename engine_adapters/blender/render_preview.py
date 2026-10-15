@@ -43,15 +43,15 @@ import os
 from pathlib import Path
 from typing import Any, Optional
 
-#: `orbit` spins the camera around the asset; `still` renders one frame.
+# `orbit` spins the camera around the asset; `still` renders one frame.
 MODES = ("orbit", "still")
 
-#: `mp4` needs ffmpeg, which Blender bundles; `png` writes the frame sequence;
-#: `auto` takes mp4 and falls back to png when the encoder is missing.
+# `mp4` needs ffmpeg, which Blender bundles; `png` writes the frame sequence;
+# `auto` takes mp4 and falls back to png when the encoder is missing.
 FORMATS = ("auto", "mp4", "png")
 
-#: Engine ids that need a GL context. Their names moved between 4.x releases,
-#: so both are listed and whichever exists is used.
+# Engine ids that need a GL context. Their names moved between 4.x releases,
+# so both are listed and whichever exists is used.
 _EEVEE_IDS = ("BLENDER_EEVEE_NEXT", "BLENDER_EEVEE")
 _WORKBENCH_ID = "BLENDER_WORKBENCH"
 
@@ -354,7 +354,7 @@ def render_preview(
     return report
 
 
-#: Object types drawn through GL even under Cycles; they abort a headless render.
+# Object types drawn through GL even under Cycles; they abort a headless render.
 GL_ONLY_TYPES = frozenset(("GPENCIL", "GREASEPENCIL"))
 
 

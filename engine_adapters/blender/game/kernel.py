@@ -115,15 +115,15 @@ def setup_world(color: Sequence[float] = (0.05, 0.06, 0.09), strength: float = 0
         _link_gradient(bpy, world, gradient, backdrop)
 
 
-#: Elevation, as sin(angle), that the gradient finishes climbing at.
-#:
-#: Measured rather than chosen: a 40 mm lens on a 16:9 frame spans 28 degrees
-#: vertically, and a chase camera aimed slightly down leaves only about 5 degrees
-#: of sky above the skyline — sin 5 deg = 0.09. A ramp spread over the hemisphere
-#: puts 95% of itself out of shot, and sampling the frame showed the sky varying
-#: by 4% from horizon to top edge, which is a flat wash. Finishing just past the
-#: top of frame spends the whole ramp where it can be seen. The cost is that a
-#: camera tilted well up sees a uniform zenith, which a chase camera never is.
+# Elevation, as sin(angle), that the gradient finishes climbing at.
+#
+# Measured rather than chosen: a 40 mm lens on a 16:9 frame spans 28 degrees
+# vertically, and a chase camera aimed slightly down leaves only about 5 degrees
+# of sky above the skyline — sin 5 deg = 0.09. A ramp spread over the hemisphere
+# puts 95% of itself out of shot, and sampling the frame showed the sky varying
+# by 4% from horizon to top edge, which is a flat wash. Finishing just past the
+# top of frame spends the whole ramp where it can be seen. The cost is that a
+# camera tilted well up sees a uniform zenith, which a chase camera never is.
 GRADIENT_TOP = 0.12
 
 
@@ -388,10 +388,10 @@ class Game:
         self.samples = int(self.spec.get("samples", 24))
         self.seed = int(self.spec.get("seed", 7))
         self.rng = random.Random(self.seed)
-        #: Decoration's own stream. Separate from `rng` because a draw spent
-        #: choosing a crate model is a draw the rules do not make, so sharing one
-        #: would make turning the art on change the gameplay — and then a run with
-        #: assets and a run without cannot be compared.
+        # Decoration's own stream. Separate from `rng` because a draw spent
+        # choosing a crate model is a draw the rules do not make, so sharing one
+        # would make turning the art on change the gameplay — and then a run with
+        # assets and a run without cannot be compared.
         self.look = random.Random(self.seed ^ 0x5A17)
 
         self.frame = 0
@@ -404,14 +404,14 @@ class Game:
         self.camera = None
         self.hud = None
 
-        #: One tick of player intent, or None when the game's own policy drives.
-        #: A subclass checks this to decide whose decision it is acting on — see
-        #: `human` below and `controls.py` for what fills it.
+        # One tick of player intent, or None when the game's own policy drives.
+        # A subclass checks this to decide whose decision it is acting on — see
+        # `human` below and `controls.py` for what fills it.
         self.controls = None
-        #: True only in a live window. Rules may use it to skip work that exists
-        #: for the recording (settling a corpse for the camera, say) but must not
-        #: change anything a metric is computed from, or a played run and a
-        #: rendered run stop being comparable.
+        # True only in a live window. Rules may use it to skip work that exists
+        # for the recording (settling a corpse for the camera, say) but must not
+        # change anything a metric is computed from, or a played run and a
+        # rendered run stop being comparable.
         self.interactive = False
 
     # ── hooks ─────────────────────────────────────────────────────────────────

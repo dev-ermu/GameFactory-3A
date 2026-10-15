@@ -186,8 +186,8 @@ class TestGenMotionOperator(unittest.TestCase):
         self.assertEqual(score["fps"], 20)
 
 
-#: A three-bone Mixamo-named BVH. Short on purpose: identification reads the
-#: hierarchy only, so the sample block never has to be realistic.
+# A three-bone Mixamo-named BVH. Short on purpose: identification reads the
+# hierarchy only, so the sample block never has to be realistic.
 _MIXAMO_BVH = """HIERARCHY
 ROOT mixamorig:Hips
 {

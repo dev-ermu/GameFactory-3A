@@ -129,8 +129,8 @@ def _pack_glb(doc: dict, bin_blob: bytes, json_pad_to: int = 0) -> bytes:
     ])
 
 
-#: Cube faces as (normal, four corners in CCW winding seen from outside), with
-#: the cube spanning 0..1 on every axis. Scaled by `size` in `make_textured_glb`.
+# Cube faces as (normal, four corners in CCW winding seen from outside), with
+# the cube spanning 0..1 on every axis. Scaled by `size` in `make_textured_glb`.
 _CUBE_FACES = (
     ((0, 0, 1), ((0, 0, 1), (1, 0, 1), (1, 1, 1), (0, 1, 1))),
     ((0, 0, -1), ((1, 0, 0), (0, 0, 0), (0, 1, 0), (1, 1, 0))),
@@ -416,7 +416,7 @@ class _StubCloudModel(_StubBase):
     """
 
     provider = "stub"
-    #: Faces the fake asset reports, so face-budget assertions have something real.
+    # Faces the fake asset reports, so face-budget assertions have something real.
     triangles = 2
 
     def __init__(self, model_id: str = "stub-v1", device: str = "cpu", **kw):
@@ -860,9 +860,9 @@ class StubSeedAudioModel(_StubBase):
 
 # ── Registry ──────────────────────────────────────────────────────────────────
 
-#: task_kind -> {backend name: stub class} for slots with several backends.
-#: The first entry is the default. Select one with
-#: `build_operator(kind, model_key="tripo")` or `smoke.py --backend tripo`.
+# task_kind -> {backend name: stub class} for slots with several backends.
+# The first entry is the default. Select one with
+# `build_operator(kind, model_key="tripo")` or `smoke.py --backend tripo`.
 STUB_BACKENDS: dict[str, dict[str, Any]] = {
     "3d_object": {
         "tripo": StubTripoModel,
@@ -879,8 +879,8 @@ STUB_BACKENDS: dict[str, dict[str, Any]] = {
     },
 }
 
-#: task_kind -> factory returning the kwargs for that task's operator.
-#: Extend this when you add an asset task, so `smoke.py --kind <new>` works.
+# task_kind -> factory returning the kwargs for that task's operator.
+# Extend this when you add an asset task, so `smoke.py --kind <new>` works.
 STUB_OPERATOR_KWARGS: dict[str, Any] = {
     "motion": lambda model_key=None: {
         "retarget_fn": stub_retarget_motion,
@@ -940,7 +940,7 @@ def build_operator(task_kind: str, run_id: str = "_smoke",
     )
 
 
-#: task_kind -> (module path, class name)
+# task_kind -> (module path, class name)
 OPERATOR_LOCATION: dict[str, tuple[str, str]] = {
     "3d_object": ("operators.gen_3d_object.operator", "Gen3DObjectOperator"),
     "tpose": ("operators.gen_tpose_image.operator", "GenTPoseImageOperator"),

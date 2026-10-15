@@ -41,8 +41,8 @@ from pathlib import Path
 DEFAULT_HOST = "127.0.0.1"
 DEFAULT_PORT = 30021
 
-#: Seconds between packets. Enough for the receiving tick to pick up the last
-#: one, which is what keeps a spawn ahead of the action that depends on it.
+# Seconds between packets. Enough for the receiving tick to pick up the last
+# one, which is what keeps a spawn ahead of the action that depends on it.
 DEFAULT_GAP = 0.05
 
 

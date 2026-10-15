@@ -59,27 +59,27 @@ import os
 from pathlib import Path
 from typing import Any, Optional
 
-#: Usage tiers, matching `engine_adapters/ue5/import_generated/import_mesh.py`
-#: so one `--usage` means the same thing whichever engine receives the asset.
+# Usage tiers, matching `engine_adapters/ue5/import_generated/import_mesh.py`
+# so one `--usage` means the same thing whichever engine receives the asset.
 USAGE_ASSET = "asset"
 USAGE_VFX_STANDALONE = "vfx_standalone"
 USAGE_VFX_PARTICLE = "vfx_particle"
 USAGES = (USAGE_ASSET, USAGE_VFX_STANDALONE, USAGE_VFX_PARTICLE)
 
-#: Formats the generators emit that Blender can ingest. Wider than UE5's list —
-#: `.ply` is why a world export can be looked at before any engine is involved.
+# Formats the generators emit that Blender can ingest. Wider than UE5's list —
+# `.ply` is why a world export can be looked at before any engine is involved.
 SUPPORTED_SUFFIXES = (".glb", ".gltf", ".fbx", ".obj", ".ply", ".stl",
                       ".usd", ".usda", ".usdc", ".usdz", ".abc")
 
-#: Written next to wherever the launcher points; a plain directory, not a
-#: `.blend`, so every artifact stays addressable by file path.
+# Written next to wherever the launcher points; a plain directory, not a
+# `.blend`, so every artifact stays addressable by file path.
 DEFAULT_DEST = "generated_blender_library"
 
-#: `--normalize-scale` target. Blender is metric, so 1 m — the UE5 importer says
-#: 100 for the same thing, because it works in centimetres.
+# `--normalize-scale` target. Blender is metric, so 1 m — the UE5 importer says
+# 100 for the same thing, because it works in centimetres.
 NORMALIZE_TARGET_METRES = 1.0
 
-#: Formats `--export` can write.
+# Formats `--export` can write.
 EXPORT_KINDS = ("glb", "fbx", "blend")
 
 
@@ -232,7 +232,7 @@ def _reset_scene(bpy) -> None:
     bpy.ops.wm.read_factory_settings(use_empty=True)
 
 
-#: Suffix -> the operator Blender 4.x exposes.
+# Suffix -> the operator Blender 4.x exposes.
 _IMPORTERS = {
     ".glb": "import_scene.gltf", ".gltf": "import_scene.gltf",
     ".fbx": "import_scene.fbx",
@@ -244,9 +244,9 @@ _IMPORTERS = {
     ".abc": "wm.alembic_import",
 }
 
-#: The pre-4.0 name of the same operator. Blender moved OBJ, PLY and STL to new
-#: C++ importers and kept the old Python ones around for a while; which of the
-#: two exists depends on the build, so both are tried.
+# The pre-4.0 name of the same operator. Blender moved OBJ, PLY and STL to new
+# C++ importers and kept the old Python ones around for a while; which of the
+# two exists depends on the build, so both are tried.
 _LEGACY_IMPORTERS = {
     "wm.obj_import": "import_scene.obj",
     "wm.ply_import": "import_mesh.ply",
@@ -604,9 +604,9 @@ def import_from_results_summary(summary_path: str, dest_dir: str = DEFAULT_DEST,
 
 # ── CLI ───────────────────────────────────────────────────────────────────────
 
-#: Environment variable holding a JSON job file, used instead of CLI arguments.
-#: Kept identical to the UE5 importer so the host-side launcher builds one job
-#: shape for every engine.
+# Environment variable holding a JSON job file, used instead of CLI arguments.
+# Kept identical to the UE5 importer so the host-side launcher builds one job
+# shape for every engine.
 JOB_ENV_VAR = "AAAGF_IMPORT_JOB"
 
 

@@ -20,7 +20,7 @@ SUPPORTED_TASK_TYPES = {
     "vibe", "vibe_retarget",
 }
 
-#: Artifact key -> filename, one directory per task.
+# Artifact key -> filename, one directory per task.
 _PER_GAME_NAMES = {
     "rig_path": "rig.txt",
     "skeleton_path": "skeleton.txt",
@@ -44,8 +44,8 @@ _PER_GAME_NAMES = {
     "vibe_report_path": "vibe_report.json",
 }
 
-#: The same artifacts under the flat layout, where one directory holds several
-#: tasks and the filename carries the task id.
+# The same artifacts under the flat layout, where one directory holds several
+# tasks and the filename carries the task id.
 _LEGACY_SUFFIXES = {
     "rig_path": "_rig.txt",
     "skeleton_path": "_skeleton.txt",

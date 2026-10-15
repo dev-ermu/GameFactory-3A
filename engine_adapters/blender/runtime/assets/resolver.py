@@ -17,10 +17,10 @@ command file works against a laptop and a render box. Anything else is literal.
 import os
 from pathlib import Path
 
-#: Environment variable holding the directory `/Library/...` resolves against.
+# Environment variable holding the directory `/Library/...` resolves against.
 ASSET_ROOT_ENV = "BLENDER_ASSET_ROOT"
 
-#: Prefix that marks a path as virtual.
+# Prefix that marks a path as virtual.
 LIBRARY_PREFIX = "/Library/"
 
 DEFAULT_ASSET_ROOT = "./assets"

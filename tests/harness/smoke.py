@@ -69,10 +69,10 @@ except ModuleNotFoundError as _e:                                    # pragma: n
 SMOKE_RUN_ID = "_smoke"
 SMOKE_GAME = "_smoke_game"
 
-#: Required keys in an operator's result dict (operatar_require.md R3).
+# Required keys in an operator's result dict (operatar_require.md R3).
 REQUIRED_RESULT_KEYS = ("task_id", "elapsed_sec", "game_id", "task_kind", "output_dir")
 
-#: Extra per-task input fields needed by specific kinds.
+# Extra per-task input fields needed by specific kinds.
 EXTRA_TASK_FIELDS: dict[str, dict] = {
     "tpose": {"description": "A smoke-test character.", "steps": 2, "target_size": 64},
     "3d_object": {"decimation_target": 1000, "texture_size": 64},

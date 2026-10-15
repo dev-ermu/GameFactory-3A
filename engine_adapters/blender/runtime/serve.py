@@ -32,12 +32,12 @@ import sys
 import time
 from pathlib import Path
 
-#: Nominal tick rate. Input arrives at whatever rate the sender manages; this
-#: only sets how finely movement is integrated between packets.
+# Nominal tick rate. Input arrives at whatever rate the sender manages; this
+# only sets how finely movement is integrated between packets.
 DEFAULT_TICK_HZ = 30.0
 
-#: A tick this long means something blocked — an import, a bake, a render.
-#: Movement is clamped to it so a stall slows the world instead of teleporting it.
+# A tick this long means something blocked — an import, a bake, a render.
+# Movement is clamped to it so a stall slows the world instead of teleporting it.
 MAX_STEP_SECONDS = 0.25
 
 

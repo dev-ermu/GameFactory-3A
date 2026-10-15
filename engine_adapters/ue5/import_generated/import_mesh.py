@@ -40,13 +40,13 @@ import os
 from pathlib import Path
 from typing import Any, Optional
 
-#: Usage tiers — task 7 part B4. The default is a plain game asset, **not** VFX.
+# Usage tiers — task 7 part B4. The default is a plain game asset, **not** VFX.
 USAGE_ASSET = "asset"
 USAGE_VFX_STANDALONE = "vfx_standalone"
 USAGE_VFX_PARTICLE = "vfx_particle"
 USAGES = (USAGE_ASSET, USAGE_VFX_STANDALONE, USAGE_VFX_PARTICLE)
 
-#: Formats the generators emit that UE can ingest.
+# Formats the generators emit that UE can ingest.
 SUPPORTED_SUFFIXES = (".glb", ".gltf", ".fbx", ".obj", ".usd", ".usda", ".usdz")
 
 DEFAULT_DEST_PACKAGE = "/Game/Generated/Meshes"
@@ -211,23 +211,23 @@ def _tier_defaults(usage: str, pivot: Optional[str], normalize_scale: bool,
     return (pivot or "center"), True
 
 
-#: Import routes, tried in this order. Override with `$AAAGF_UE_IMPORT_ROUTE`.
-#:
-#: Measured on UE 5.7:
-#:   automated    `AssetTools.import_assets_automated` — imports for real, takes
-#:                no pipeline override, so it cannot carry a pivot/scale offset.
-#:   task         `AssetTools.import_asset_tasks` — imports for real and carries
-#:                offsets through an InterchangePipelineStackOverride.
-#:   interchange  `InterchangeManager.import_asset` — returns before the assets
-#:                exist (the scripted call is asynchronous), so it is last and
-#:                only useful as a fallback on builds where AssetTools is absent.
-#:
-#: Both AssetTools routes finish the import and then sync the Content Browser,
-#: which asserts in `FSlateApplication::Get()` when the engine runs as a
-#: commandlet (`-run=pythonscript`). Launch the full editor instead
-#: (`UnrealEditor.exe -ExecutePythonScript=...`, what
-#: `scripts/import_generated_asset.py --ue-mode editor` does by default) and
-#: Slate exists, so the sync is harmless.
+# Import routes, tried in this order. Override with `$AAAGF_UE_IMPORT_ROUTE`.
+#
+# Measured on UE 5.7:
+#   automated    `AssetTools.import_assets_automated` — imports for real, takes
+#                no pipeline override, so it cannot carry a pivot/scale offset.
+#   task         `AssetTools.import_asset_tasks` — imports for real and carries
+#                offsets through an InterchangePipelineStackOverride.
+#   interchange  `InterchangeManager.import_asset` — returns before the assets
+#                exist (the scripted call is asynchronous), so it is last and
+#                only useful as a fallback on builds where AssetTools is absent.
+#
+# Both AssetTools routes finish the import and then sync the Content Browser,
+# which asserts in `FSlateApplication::Get()` when the engine runs as a
+# commandlet (`-run=pythonscript`). Launch the full editor instead
+# (`UnrealEditor.exe -ExecutePythonScript=...`, what
+# `scripts/import_generated_asset.py --ue-mode editor` does by default) and
+# Slate exists, so the sync is harmless.
 IMPORT_ROUTES = ("automated", "task", "interchange")
 
 
@@ -754,10 +754,10 @@ def import_from_results_summary(summary_path: str,
 # ── CLI ───────────────────────────────────────────────────────────────────────
 
 
-#: Environment variable holding a JSON job file, used instead of CLI arguments.
-#: UE's `-run=pythonscript -script="file.py --a b"` has to survive two rounds of
-#: command-line splitting (Windows shell, then UE's own parser), and paths with
-#: spaces do not always come out intact. An environment variable does.
+# Environment variable holding a JSON job file, used instead of CLI arguments.
+# UE's `-run=pythonscript -script="file.py --a b"` has to survive two rounds of
+# command-line splitting (Windows shell, then UE's own parser), and paths with
+# spaces do not always come out intact. An environment variable does.
 JOB_ENV_VAR = "AAAGF_IMPORT_JOB"
 
 

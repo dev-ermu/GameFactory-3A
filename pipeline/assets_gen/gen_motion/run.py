@@ -22,7 +22,7 @@ from pipeline.common import config, paths  # noqa: E402
 TASK_KIND = "motion"
 DEFAULT_TASKS = paths.collect_jsonl(TASK_KIND)
 
-#: 由 TokenHub 云模型（而非本地模型）承担的 task_type。
+# 由 TokenHub 云模型（而非本地模型）承担的 task_type。
 CLOUD_TASK_TYPES = frozenset({"cloud_rig", "cloud_humanoid"})
 
 

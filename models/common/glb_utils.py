@@ -29,11 +29,11 @@ from typing import Any, Optional, Sequence
 
 GLB_MAGIC = b"glTF"
 
-#: glTF primitive mode 4 == TRIANGLES. Only triangle primitives are counted.
+# glTF primitive mode 4 == TRIANGLES. Only triangle primitives are counted.
 _MODE_TRIANGLES = 4
 
-#: glTF componentType -> (struct format, byte size). Indices are allowed to be
-#: any of the unsigned types; positions are float in every file worth reading.
+# glTF componentType -> (struct format, byte size). Indices are allowed to be
+# any of the unsigned types; positions are float in every file worth reading.
 _COMPONENT_TYPES: dict[int, tuple[str, int]] = {
     5120: ("b", 1),   # BYTE
     5121: ("B", 1),   # UNSIGNED_BYTE
@@ -43,7 +43,7 @@ _COMPONENT_TYPES: dict[int, tuple[str, int]] = {
     5126: ("f", 4),   # FLOAT
 }
 
-#: glTF accessor type -> component count.
+# glTF accessor type -> component count.
 _TYPE_COUNTS: dict[str, int] = {
     "SCALAR": 1, "VEC2": 2, "VEC3": 3, "VEC4": 4,
     "MAT2": 4, "MAT3": 9, "MAT4": 16,

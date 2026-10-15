@@ -41,14 +41,14 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Iterable, Optional
 
-#: Degrees of view rotation per pixel of mouse movement. Roughly a 400 dpi
-#: mouse at a normal sensitivity; `interactive.py` scales it by a CLI factor.
+# Degrees of view rotation per pixel of mouse movement. Roughly a 400 dpi
+# mouse at a normal sensitivity; `interactive.py` scales it by a CLI factor.
 # 每像素鼠标移动对应的视角旋转角度。该数值对应常规灵敏度下400 DPI的鼠标；`interactive.py`会根据命令行参数对其缩放。
 MOUSE_DEGREES_PER_PIXEL = 0.12
 
-#: How fast the arrow-key fallback turns, in degrees a second. Present because
-#: mouse capture is the first thing to break over a remote display, and a game
-#: you cannot aim in is not testable.
+# How fast the arrow-key fallback turns, in degrees a second. Present because
+# mouse capture is the first thing to break over a remote display, and a game
+# you cannot aim in is not testable.
 # 方向键替代控制的旋转速度，单位为每秒度数。设置该参数的原因是远程显示环境下鼠标捕获功能最容易失效，而无法瞄准的游戏是无法进行测试的。
 KEY_TURN_DEGREES_PER_SECOND = 130.0
 
@@ -90,7 +90,7 @@ class Controls:
     quit: bool = False
     pause: bool = False
 
-    #: What was held on the previous tick, for `pressed()`. Not part of intent.
+    # What was held on the previous tick, for `pressed()`. Not part of intent.
     previous: Optional["Controls"] = field(default=None, repr=False, compare=False)
 
     def pressed(self, name: str) -> bool:
@@ -101,8 +101,8 @@ class Controls:
 
 # ── Key bindings ──────────────────────────────────────────────────────────────
 
-#: `field: (keys that push it +1, keys that push it −1)`.
-#: Arrow keys shadow WASD everywhere so a keyboard with either hand works.
+# `field: (keys that push it +1, keys that push it −1)`.
+# Arrow keys shadow WASD everywhere so a keyboard with either hand works.
 AXIS_BINDINGS: dict[str, dict[str, tuple]] = {
     "fps": {
         "move_y": (("W", "UP_ARROW"), ("S", "DOWN_ARROW")),
@@ -124,7 +124,7 @@ AXIS_BINDINGS: dict[str, dict[str, tuple]] = {
     },
 }
 
-#: `field: keys that hold it down`.
+# `field: keys that hold it down`.
 BUTTON_BINDINGS: dict[str, dict[str, tuple]] = {
     "fps": {
         "fire": ("LEFTMOUSE", "SPACE"),
@@ -149,7 +149,7 @@ BUTTON_BINDINGS: dict[str, dict[str, tuple]] = {
     },
 }
 
-#: Same in every genre, and never bound to gameplay.
+# Same in every genre, and never bound to gameplay.
 SESSION_BINDINGS = {"quit": ("ESC",), "pause": ("P",)}
 
 

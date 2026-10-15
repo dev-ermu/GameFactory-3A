@@ -67,8 +67,8 @@ from typing import Optional, Sequence
 
 from . import assets, prims
 
-#: Part names, by role. Tuples because kits disagree about hyphens and order, and
-#: the first one present wins.
+# Part names, by role. Tuples because kits disagree about hyphens and order, and
+# the first one present wins.
 # 按功能分类的部件名称。使用元组是为了适配不同套件中名称的连字符用法和顺序差异，
 # 只要存在第一个匹配的名称即可。
 LEFT_ARM = ("arm-left", "armLeft", "arm_left")
@@ -78,19 +78,19 @@ RIGHT_LEG = ("leg-right", "legRight", "leg_right")
 TORSO = ("torso", "body", "chest")
 HEAD = ("head",)
 
-#: Metres of ground covered per full stride cycle. Set from the model rather than
-#: chosen: a leg 0.667 m long swinging 30 degrees each way covers about 0.7 m, and
-#: a phase that advances faster than that is the skating that gives away a fake.
+# Metres of ground covered per full stride cycle. Set from the model rather than
+# chosen: a leg 0.667 m long swinging 30 degrees each way covers about 0.7 m, and
+# a phase that advances faster than that is the skating that gives away a fake.
 # 完成一次完整迈步周期所前进的地面距离（单位：米）。该数值根据模型实际测量得出而非主观设定：
 # 长度为0.667米的腿向两侧各摆动30度时，前进距离约为0.7米；若迈步速度超过该数值，就会呈现出虚假的滑行效果。
 STRIDE_PER_LEG_LENGTH = 1.05
 
-#: How far a leg swings at a walk, in degrees. Sprinting scales this up.
+# How far a leg swings at a walk, in degrees. Sprinting scales this up.
 # 步行状态下腿部摆动的角度（单位：度）。冲刺时会放大该数值。
 LEG_SWING = 26.0
 
-#: Arms counter-swing at a fraction of the legs, which is what stops a walk
-#: reading as a march.
+# Arms counter-swing at a fraction of the legs, which is what stops a walk
+# reading as a march.
 # 手臂摆动的幅度仅为腿部的一半左右，正是这一特性避免了步行动作看起来像行军步伐。
 ARM_SWING_RATIO = 0.55
 

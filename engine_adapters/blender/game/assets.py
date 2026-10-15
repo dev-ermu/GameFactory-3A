@@ -38,15 +38,15 @@ from typing import NamedTuple, Optional, Sequence
 
 LIBRARY_PREFIX = "/Library/"
 
-#: Imported models are parked in this collection, excluded from the view layer.
-#: One import per file, however many instances use it.
+# Imported models are parked in this collection, excluded from the view layer.
+# One import per file, however many instances use it.
 # 导入的模型会被存放到此集合中，且不会显示在视图层中。
 # 每个文件对应一个导入项，无论有多少个实例使用该模型。
 SOURCE_COLLECTION = "aaagf_asset_sources"
 
-#: `.../engine_adapters/blender/game/assets.py` -> the repo. Derived from this
-#: file rather than from `AAAGF_REPO_ROOT`, because it is always right and the
-#: environment variable is only sometimes set.
+# `.../engine_adapters/blender/game/assets.py` -> the repo. Derived from this
+# file rather than from `AAAGF_REPO_ROOT`, because it is always right and the
+# environment variable is only sometimes set.
 # `.../engine_adapters/blender/game/assets.py`对应的代码库根目录。
 # 该值源自当前文件而非`AAAGF_REPO_ROOT`，因为前者始终准确，而环境变量有时并未设置。
 _REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -416,7 +416,7 @@ class Unpacked(NamedTuple):
     scale: float
 
 
-#: Blender's answer to a name that is already taken: `body` then `body.001`.
+# Blender's answer to a name that is already taken: `body` then `body.001`.
 _SUFFIXED = re.compile(r"\.\d{3}$")
 
 

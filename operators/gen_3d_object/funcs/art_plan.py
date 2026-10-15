@@ -20,59 +20,59 @@ show, and ends the mesh where a crop ended the subject.
 
 from typing import Any
 
-#: Appended to every prompt.
-#:
-#: Kept short on purpose: CLIP truncates at 77 tokens, so a long style
-#: suffix silently throws away the end of the sentence — and the subject
-#: is the part that matters. What survives here is only what was observed
-#: to change the output:
-#:
-#: * "one single … standing alone" — asked for a *game asset*, a
-#:   text-to-image model produces concept art, and concept art is a
-#:   two-view turnaround. Two figures in one image reconstruct as two
-#:   fused figures.
-#: * "full body, whole object in frame" — a distilled model at 512 px
-#:   zooms in, and a cropped subject reconstructs as a truncated mesh.
-#: * "plain white background" — a busy backdrop is matted into the
-#:   silhouette and reconstructs as lumps attached to the subject.
-#: * "no shadow" — a cast shadow is baked into the albedo permanently,
-#:   under every light the game later uses.
-#:
-#: None of this is reliable, which is why `frame_subject` exists: the
-#: prompt asks, the framing pass enforces.
+# Appended to every prompt.
+#
+# Kept short on purpose: CLIP truncates at 77 tokens, so a long style
+# suffix silently throws away the end of the sentence — and the subject
+# is the part that matters. What survives here is only what was observed
+# to change the output:
+#
+# * "one single … standing alone" — asked for a *game asset*, a
+#   text-to-image model produces concept art, and concept art is a
+#   two-view turnaround. Two figures in one image reconstruct as two
+#   fused figures.
+# * "full body, whole object in frame" — a distilled model at 512 px
+#   zooms in, and a cropped subject reconstructs as a truncated mesh.
+# * "plain white background" — a busy backdrop is matted into the
+#   silhouette and reconstructs as lumps attached to the subject.
+# * "no shadow" — a cast shadow is baked into the albedo permanently,
+#   under every light the game later uses.
+#
+# None of this is reliable, which is why `frame_subject` exists: the
+# prompt asks, the framing pass enforces.
 PROMPT_STYLE = (
     "one single object standing alone, wide shot, small in the centre of "
     "a large empty white background, whole object in frame with margin, "
     "facing the viewer, soft even light, no shadow, stylised game art"
 )
 
-#: The axis a single-image reconstruction places the input view on.
-#: Recorded as a *heuristic*, so the review pass still happens.
+# The axis a single-image reconstruction places the input view on.
+# Recorded as a *heuristic*, so the review pass still happens.
 GENERATED_FORWARD_AXIS = "+z"
 
-#: Triangle and texture budgets for a browser drawing 60 frames a second.
-#: The model wrapper defaults to 1 000 000 triangles and a 4K atlas, which
-#: is right for a showcase render and wrong for a web game: a 4K atlas is
-#: 16 MB of download per prop, and a million-triangle chair spends its
-#: budget where nobody looks.
-#:
-#: Measured on a generated character: 76k triangles with a 2K atlas is a
-#: 9.8 MB file. That is affordable once, for something the player looks at
-#: from two metres away, and not affordable eleven times for scenery.
-#: Triangle and texture budgets, per role, for a browser drawing 60 frames
-#: a second. The model wrapper defaults to 1 000 000 triangles and a 4K
-#: atlas: right for a showcase render, ruinous for a web game.
-#:
-#: These are the numbers `agent_skills/asset_qa/generated_asset_review.md`
-#: tells a reviewer to enforce, so they belong here rather than in a
-#: reviewer's head — a budget that only exists in prose gets violated by
-#: the next run. A first pass generated everything at 80 000, which put a
-#: 48 000-triangle crate in an arena shooter and 5 MB on the download for
-#: a box the player hides behind.
-#:
-#: Triangle counts cannot be fixed afterwards: decimating a textured mesh
-#: outside the generator throws its UVs away, and the generator bakes the
-#: texture *after* it decimates. The budget has to be right at generation.
+# Triangle and texture budgets for a browser drawing 60 frames a second.
+# The model wrapper defaults to 1 000 000 triangles and a 4K atlas, which
+# is right for a showcase render and wrong for a web game: a 4K atlas is
+# 16 MB of download per prop, and a million-triangle chair spends its
+# budget where nobody looks.
+#
+# Measured on a generated character: 76k triangles with a 2K atlas is a
+# 9.8 MB file. That is affordable once, for something the player looks at
+# from two metres away, and not affordable eleven times for scenery.
+# Triangle and texture budgets, per role, for a browser drawing 60 frames
+# a second. The model wrapper defaults to 1 000 000 triangles and a 4K
+# atlas: right for a showcase render, ruinous for a web game.
+#
+# These are the numbers `agent_skills/asset_qa/generated_asset_review.md`
+# tells a reviewer to enforce, so they belong here rather than in a
+# reviewer's head — a budget that only exists in prose gets violated by
+# the next run. A first pass generated everything at 80 000, which put a
+# 48 000-triangle crate in an arena shooter and 5 MB on the download for
+# a box the player hides behind.
+#
+# Triangle counts cannot be fixed afterwards: decimating a textured mesh
+# outside the generator throws its UVs away, and the generator bakes the
+# texture *after* it decimates. The budget has to be right at generation.
 BUDGET_BY_ROLE: dict[str, tuple[int, int]] = {
     #  role         triangles  texture
     "avatar": (40_000, 2048),   # the player looks at this from 2 m
@@ -85,9 +85,9 @@ BUDGET_BY_ROLE: dict[str, tuple[int, int]] = {
 DEFAULT_DECIMATION_TARGET = BUDGET_BY_ROLE["prop"][0]
 DEFAULT_TEXTURE_SIZE = BUDGET_BY_ROLE["prop"][1]
 
-#: game_id -> assets to generate. `asset_id`, `type`, `height` and
-#: `prompt` are required; `faces` overrides the heuristic axis and
-#: `triangles` overrides the budget.
+# game_id -> assets to generate. `asset_id`, `type`, `height` and
+# `prompt` are required; `faces` overrides the heuristic axis and
+# `triangles` overrides the budget.
 GAME_ART_PLANS: dict[str, tuple[dict[str, Any], ...]] = {
     "game_fps_pistol_arena": (
         {

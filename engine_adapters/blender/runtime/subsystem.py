@@ -17,12 +17,12 @@ this runtime could have comes from crossing that boundary.
 import queue
 from typing import Optional, Tuple
 
-#: Blender's command port. The UE runtime in this repo's sibling adapter
-#: conventionally takes 30020; keeping them distinct lets both run at once.
+# Blender's command port. The UE runtime in this repo's sibling adapter
+# conventionally takes 30020; keeping them distinct lets both run at once.
 DEFAULT_PORT = 30021
 
-#: How many queued commands one tick is allowed to run. A burst of imports can
-#: each take seconds, and draining without a cap would stall the tick loop.
+# How many queued commands one tick is allowed to run. A burst of imports can
+# each take seconds, and draining without a cap would stall the tick loop.
 DEFAULT_MAX_OPS_PER_TICK = 32
 
 
